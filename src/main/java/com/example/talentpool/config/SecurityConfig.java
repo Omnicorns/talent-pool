@@ -54,6 +54,7 @@ public class SecurityConfig {
                                 "/favicon.ico",
                                 "/assets/**",
                                 "/backoffice",
+                                "/sarinah-talent-pool/**",
                                 "/backoffice/**",
                                 "/error"
                         )
