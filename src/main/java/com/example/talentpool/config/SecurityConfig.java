@@ -105,7 +105,7 @@ public class SecurityConfig {
                         .permitAll()
                 )
 
-                .httpBasic(Customizer.withDefaults())
+                .httpBasic(httpBasic -> httpBasic.disable())
 
                 .build();
     }
