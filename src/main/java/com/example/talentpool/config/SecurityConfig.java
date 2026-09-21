@@ -23,23 +23,39 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         return http
+                // ============================================
+                // CSRF
+                // ============================================
                 .csrf(csrf -> csrf.disable())
 
+                // ============================================
+                // CORS
+                // ============================================
                 .cors(Customizer.withDefaults())
 
+                // ============================================
+                // STATELESS
+                // ============================================
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
                 )
 
+                // ============================================
+                // AUTHORIZATION
+                // ============================================
                 .authorizeHttpRequests(auth -> auth
 
                         // ============================================
                         // STATIC RESOURCE SPRING BOOT
                         // ============================================
                         .requestMatchers(
-                                PathRequest.toStaticResources().atCommonLocations()
+                                PathRequest.toStaticResources()
+                                        .atCommonLocations()
                         )
                         .permitAll()
+
 
                         // ============================================
                         // REACT / VITE STATIC
@@ -59,6 +75,7 @@ public class SecurityConfig {
                         )
                         .permitAll()
 
+
                         // ============================================
                         // REACT ROUTES
                         // ============================================
@@ -67,6 +84,7 @@ public class SecurityConfig {
                                 "/backoffice/**"
                         )
                         .permitAll()
+
 
                         // ============================================
                         // ACTUATOR
@@ -77,26 +95,67 @@ public class SecurityConfig {
                         )
                         .permitAll()
 
+
                         // ============================================
-                        // PUBLIC API
+                        // PUBLIC API - TALENT
                         // ============================================
+
+                        // Submit kandidat / Talent Pool
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/public/talents"
                         )
                         .permitAll()
 
+                        // Cek status kandidat
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/public/talents/*/status"
                         )
                         .permitAll()
 
+
+                        // ============================================
+                        // PUBLIC API - JOB LISTING
+                        // ============================================
+
+                        // List Job Listing
+                        //
+                        // GET:
+                        // /api/public/job-listings
+                        //
+                        // Bisa dengan query:
+                        // ?page=0&size=100&sort=updatedAt,desc
+                        //
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/public/job-listings"
+                        )
+                        .permitAll()
+
+                        // Detail Job Listing
+                        //
+                        // GET:
+                        // /api/public/job-listings/{id}
+                        //
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/public/job-listings/**"
+                        )
+                        .permitAll()
+
+
                         // ============================================
                         // BACKOFFICE API
                         // ============================================
-                        .requestMatchers("/api/backoffice/**")
-                        .hasAnyRole("ADMIN", "RECRUITER")
+                        .requestMatchers(
+                                "/api/backoffice/**"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "RECRUITER"
+                        )
+
 
                         // ============================================
                         // LAINNYA
@@ -105,30 +164,61 @@ public class SecurityConfig {
                         .permitAll()
                 )
 
+
+                // ============================================
+                // HTTP BASIC
+                // ============================================
                 .httpBasic(Customizer.withDefaults())
 
                 .build();
     }
 
+
+    // ============================================================
+    // USER BACKOFFICE
+    // ============================================================
     @Bean
     UserDetailsService userDetailsService(
             SecurityProperties properties,
             PasswordEncoder encoder
     ) {
 
-        var admin = User.withUsername(properties.adminUsername())
-                .password(encoder.encode(properties.adminPassword()))
+        var admin = User
+                .withUsername(
+                        properties.adminUsername()
+                )
+                .password(
+                        encoder.encode(
+                                properties.adminPassword()
+                        )
+                )
                 .roles("ADMIN")
                 .build();
 
-        var recruiter = User.withUsername(properties.recruiterUsername())
-                .password(encoder.encode(properties.recruiterPassword()))
+
+        var recruiter = User
+                .withUsername(
+                        properties.recruiterUsername()
+                )
+                .password(
+                        encoder.encode(
+                                properties.recruiterPassword()
+                        )
+                )
                 .roles("RECRUITER")
                 .build();
 
-        return new InMemoryUserDetailsManager(admin, recruiter);
+
+        return new InMemoryUserDetailsManager(
+                admin,
+                recruiter
+        );
     }
 
+
+    // ============================================================
+    // PASSWORD ENCODER
+    // ============================================================
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
