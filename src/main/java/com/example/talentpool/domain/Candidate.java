@@ -35,6 +35,9 @@ public class Candidate {
     @Column(name = "identity_number", length = 100)
     private String identityNumber;
 
+    @Column(name = "about", columnDefinition = "text")
+    private String about;
+
     @Column(name ="languanges")
     private String languange;
 
@@ -204,6 +207,8 @@ public class Candidate {
     public void setBirthDate(LocalDate birthDate) { this.birthDate = birthDate; }
     public String getIdentityNumber() { return identityNumber; }
     public void setIdentityNumber(String identityNumber) { this.identityNumber = identityNumber; }
+    public String getAbout() { return about; }
+    public void setAbout(String about) { this.about = about; }
     public String getCitizenIdAddress() { return citizenIdAddress; }
     public void setCitizenIdAddress(String citizenIdAddress) { this.citizenIdAddress = citizenIdAddress; }
     public String getResidentialAddress() { return residentialAddress; }
