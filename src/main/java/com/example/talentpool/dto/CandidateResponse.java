@@ -17,6 +17,8 @@ public record CandidateResponse(
         String phone,
         LocalDate birthDate,
         String identityNumber,
+        String languanges,
+        String religion,
         String citizenIdAddress,
         String residentialAddress,
         boolean sameAsCitizenIdAddress,
@@ -35,8 +37,6 @@ public record CandidateResponse(
         List<String> tools,
         List<String> jobInterests,
         List<String> preferredLocations,
-
-
         List<EducationItem> educations,
         List<WorkExperienceItem> workExperiences,
         List<PortfolioItem> portfolios,
@@ -44,16 +44,32 @@ public record CandidateResponse(
         Instant updatedAt
 ) {
     public record EducationItem(
-            UUID id, EducationType type, String level, String institution, String major,
-            Integer startYear, Integer endYear, String description
+            UUID id,
+            EducationType type,
+            String level,
+            String institution,
+            String major,
+            Integer startYear,
+            Integer endYear,
+            String description,
+            String ipk
     ) {}
 
     public record WorkExperienceItem(
-            UUID id, String companyName, String position, LocalDate startDate,
-            LocalDate endDate, boolean currentJob, String description
+            UUID id,
+            String companyName,
+            String position,
+            LocalDate startDate,
+            LocalDate endDate,
+            boolean currentJob,
+            String description
     ) {}
 
     public record PortfolioItem(
-            UUID id, PortfolioType type, String title, String url, String originalName
+            UUID id,
+            PortfolioType type,
+            String title,
+            String url,
+            String originalName
     ) {}
 }
