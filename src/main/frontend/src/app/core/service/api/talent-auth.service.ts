@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 import { TalentSession } from '../../models/talent.models';
+import { API_BASE } from './api-base';
 
 const SESSION_KEY = 'sarinahCandidateSession';
 
@@ -11,7 +12,7 @@ export class TalentAuthService {
   constructor(private http: HttpClient, private router: Router) {}
 
   login(email: string, password: string): Observable<TalentSession> {
-    return this.http.post<TalentSession>('/api/talent/auth/login', { email, password })
+    return this.http.post<TalentSession>(`${API_BASE}/talent/auth/login`, { email, password })
       .pipe(tap((session) => this.saveSession(session)));
   }
 
@@ -22,12 +23,12 @@ export class TalentAuthService {
     password: string;
     termsAccepted: boolean;
   }): Observable<TalentSession> {
-    return this.http.post<TalentSession>('/api/talent/auth/register', payload)
+    return this.http.post<TalentSession>(`${API_BASE}/talent/auth/register`, payload)
       .pipe(tap((session) => this.saveSession(session)));
   }
 
   changePassword(currentPassword: string, newPassword: string) {
-    return this.http.patch('/api/talent/auth/change-password', {
+    return this.http.patch(`${API_BASE}/talent/auth/change-password`, {
       currentPassword,
       newPassword,
     });
