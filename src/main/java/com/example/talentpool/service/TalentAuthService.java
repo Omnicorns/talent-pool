@@ -94,9 +94,7 @@ public class TalentAuthService {
 
     @Transactional
     public TalentMeResponse me(UUID candidateId) {
-        TalentAccount account = accountRepository.findAll().stream()
-                .filter(item -> item.getCandidate().getId().equals(candidateId))
-                .findFirst()
+        TalentAccount account = accountRepository.findByCandidateId(candidateId)
                 .orElseThrow(() -> new BadRequestException("Akun kandidat tidak ditemukan"));
 
         return new TalentMeResponse(
