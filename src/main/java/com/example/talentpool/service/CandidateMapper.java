@@ -186,6 +186,9 @@ public class CandidateMapper {
 
                 c.getIdentityNumber(),
 
+                c.getLanguange(),
+                c.getReligion(),
+
                 c.getCitizenIdAddress(),
                 c.getResidentialAddress(),
 
@@ -261,7 +264,8 @@ public class CandidateMapper {
                                         e.getMajor(),
                                         e.getStartYear(),
                                         e.getEndYear(),
-                                        e.getDescription()
+                                        e.getDescription(),
+                                        e.getIpk()
                                 )
                         )
                         .toList(),
