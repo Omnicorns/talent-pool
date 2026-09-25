@@ -17,6 +17,7 @@ public class CandidateMapper {
             candidate.setPhone(request.phone().trim());
             candidate.setBirthDate(request.birthDate());
             candidate.setIdentityNumber(trimToNull(request.identityNumber()));
+            candidate.setAbout(trimToNull(request.about()));
 
             // =========================
             // TAMBAHAN
@@ -185,6 +186,7 @@ public class CandidateMapper {
                 c.getBirthDate(),
 
                 c.getIdentityNumber(),
+                c.getAbout(),
 
                 c.getLanguange(),
                 c.getReligion(),
