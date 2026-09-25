@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs';
+import { API_BASE } from './api-base';
 
 const BACKOFFICE_KEY = 'sarinahBackofficeAuth';
 
@@ -13,7 +14,7 @@ export class BackofficeAuthService {
     const authorization = 'Basic ' + btoa(`${username}:${password}`);
     const headers = new HttpHeaders({ Authorization: authorization });
 
-    return this.http.get('/api/backoffice/dashboard', { headers }).pipe(
+    return this.http.get(`${API_BASE}/backoffice/dashboard`, { headers }).pipe(
       tap(() => sessionStorage.setItem(BACKOFFICE_KEY, authorization))
     );
   }
