@@ -4,6 +4,7 @@ import com.example.talentpool.domain.Candidate;
 import com.example.talentpool.domain.CandidateStatus;
 import com.example.talentpool.domain.TalentAccount;
 import com.example.talentpool.dto.TalentAuthResponse;
+import com.example.talentpool.dto.TalentChangePasswordRequest;
 import com.example.talentpool.dto.TalentLoginRequest;
 import com.example.talentpool.dto.TalentMeResponse;
 import com.example.talentpool.dto.TalentRegisterRequest;
@@ -102,6 +103,22 @@ public class TalentAuthService {
                 account.getEmail(),
                 account.getCandidate().getFullName()
         );
+    }
+
+    @Transactional
+    public void changePassword(UUID candidateId, TalentChangePasswordRequest request) {
+        TalentAccount account = accountRepository.findByCandidateId(candidateId)
+                .orElseThrow(() -> new BadRequestException("Akun kandidat tidak ditemukan"));
+
+        if (!passwordEncoder.matches(request.currentPassword(), account.getPasswordHash())) {
+            throw new BadRequestException("Password saat ini tidak valid");
+        }
+        if (passwordEncoder.matches(request.newPassword(), account.getPasswordHash())) {
+            throw new BadRequestException("Password baru harus berbeda dari password saat ini");
+        }
+
+        account.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        accountRepository.save(account);
     }
 
     private TalentAuthResponse issueToken(TalentAccount account) {
