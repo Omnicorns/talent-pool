@@ -58,6 +58,17 @@ public class AppBasePathFilter extends OncePerRequestFilter {
             stripped = "/";
         }
 
+        boolean apiRequest =
+                stripped.equals("/api")
+                || stripped.startsWith("/api/")
+                || stripped.equals("/actuator")
+                || stripped.startsWith("/actuator/");
+
+        if (!apiRequest) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         final String rewrittenUri = stripped;
 
         HttpServletRequestWrapper wrapped = new HttpServletRequestWrapper(request) {
@@ -69,23 +80,6 @@ public class AppBasePathFilter extends OncePerRequestFilter {
             @Override
             public String getServletPath() {
                 return rewrittenUri;
-            }
-
-            @Override
-            public StringBuffer getRequestURL() {
-                StringBuffer url = new StringBuffer();
-                url.append(getScheme()).append("://").append(getServerName());
-
-                int port = getServerPort();
-                boolean defaultHttp = "http".equalsIgnoreCase(getScheme()) && port == 80;
-                boolean defaultHttps = "https".equalsIgnoreCase(getScheme()) && port == 443;
-
-                if (!defaultHttp && !defaultHttps) {
-                    url.append(':').append(port);
-                }
-
-                url.append(rewrittenUri);
-                return url;
             }
         };
 
