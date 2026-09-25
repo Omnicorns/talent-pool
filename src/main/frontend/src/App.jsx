@@ -1983,6 +1983,65 @@ body{overflow-x:hidden!important;background:#fff!important}
   .career-public .candidate-portal-applications{margin-top:14px;padding:20px 18px;border-radius:14px}
 }
 
+
+/* Candidate edit side drawer */
+.career-public .candidate-side-drawer-backdrop{
+  position:fixed;inset:0;z-index:3000;background:rgba(15,23,42,.38);
+  display:flex;justify-content:flex-end;backdrop-filter:blur(2px);
+}
+.career-public .candidate-side-drawer{
+  width:min(580px,100vw);height:100vh;background:#fff;
+  display:flex;flex-direction:column;box-shadow:-24px 0 60px rgba(15,23,42,.18);
+  animation:candidateDrawerIn .22s ease both;
+}
+@keyframes candidateDrawerIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.career-public .candidate-side-drawer-head{
+  padding:22px 24px 18px;border-bottom:1px solid #e7eaee;
+  display:flex;justify-content:space-between;gap:18px;align-items:flex-start;background:#fff;
+}
+.career-public .candidate-side-drawer-head h2{margin:0;font-size:22px;letter-spacing:-.025em;color:#182028}
+.career-public .candidate-side-drawer-head p{margin:6px 0 0;color:#7a838d;font-size:12px;line-height:1.5}
+.career-public .candidate-side-drawer-close{
+  width:38px;height:38px;border:1px solid #e0e4e8;border-radius:10px;background:#fff;
+  display:grid;place-items:center;color:#68727d;cursor:pointer;flex:0 0 auto;
+}
+.career-public .candidate-side-drawer-close:hover{background:#fff4f2;color:#c9281e;border-color:#efc0bb}
+.career-public .candidate-side-drawer-body{flex:1;overflow:auto;padding:24px;background:#fbfcfc}
+.career-public .candidate-drawer-form{display:grid;gap:16px}
+.career-public .candidate-drawer-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.career-public .candidate-drawer-field{display:grid;gap:7px;min-width:0}
+.career-public .candidate-drawer-field>span{font-size:12px;font-weight:800;color:#303842}
+.career-public .candidate-drawer-field input,
+.career-public .candidate-drawer-field textarea,
+.career-public .candidate-drawer-field select{
+  width:100%;border:1px solid #dce1e5;border-radius:10px;background:#fff;color:#202830;
+  min-height:44px;padding:10px 12px;outline:none;font-size:13px;resize:vertical;
+}
+.career-public .candidate-drawer-field textarea{min-height:112px}
+.career-public .candidate-drawer-field input:focus,
+.career-public .candidate-drawer-field textarea:focus,
+.career-public .candidate-drawer-field select:focus{
+  border-color:#e08e87;box-shadow:0 0 0 3px rgba(217,39,28,.08)
+}
+.career-public .candidate-drawer-field input:disabled{background:#f3f5f6;color:#8a929b}
+.career-public .candidate-drawer-check{display:flex;align-items:center;gap:8px;color:#59636d;font-size:12px}
+.career-public .candidate-drawer-actions{
+  padding:17px 24px;border-top:1px solid #e7eaee;background:#fff;
+  display:flex;justify-content:flex-end;gap:10px;
+}
+.career-public .candidate-drawer-cancel,
+.career-public .candidate-drawer-save{
+  min-height:42px;padding:0 17px;border-radius:9px;font-weight:850;font-size:12px;cursor:pointer;
+}
+.career-public .candidate-drawer-cancel{border:1px solid #dce1e5;background:#fff;color:#59636d}
+.career-public .candidate-drawer-save{border:1px solid #d9271c;background:#d9271c;color:#fff}
+.career-public .candidate-drawer-save:disabled{opacity:.55;cursor:not-allowed}
+@media(max-width:620px){
+  .career-public .candidate-side-drawer{width:100vw}
+  .career-public .candidate-side-drawer-head,.career-public .candidate-side-drawer-body{padding-left:18px;padding-right:18px}
+  .career-public .candidate-drawer-grid{grid-template-columns:1fr}
+}
+
 `;
 
 function CandidatePortal({ onToast }) {
@@ -2021,12 +2080,20 @@ function CandidatePortal({ onToast }) {
   const [candidatePasswordForm, setCandidatePasswordForm] = useState({
     currentPassword: '', newPassword: '', confirmPassword: '',
   });
+  const [candidateDrawer, setCandidateDrawer] = useState({
+    open: false,
+    section: null,
+    index: null,
+    snapshot: null,
+    saving: false,
+  });
   const [publicJobs, setPublicJobs] = useState([]);
   const [publicJobsLoading, setPublicJobsLoading] = useState(false);
   const [publicJobsError, setPublicJobsError] = useState('');
   const [publicJobsLoaded, setPublicJobsLoaded] = useState(false);
   const [form, setForm] = useState({
     fullName: '', email: '', phone: '', birthDate: '', identityNumber: '',
+    about: '',
     languanges: '', religion: '',
     citizenIdAddress: '', residentialAddress: '', sameAsCitizenIdAddress: false,
     currentSalary: '', expectedSalary: '', source: 'Website', termsAccepted: false,
@@ -2140,6 +2207,7 @@ function CandidatePortal({ onToast }) {
       phone: profile.phone || '',
       birthDate: profile.birthDate || '',
       identityNumber: profile.identityNumber || '',
+      about: profile.about || '',
       languanges: profile.languanges || '',
       religion: profile.religion || '',
       citizenIdAddress: profile.citizenIdAddress || '',
@@ -2468,28 +2536,29 @@ function CandidatePortal({ onToast }) {
     return String(value || '').split(',').map((item) => item.trim()).filter(Boolean).slice(0, 3);
   }
 
-  function buildPayload() {
+  function buildPayload(sourceForm = form) {
     return {
-      fullName: form.fullName.trim(),
-      email: form.email.trim(),
-      phone: form.phone.trim(),
-      birthDate: form.birthDate || null,
-      identityNumber: form.identityNumber || null,
-      languanges: form.languanges || null,
-      religion: form.religion || null,
-      citizenIdAddress: form.citizenIdAddress || null,
-      residentialAddress: form.sameAsCitizenIdAddress ? form.citizenIdAddress : (form.residentialAddress || null),
-      sameAsCitizenIdAddress: form.sameAsCitizenIdAddress,
-      currentSalary: form.currentSalary === '' ? null : Number(form.currentSalary),
-      expectedSalary: form.expectedSalary === '' ? null : Number(form.expectedSalary),
-      source: form.source || 'Website',
-      termsAccepted: form.termsAccepted,
-      relatedIndustries: cleanArrayText(form.relatedIndustries),
-      relatedJobPositions: cleanArrayText(form.relatedJobPositions),
-      tools: cleanArrayText(form.tools),
-      jobInterests: cleanArrayText(form.jobInterests),
-      preferredLocations: cleanArrayText(form.preferredLocations),
-      educations: form.educations
+      fullName: sourceForm.fullName.trim(),
+      email: sourceForm.email.trim(),
+      phone: sourceForm.phone.trim(),
+      birthDate: sourceForm.birthDate || null,
+      identityNumber: sourceForm.identityNumber || null,
+      about: sourceForm.about || null,
+      languanges: sourceForm.languanges || null,
+      religion: sourceForm.religion || null,
+      citizenIdAddress: sourceForm.citizenIdAddress || null,
+      residentialAddress: sourceForm.sameAsCitizenIdAddress ? sourceForm.citizenIdAddress : (sourceForm.residentialAddress || null),
+      sameAsCitizenIdAddress: sourceForm.sameAsCitizenIdAddress,
+      currentSalary: sourceForm.currentSalary === '' ? null : Number(sourceForm.currentSalary),
+      expectedSalary: sourceForm.expectedSalary === '' ? null : Number(sourceForm.expectedSalary),
+      source: sourceForm.source || 'Website',
+      termsAccepted: sourceForm.termsAccepted,
+      relatedIndustries: cleanArrayText(sourceForm.relatedIndustries),
+      relatedJobPositions: cleanArrayText(sourceForm.relatedJobPositions),
+      tools: cleanArrayText(sourceForm.tools),
+      jobInterests: cleanArrayText(sourceForm.jobInterests),
+      preferredLocations: cleanArrayText(sourceForm.preferredLocations),
+      educations: sourceForm.educations
         .filter((item) => String(item.institution || '').trim())
         .map((item) => ({
           ...item,
@@ -2501,13 +2570,111 @@ function CandidatePortal({ onToast }) {
           ipk: item.ipk === '' ? null : Number(item.ipk),
           description: String(item.description || '').trim() || null,
         })),
-      workExperiences: form.workExperiences.filter((item) => item.companyName && item.position && item.startDate).map((item) => ({
+      workExperiences: sourceForm.workExperiences.filter((item) => item.companyName && item.position && item.startDate).map((item) => ({
         ...item,
         startDate: item.startDate || null,
         endDate: item.currentJob ? null : (item.endDate || null),
       })),
-      portfolioLinks: form.portfolioLinks.filter((item) => item.url),
+      portfolioLinks: sourceForm.portfolioLinks.filter((item) => item.url),
     };
+  }
+
+  function cloneCandidateForm(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  function findEducationFormIndex(education) {
+    return form.educations.findIndex((item) =>
+      item.type === education?.type &&
+      String(item.institution || '') === String(education?.institution || '') &&
+      String(item.major || '') === String(education?.major || '') &&
+      String(item.startYear ?? '') === String(education?.startYear ?? '')
+    );
+  }
+
+  function openCandidateDrawer(section, index = null) {
+    const snapshot = cloneCandidateForm(form);
+    let resolvedIndex = index;
+
+    if (section === 'experience' && index == null) {
+      resolvedIndex = form.workExperiences.length;
+      setForm((current) => ({
+        ...current,
+        workExperiences: [...current.workExperiences, emptyExperience()],
+      }));
+    }
+
+    if ((section === 'education' || section === 'training') && index == null) {
+      resolvedIndex = form.educations.length;
+      setForm((current) => ({
+        ...current,
+        educations: [
+          ...current.educations,
+          { ...emptyEducation(), type: section === 'training' ? 'INFORMAL' : 'FORMAL' },
+        ],
+      }));
+    }
+
+    setCandidateDrawer({
+      open: true,
+      section,
+      index: resolvedIndex,
+      snapshot,
+      saving: false,
+    });
+  }
+
+  function closeCandidateDrawer({ revert = false } = {}) {
+    if (revert && candidateDrawer.snapshot) {
+      setForm(candidateDrawer.snapshot);
+    }
+    setCandidateDrawer({
+      open: false,
+      section: null,
+      index: null,
+      snapshot: null,
+      saving: false,
+    });
+  }
+
+  async function saveCandidateDrawer() {
+    if (!candidateSession?.accessToken) {
+      closeCandidateDrawer({ revert: true });
+      requireCandidateLogin('none');
+      return;
+    }
+
+    if (!form.fullName.trim() || !form.email.trim() || !form.phone.trim()) {
+      onToast({ type: 'error', message: 'Nama, email, dan nomor telepon wajib diisi.' });
+      return;
+    }
+
+    setCandidateDrawer((current) => ({ ...current, saving: true }));
+
+    try {
+      const body = new FormData();
+      body.append(
+        'data',
+        new Blob([JSON.stringify(buildPayload(form))], { type: 'application/json' })
+      );
+
+      const result = await candidateApi('/api/talent/profile', {
+        method: 'PUT',
+        body,
+      });
+
+      if (result) {
+        profileToForm(result);
+      } else {
+        await loadCandidateProfile();
+      }
+
+      closeCandidateDrawer();
+      onToast({ message: 'Profil kandidat berhasil diperbarui.' });
+    } catch (error) {
+      onToast({ type: 'error', message: error.message });
+      setCandidateDrawer((current) => ({ ...current, saving: false }));
+    }
   }
 
   function handleFormKeyDown(event) {
@@ -3007,7 +3174,7 @@ function CandidatePortal({ onToast }) {
                       <button
                         type="button"
                         className="candidate-profile-edit"
-                        onClick={() => requireCandidateLogin('talent-pool')}
+                        onClick={() => openCandidateDrawer('profile')}
                       >
                         <Icon name="edit" size={16}/> Edit Profil
                       </button>
@@ -3053,12 +3220,13 @@ function CandidatePortal({ onToast }) {
                     <section id="candidate-about" className="candidate-profile-section">
                       <div className="candidate-section-heading">
                         <h2>About</h2>
-                        <button type="button" className="candidate-section-action" onClick={() => requireCandidateLogin('talent-pool')}>
+                        <button type="button" className="candidate-section-action" onClick={() => openCandidateDrawer('about')}>
                           <Icon name="edit" size={15}/> Edit
                         </button>
                       </div>
                       <p className="candidate-about-copy">
-                        {candidateProfile?.workExperiences?.find((item) => item.description)?.description
+                        {candidateProfile?.about
+                          || candidateProfile?.workExperiences?.find((item) => item.description)?.description
                           || candidateProfile?.educations?.find((item) => item.description)?.description
                           || 'Lengkapi deskripsi pengalaman atau pendidikan Anda agar recruiter dapat memahami profil profesional Anda dengan lebih baik.'}
                       </p>
@@ -3067,7 +3235,7 @@ function CandidatePortal({ onToast }) {
                     <section id="candidate-experience" className="candidate-profile-section">
                       <div className="candidate-section-heading">
                         <h2>Work Experience</h2>
-                        <button type="button" className="candidate-section-action" onClick={() => requireCandidateLogin('talent-pool')}>
+                        <button type="button" className="candidate-section-action" onClick={() => openCandidateDrawer('experience')}>
                           <Icon name="plus" size={15}/> Add
                         </button>
                       </div>
@@ -3081,7 +3249,7 @@ function CandidatePortal({ onToast }) {
                               <div className="candidate-timeline-body">
                                 <div className="candidate-timeline-title">
                                   <h3>{experience.position || 'Posisi'}</h3>
-                                  <button type="button" onClick={() => requireCandidateLogin('talent-pool')} aria-label="Edit pengalaman kerja">
+                                  <button type="button" onClick={() => openCandidateDrawer('experience', index)} aria-label="Edit pengalaman kerja">
                                     <Icon name="edit" size={15}/>
                                   </button>
                                 </div>
@@ -3102,7 +3270,7 @@ function CandidatePortal({ onToast }) {
                     <section id="candidate-education" className="candidate-profile-section">
                       <div className="candidate-section-heading">
                         <h2>Education</h2>
-                        <button type="button" className="candidate-section-action" onClick={() => requireCandidateLogin('talent-pool')}>
+                        <button type="button" className="candidate-section-action" onClick={() => openCandidateDrawer('education')}>
                           <Icon name="plus" size={15}/> Add
                         </button>
                       </div>
@@ -3116,7 +3284,7 @@ function CandidatePortal({ onToast }) {
                               <div className="candidate-timeline-body">
                                 <div className="candidate-timeline-title">
                                   <h3>{education.institution || 'Institusi Pendidikan'}</h3>
-                                  <button type="button" onClick={() => requireCandidateLogin('talent-pool')} aria-label="Edit pendidikan">
+                                  <button type="button" onClick={() => openCandidateDrawer('education', findEducationFormIndex(education))} aria-label="Edit pendidikan">
                                     <Icon name="edit" size={15}/>
                                   </button>
                                 </div>
@@ -3140,7 +3308,7 @@ function CandidatePortal({ onToast }) {
                     <section id="candidate-training" className="candidate-profile-section">
                       <div className="candidate-section-heading">
                         <h2>Training & Certification</h2>
-                        <button type="button" className="candidate-section-action" onClick={() => requireCandidateLogin('talent-pool')}>
+                        <button type="button" className="candidate-section-action" onClick={() => openCandidateDrawer('training')}>
                           <Icon name="plus" size={15}/> Add
                         </button>
                       </div>
@@ -3154,7 +3322,7 @@ function CandidatePortal({ onToast }) {
                               <div className="candidate-timeline-body">
                                 <div className="candidate-timeline-title">
                                   <h3>{education.major || education.level || 'Training / Certification'}</h3>
-                                  <button type="button" onClick={() => requireCandidateLogin('talent-pool')} aria-label="Edit training">
+                                  <button type="button" onClick={() => openCandidateDrawer('training', findEducationFormIndex(education))} aria-label="Edit training">
                                     <Icon name="edit" size={15}/>
                                   </button>
                                 </div>
@@ -3175,7 +3343,7 @@ function CandidatePortal({ onToast }) {
                     <section id="candidate-additional" className="candidate-profile-section">
                       <div className="candidate-section-heading">
                         <h2>Additional Information</h2>
-                        <button type="button" className="candidate-section-action" onClick={() => requireCandidateLogin('talent-pool')}>
+                        <button type="button" className="candidate-section-action" onClick={() => openCandidateDrawer('additional')}>
                           <Icon name="edit" size={15}/> Edit
                         </button>
                       </div>
@@ -3268,6 +3436,107 @@ function CandidatePortal({ onToast }) {
             )}
           </div>
         </main>
+      )}
+
+      {candidateDrawer.open && (
+        <div
+          className="candidate-side-drawer-backdrop"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeCandidateDrawer({ revert: true });
+          }}
+        >
+          <aside className="candidate-side-drawer" role="dialog" aria-modal="true">
+            <div className="candidate-side-drawer-head">
+              <div>
+                <h2>{
+                  candidateDrawer.section === 'profile' ? 'Edit Profil' :
+                  candidateDrawer.section === 'about' ? 'Edit About' :
+                  candidateDrawer.section === 'experience' ? 'Work Experience' :
+                  candidateDrawer.section === 'education' ? 'Education' :
+                  candidateDrawer.section === 'training' ? 'Training & Certification' :
+                  'Additional Information'
+                }</h2>
+                <p>Perbarui data kandidat. Perubahan tersimpan ke profil Talent Pool Anda.</p>
+              </div>
+              <button type="button" className="candidate-side-drawer-close" onClick={() => closeCandidateDrawer({ revert: true })}>
+                <Icon name="x" size={18}/>
+              </button>
+            </div>
+
+            <div className="candidate-side-drawer-body">
+              {candidateDrawer.section === 'profile' && (
+                <div className="candidate-drawer-form">
+                  <label className="candidate-drawer-field"><span>Nama Lengkap</span><input value={form.fullName} onChange={(e) => setValue('fullName', e.target.value)}/></label>
+                  <div className="candidate-drawer-grid">
+                    <label className="candidate-drawer-field"><span>Email Login</span><input value={form.email} disabled/></label>
+                    <label className="candidate-drawer-field"><span>WhatsApp</span><input value={form.phone} onChange={(e) => setValue('phone', e.target.value)}/></label>
+                  </div>
+                  <label className="candidate-drawer-field"><span>Preferred Locations</span><input value={form.preferredLocations} onChange={(e) => setValue('preferredLocations', e.target.value)} placeholder="Jakarta, Bandung"/></label>
+                  <label className="candidate-drawer-field"><span>Posisi yang Diminati</span><input value={form.relatedJobPositions} onChange={(e) => setValue('relatedJobPositions', e.target.value)} placeholder="Backend Engineer, Software Engineer"/></label>
+                </div>
+              )}
+
+              {candidateDrawer.section === 'about' && (
+                <div className="candidate-drawer-form">
+                  <label className="candidate-drawer-field">
+                    <span>About</span>
+                    <textarea value={form.about || ''} onChange={(e) => setValue('about', e.target.value)} maxLength={4000} placeholder="Ceritakan pengalaman, keahlian, dan tujuan karier Anda..."/>
+                  </label>
+                </div>
+              )}
+
+              {candidateDrawer.section === 'experience' && candidateDrawer.index != null && form.workExperiences[candidateDrawer.index] && (
+                <div className="candidate-drawer-form">
+                  <label className="candidate-drawer-field"><span>Posisi</span><input value={form.workExperiences[candidateDrawer.index].position} onChange={(e) => updateArray('workExperiences', candidateDrawer.index, 'position', e.target.value)}/></label>
+                  <label className="candidate-drawer-field"><span>Perusahaan</span><input value={form.workExperiences[candidateDrawer.index].companyName} onChange={(e) => updateArray('workExperiences', candidateDrawer.index, 'companyName', e.target.value)}/></label>
+                  <div className="candidate-drawer-grid">
+                    <label className="candidate-drawer-field"><span>Tanggal Mulai</span><input type="date" value={form.workExperiences[candidateDrawer.index].startDate} onChange={(e) => updateArray('workExperiences', candidateDrawer.index, 'startDate', e.target.value)}/></label>
+                    <label className="candidate-drawer-field"><span>Tanggal Selesai</span><input type="date" disabled={form.workExperiences[candidateDrawer.index].currentJob} value={form.workExperiences[candidateDrawer.index].endDate} onChange={(e) => updateArray('workExperiences', candidateDrawer.index, 'endDate', e.target.value)}/></label>
+                  </div>
+                  <label className="candidate-drawer-check"><input type="checkbox" checked={form.workExperiences[candidateDrawer.index].currentJob} onChange={(e) => updateArray('workExperiences', candidateDrawer.index, 'currentJob', e.target.checked)}/> Saya masih bekerja di sini</label>
+                  <label className="candidate-drawer-field"><span>Deskripsi</span><textarea value={form.workExperiences[candidateDrawer.index].description} onChange={(e) => updateArray('workExperiences', candidateDrawer.index, 'description', e.target.value)}/></label>
+                </div>
+              )}
+
+              {(candidateDrawer.section === 'education' || candidateDrawer.section === 'training') && candidateDrawer.index != null && form.educations[candidateDrawer.index] && (
+                <div className="candidate-drawer-form">
+                  <input type="hidden" value={form.educations[candidateDrawer.index].type}/>
+                  <label className="candidate-drawer-field"><span>{candidateDrawer.section === 'training' ? 'Nama Training / Sertifikasi' : 'Institusi Pendidikan'}</span><input value={candidateDrawer.section === 'training' ? form.educations[candidateDrawer.index].major : form.educations[candidateDrawer.index].institution} onChange={(e) => updateArray('educations', candidateDrawer.index, candidateDrawer.section === 'training' ? 'major' : 'institution', e.target.value)}/></label>
+                  {candidateDrawer.section === 'training' && <label className="candidate-drawer-field"><span>Penyelenggara / Institusi</span><input value={form.educations[candidateDrawer.index].institution} onChange={(e) => updateArray('educations', candidateDrawer.index, 'institution', e.target.value)}/></label>}
+                  {candidateDrawer.section === 'education' && <label className="candidate-drawer-field"><span>Jurusan</span><input value={form.educations[candidateDrawer.index].major} onChange={(e) => updateArray('educations', candidateDrawer.index, 'major', e.target.value)}/></label>}
+                  <label className="candidate-drawer-field"><span>{candidateDrawer.section === 'training' ? 'Jenis / Level Sertifikasi' : 'Jenjang Pendidikan'}</span><input value={form.educations[candidateDrawer.index].level} onChange={(e) => updateArray('educations', candidateDrawer.index, 'level', e.target.value)}/></label>
+                  <div className="candidate-drawer-grid">
+                    <label className="candidate-drawer-field"><span>Tahun Mulai</span><input type="number" min="1950" max="2100" value={form.educations[candidateDrawer.index].startYear} onChange={(e) => updateArray('educations', candidateDrawer.index, 'startYear', e.target.value)}/></label>
+                    <label className="candidate-drawer-field"><span>Tahun Selesai</span><input type="number" min="1950" max="2100" value={form.educations[candidateDrawer.index].endYear} onChange={(e) => updateArray('educations', candidateDrawer.index, 'endYear', e.target.value)}/></label>
+                  </div>
+                  {candidateDrawer.section === 'education' && <label className="candidate-drawer-field"><span>IPK</span><input type="number" step="0.01" value={form.educations[candidateDrawer.index].ipk} onChange={(e) => updateArray('educations', candidateDrawer.index, 'ipk', e.target.value)}/></label>}
+                  <label className="candidate-drawer-field"><span>Deskripsi</span><textarea value={form.educations[candidateDrawer.index].description} onChange={(e) => updateArray('educations', candidateDrawer.index, 'description', e.target.value)}/></label>
+                </div>
+              )}
+
+              {candidateDrawer.section === 'additional' && (
+                <div className="candidate-drawer-form">
+                  <div className="candidate-drawer-grid">
+                    <label className="candidate-drawer-field"><span>Languages</span><input value={form.languanges} onChange={(e) => setValue('languanges', e.target.value)}/></label>
+                    <label className="candidate-drawer-field"><span>Religion</span><input value={form.religion} onChange={(e) => setValue('religion', e.target.value)}/></label>
+                  </div>
+                  <label className="candidate-drawer-field"><span>Job Interests</span><input value={form.jobInterests} onChange={(e) => setValue('jobInterests', e.target.value)} placeholder="Retail, Technology, Operations"/></label>
+                  <label className="candidate-drawer-field"><span>Preferred Locations</span><input value={form.preferredLocations} onChange={(e) => setValue('preferredLocations', e.target.value)} placeholder="Jakarta, Bandung"/></label>
+                  <label className="candidate-drawer-field"><span>Related Industries</span><input value={form.relatedIndustries} onChange={(e) => setValue('relatedIndustries', e.target.value)}/></label>
+                  <label className="candidate-drawer-field"><span>Tools / Skills</span><input value={form.tools} onChange={(e) => setValue('tools', e.target.value)} placeholder="Java, Spring Boot, PostgreSQL"/></label>
+                  <label className="candidate-drawer-field"><span>Expected Salary</span><input type="number" min="0" value={form.expectedSalary} onChange={(e) => setValue('expectedSalary', e.target.value)}/></label>
+                </div>
+              )}
+            </div>
+
+            <div className="candidate-drawer-actions">
+              <button type="button" className="candidate-drawer-cancel" disabled={candidateDrawer.saving} onClick={() => closeCandidateDrawer({ revert: true })}>Batal</button>
+              <button type="button" className="candidate-drawer-save" disabled={candidateDrawer.saving} onClick={saveCandidateDrawer}>
+                {candidateDrawer.saving ? 'Menyimpan...' : 'Simpan Perubahan'}
+              </button>
+            </div>
+          </aside>
+        </div>
       )}
 
       {publicPage === 'security' && (
