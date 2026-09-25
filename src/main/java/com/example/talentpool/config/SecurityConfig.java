@@ -4,7 +4,7 @@ import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import static org.springframework.security.config.Customizer.withDefaults;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -14,6 +14,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableMethodSecurity
@@ -21,45 +26,15 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         return http
-                // ============================================
-                // CSRF
-                // ============================================
                 .csrf(csrf -> csrf.disable())
-
-                // ============================================
-                // CORS
-                // ============================================
-                .cors(withDefaults())
-
-                // ============================================
-                // STATELESS
-                // ============================================
+                .cors(Customizer.withDefaults())
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS
-                        )
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-
-                // ============================================
-                // AUTHORIZATION
-                // ============================================
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
 
-                        // ============================================
-                        // STATIC RESOURCE SPRING BOOT
-                        // ============================================
-                        .requestMatchers(
-                                PathRequest.toStaticResources()
-                                        .atCommonLocations()
-                        )
-                        .permitAll()
-
-
-                        // ============================================
-                        // REACT / VITE STATIC
-                        // ============================================
                         .requestMatchers(
                                 "/",
                                 "/index.html",
@@ -72,155 +47,67 @@ public class SecurityConfig {
                                 "/*.jpeg",
                                 "/*.svg",
                                 "/*.ico"
-                        )
-                        .permitAll()
+                        ).permitAll()
 
+                        .requestMatchers("/backoffice", "/backoffice/**").permitAll()
 
-                        // ============================================
-                        // REACT ROUTES
-                        // ============================================
-                        .requestMatchers(
-                                "/backoffice",
-                                "/backoffice/**"
-                        )
-                        .permitAll()
+                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
 
+                        .requestMatchers(HttpMethod.POST, "/api/public/talents").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/public/talents/*/status").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/public/job-listings", "/api/public/job-listings/**").permitAll()
 
-                        // ============================================
-                        // ACTUATOR
-                        // ============================================
-                        .requestMatchers(
-                                "/actuator/health",
-                                "/actuator/info"
-                        )
-                        .permitAll()
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/talent/auth/register",
+                                "/api/talent/auth/login"
+                        ).permitAll()
 
+                        .requestMatchers("/api/talent/**").authenticated()
 
-                        // ============================================
-                        // PUBLIC API - TALENT
-                        // ============================================
+                        .requestMatchers("/api/backoffice/**")
+                        .hasAnyRole("ADMIN", "RECRUITER")
 
-                        // Submit kandidat / Talent Pool
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/public/talents"
-                        )
-                        .permitAll()
-
-                        // Cek status kandidat
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/public/talents/*/status"
-                        )
-                        .permitAll()
-
-
-                        // ============================================
-                        // PUBLIC API - JOB LISTING
-                        // ============================================
-
-                        // List Job Listing
-                        //
-                        // GET:
-                        // /api/public/job-listings
-                        //
-                        // Bisa dengan query:
-                        // ?page=0&size=100&sort=updatedAt,desc
-                        //
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/public/job-listings"
-                        )
-                        .permitAll()
-
-                        // Detail Job Listing
-                        //
-                        // GET:
-                        // /api/public/job-listings/{id}
-                        //
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/public/job-listings/**"
-                        )
-                        .permitAll()
-
-
-                        // ============================================
-                        // BACKOFFICE API
-                        // ============================================
-                        .requestMatchers(
-                                "/api/backoffice/**"
-                        )
-                        .hasAnyRole(
-                                "ADMIN",
-                                "RECRUITER"
-                        )
-
-
-                        // ============================================
-                        // LAINNYA
-                        // ============================================
-                        .anyRequest()
-                        .permitAll()
+                        .anyRequest().permitAll()
                 )
-
-
-                // ============================================
-                // HTTP BASIC
-                // ============================================
-                .httpBasic(withDefaults())
-
+                .oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()))
+                .httpBasic(Customizer.withDefaults())
                 .build();
     }
 
-
-    // ============================================================
-    // USER BACKOFFICE
-    // ============================================================
     @Bean
     UserDetailsService userDetailsService(
             SecurityProperties properties,
             PasswordEncoder encoder
     ) {
-
-        var admin = User
-                .withUsername(
-                        properties.adminUsername()
-                )
-                .password(
-                        encoder.encode(
-                                properties.adminPassword()
-                        )
-                )
+        var admin = User.withUsername(properties.adminUsername())
+                .password(encoder.encode(properties.adminPassword()))
                 .roles("ADMIN")
                 .build();
 
-
-        var recruiter = User
-                .withUsername(
-                        properties.recruiterUsername()
-                )
-                .password(
-                        encoder.encode(
-                                properties.recruiterPassword()
-                        )
-                )
+        var recruiter = User.withUsername(properties.recruiterUsername())
+                .password(encoder.encode(properties.recruiterPassword()))
                 .roles("RECRUITER")
                 .build();
 
-
-        return new InMemoryUserDetailsManager(
-                admin,
-                recruiter
-        );
+        return new InMemoryUserDetailsManager(admin, recruiter);
     }
 
-
-    // ============================================================
-    // PASSWORD ENCODER
-    // ============================================================
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource(CorsProperties properties) {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(properties.allowedOrigins());
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+        configuration.setExposedHeaders(List.of("Content-Disposition"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }
