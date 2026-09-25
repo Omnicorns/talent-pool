@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { CandidateProfile, JobApplication, JobListing } from '../../models/talent.models';
+import { API_BASE } from './api-base';
 
 @Injectable({ providedIn: 'root' })
 export class TalentPortalService {
   constructor(private http: HttpClient) {}
 
   profile() {
-    return this.http.get<CandidateProfile>('/api/talent/profile');
+    return this.http.get<CandidateProfile>(`${API_BASE}/talent/profile`);
   }
 
   saveProfile(profile: CandidateProfile) {
@@ -23,31 +24,26 @@ export class TalentPortalService {
 
     const data = new FormData();
     data.append('data', new Blob([JSON.stringify(payload)], { type: 'application/json' }));
-
-    return this.http.put<CandidateProfile>('/api/talent/profile', data);
+    return this.http.put<CandidateProfile>(`${API_BASE}/talent/profile`, data);
   }
 
   applications() {
-    const params = new HttpParams()
-      .set('page', '0')
-      .set('size', '100')
-      .set('sort', 'updatedAt,desc');
-
-    return this.http.get<{ content: JobApplication[] }>('/api/talent/applications', { params });
+    const params = new HttpParams().set('page', '0').set('size', '100').set('sort', 'updatedAt,desc');
+    return this.http.get<{ content: JobApplication[] }>(`${API_BASE}/talent/applications`, { params });
   }
 
   jobs() {
     const params = new HttpParams().set('page', '0').set('size', '100');
-    return this.http.get<{ content: JobListing[] }>('/api/talent/jobs', { params });
+    return this.http.get<{ content: JobListing[] }>(`${API_BASE}/talent/jobs`, { params });
   }
 
   apply(jobId: string) {
-    return this.http.post(`/api/talent/jobs/${jobId}/apply`, {
+    return this.http.post(`${API_BASE}/talent/jobs/${jobId}/apply`, {
       notes: 'Dilamar melalui Sarinah Career Portal',
     });
   }
 
   withdraw(applicationId: string) {
-    return this.http.patch(`/api/talent/applications/${applicationId}/withdraw`, {});
+    return this.http.patch(`${API_BASE}/talent/applications/${applicationId}/withdraw`, {});
   }
 }
