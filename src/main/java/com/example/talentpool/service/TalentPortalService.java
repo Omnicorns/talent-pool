@@ -55,6 +55,10 @@ public class TalentPortalService {
             MultipartFile profilePicture,
             List<MultipartFile> portfolioFiles
     ) {
+        CandidateResponse current = candidateService.detail(candidateId);
+        if (current.email() == null || !current.email().equalsIgnoreCase(request.email())) {
+            throw new BadRequestException("Email login tidak dapat diubah dari profil");
+        }
         return candidateService.update(candidateId, request, cv, profilePicture, portfolioFiles);
     }
 
