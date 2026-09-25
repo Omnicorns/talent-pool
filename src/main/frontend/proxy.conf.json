@@ -1,0 +1,18 @@
+{
+  "/sarinah-talent-pool/api": {
+    "target": "http://localhost:8004",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/sarinah-talent-pool": ""
+    }
+  },
+  "/sarinah-talent-pool/images": {
+    "target": "http://localhost:8004",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/sarinah-talent-pool": ""
+    }
+  }
+}

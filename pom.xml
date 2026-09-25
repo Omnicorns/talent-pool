@@ -93,9 +93,7 @@
                 <executions>
                     <execution>
                         <id>install-node-and-npm</id>
-                        <goals>
-                            <goal>install-node-and-npm</goal>
-                        </goals>
+                        <goals><goal>install-node-and-npm</goal></goals>
                         <configuration>
                             <nodeVersion>v20.18.0</nodeVersion>
                             <npmVersion>10.8.2</npmVersion>
@@ -104,29 +102,21 @@
                     <execution>
                         <id>npm-install</id>
                         <phase>generate-resources</phase>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
+                        <goals><goal>npm</goal></goals>
                         <configuration>
                             <arguments>install --no-audit --no-fund</arguments>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>vite-build</id>
+                        <id>angular-build</id>
                         <phase>generate-resources</phase>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
+                        <goals><goal>npm</goal></goals>
                         <configuration>
                             <arguments>run build</arguments>
-                            <environmentVariables>
-                                <VITE_BASE_PATH>/sarinah-talent-pool/</VITE_BASE_PATH>
-                            </environmentVariables>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 </project>

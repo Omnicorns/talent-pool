@@ -1,24 +1,53 @@
-# Sarinah Talent Pool UI
+# Sarinah Talent Pool UI — Angular
 
-Source React/Vite untuk Candidate Portal dan Back Office.
+Frontend Talent Pool menggunakan Angular dan tetap dibundel ke dalam Spring Boot.
+
+## Struktur
+
+```text
+src/main/frontend/
+├── angular.json
+├── package.json
+├── proxy.conf.json
+├── tsconfig.json
+├── tsconfig.app.json
+└── src/
+    ├── index.html
+    ├── main.ts
+    ├── styles.css
+    └── app/
+        ├── app.component.ts
+        ├── app.config.ts
+        ├── app.routes.ts
+        ├── core/
+        │   ├── guard/
+        │   ├── interceptor/
+        │   ├── models/
+        │   └── service/api/
+        └── features/
+            ├── auth/
+            ├── public/
+            ├── candidate/
+            └── backoffice/
+```
 
 ## Development
 
-Pastikan Spring Boot berjalan di port 8004, lalu:
+Jalankan backend Spring Boot di port 8004, lalu:
 
 ```bash
 cd src/main/frontend
 npm install
-npm run dev
+npm start
 ```
 
 Buka:
 
 ```text
-http://localhost:5173/sarinah-talent-pool/
+http://localhost:4200/sarinah-talent-pool/
 ```
 
-Request API dan image dengan prefix `/sarinah-talent-pool` diproxy oleh Vite ke Spring Boot port 8004.
+Angular dev server mem-proxy request `/sarinah-talent-pool/api/**` ke Spring Boot port 8004.
 
 ## Production build
 
@@ -26,10 +55,20 @@ Request API dan image dengan prefix `/sarinah-talent-pool` diproxy oleh Vite ke 
 npm run build
 ```
 
-Output Vite langsung ditulis ke:
+Output Angular langsung ditulis ke:
 
 ```text
 src/main/resources/static/
 ```
 
-sehingga frontend ikut di dalam JAR Spring Boot.
+Folder static existing seperti `images/` dipertahankan.
+
+## Build satu JAR
+
+Dari root project:
+
+```bash
+mvn clean package
+```
+
+Maven menjalankan Node/npm + Angular build sebelum Spring Boot membuat JAR.
