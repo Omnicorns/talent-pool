@@ -20,6 +20,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
@@ -123,14 +124,24 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource(CorsProperties properties) {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(properties.allowedOrigins());
+        List<String> allowedOrigins = new ArrayList<>();
+        if (properties.allowedOrigins() != null) {
+            allowedOrigins.addAll(properties.allowedOrigins());
+        }
+        if (!allowedOrigins.contains("https://satudata.sarinah.com")) {
+            allowedOrigins.add("https://satudata.sarinah.com");
+        }
+
+        configuration.setAllowedOrigins(allowedOrigins);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
         configuration.setExposedHeaders(List.of("Content-Disposition"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        // CORS hanya berlaku untuk API. Static asset JS/CSS/image tidak perlu
+        // diperiksa CORS karena dilayani same-origin melalui reverse proxy.
+        source.registerCorsConfiguration("/api/**", configuration);
         return source;
     }
 }
