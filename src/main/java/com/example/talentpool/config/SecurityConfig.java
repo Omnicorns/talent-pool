@@ -8,10 +8,12 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
@@ -25,7 +27,10 @@ import java.util.List;
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            JwtAuthenticationConverter talentJwtAuthenticationConverter
+    ) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
@@ -39,6 +44,10 @@ public class SecurityConfig {
                                 "/",
                                 "/index.html",
                                 "/assets/**",
+                                "/images/**",
+                                "/talent",
+                                "/talent/",
+                                "/talent/**",
                                 "/favicon.ico",
                                 "/*.js",
                                 "/*.css",
@@ -50,7 +59,6 @@ public class SecurityConfig {
                         ).permitAll()
 
                         .requestMatchers("/backoffice", "/backoffice/**").permitAll()
-
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
 
                         .requestMatchers(HttpMethod.POST, "/api/public/talents").permitAll()
@@ -62,16 +70,31 @@ public class SecurityConfig {
                                 "/api/talent/auth/login"
                         ).permitAll()
 
-                        .requestMatchers("/api/talent/**").authenticated()
+                        .requestMatchers("/api/talent/**").hasRole("TALENT")
 
                         .requestMatchers("/api/backoffice/**")
                         .hasAnyRole("ADMIN", "RECRUITER")
 
                         .anyRequest().permitAll()
                 )
-                .oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()))
+                .oauth2ResourceServer(oauth -> oauth.jwt(jwt ->
+                        jwt.jwtAuthenticationConverter(talentJwtAuthenticationConverter)
+                ))
                 .httpBasic(Customizer.withDefaults())
                 .build();
+    }
+
+    @Bean
+    JwtAuthenticationConverter talentJwtAuthenticationConverter() {
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            String role = jwt.getClaimAsString("role");
+            if (role == null || role.isBlank()) {
+                return List.of();
+            }
+            return List.of(new SimpleGrantedAuthority("ROLE_" + role));
+        });
+        return converter;
     }
 
     @Bean
