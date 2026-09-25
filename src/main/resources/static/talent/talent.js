@@ -1,5 +1,5 @@
 (() => {
-  const API = '/api/talent';
+  const APP_BASE = location.pathname.includes('/talent') ? location.pathname.split('/talent')[0] : '';\n  const API = APP_BASE + '/api/talent';
   const TOKEN_KEY = 'talentPortalToken';
   let token = localStorage.getItem(TOKEN_KEY) || '';
   let me = null;
@@ -144,7 +144,7 @@
     $('profilePhone').value=profile.phone||'';
     $('profileBirthDate').value=profile.birthDate||'';
     $('profileIdentity').value=profile.identityNumber||'';
-    $('profileReligion').value=profile.religion||'';
+    $('profileReligion').value=profile.religion||'';\n    if($('profileLanguage')) $('profileLanguage').value=profile.languanges||'';
     $('profileCitizenAddress').value=profile.citizenIdAddress||'';
     $('profileResidentialAddress').value=profile.residentialAddress||'';
     $('profileSameAddress').checked=!!profile.sameAsCitizenIdAddress;
@@ -205,14 +205,14 @@
         fullName:$('profileFullName').value.trim(),email:profile.email,phone:$('profilePhone').value.trim(),
         birthDate:$('profileBirthDate').value||null,identityNumber:$('profileIdentity').value.trim()||null,
         citizenIdAddress:$('profileCitizenAddress').value.trim()||null,residentialAddress:$('profileResidentialAddress').value.trim()||null,
-        languanges:profile.languanges||null,religion:$('profileReligion').value.trim()||null,
+        languanges:$('profileLanguage')?.value.trim()||profile.languanges||null,religion:$('profileReligion').value.trim()||null,
         sameAsCitizenIdAddress:$('profileSameAddress').checked,currentSalary:profile.currentSalary??null,
         expectedSalary:$('profileExpectedSalary').value ? Number($('profileExpectedSalary').value) : null,
         source:profile.source||'Talent Portal',termsAccepted:true,
         relatedIndustries:split3($('profileIndustries').value),relatedJobPositions:split3($('profilePositions').value),
         tools:split3($('profileTools').value),jobInterests:split3($('profileJobInterests').value),
         preferredLocations:split3($('profileLocations').value),
-        educations:(profile.educations||[]).map(x=>({type:x.type,level:x.level,institution:x.institution,major:x.major,startYear:x.startYear,endYear:x.endYear,description:x.description})),
+        educations:(profile.educations||[]).map(x=>({type:x.type,level:x.level,institution:x.institution,major:x.major,startYear:x.startYear,endYear:x.endYear,description:x.description,ipk:x.ipk})),
         workExperiences:(profile.workExperiences||[]).map(x=>({companyName:x.companyName,position:x.position,startDate:x.startDate,endDate:x.endDate,currentJob:x.currentJob,description:x.description})),
         portfolioLinks:(profile.portfolios||[]).filter(x=>x.type==='LINK').map(x=>({title:x.title,url:x.url}))
       };
