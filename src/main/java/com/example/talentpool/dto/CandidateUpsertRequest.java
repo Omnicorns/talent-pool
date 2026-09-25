@@ -13,6 +13,7 @@ public record CandidateUpsertRequest(
         @NotBlank @Size(max = 50) String phone,
         LocalDate birthDate,
         @Size(max = 100) String identityNumber,
+        @Size(max = 4000) String about,
         String citizenIdAddress,
         String residentialAddress,
 
