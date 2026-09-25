@@ -1,5 +1,6 @@
 (() => {
-  const APP_BASE = location.pathname.includes('/talent') ? location.pathname.split('/talent')[0] : '';\n  const API = APP_BASE + '/api/talent';
+  const APP_BASE = location.pathname.includes('/talent') ? location.pathname.split('/talent')[0] : '';
+  const API = APP_BASE + '/api/talent';
   const TOKEN_KEY = 'talentPortalToken';
   let token = localStorage.getItem(TOKEN_KEY) || '';
   let me = null;
@@ -144,7 +145,8 @@
     $('profilePhone').value=profile.phone||'';
     $('profileBirthDate').value=profile.birthDate||'';
     $('profileIdentity').value=profile.identityNumber||'';
-    $('profileReligion').value=profile.religion||'';\n    if($('profileLanguage')) $('profileLanguage').value=profile.languanges||'';
+    $('profileReligion').value=profile.religion||'';
+    if($('profileLanguage')) $('profileLanguage').value=profile.languanges||'';
     $('profileCitizenAddress').value=profile.citizenIdAddress||'';
     $('profileResidentialAddress').value=profile.residentialAddress||'';
     $('profileSameAddress').checked=!!profile.sameAsCitizenIdAddress;
