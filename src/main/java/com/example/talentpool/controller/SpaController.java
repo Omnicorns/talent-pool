@@ -7,12 +7,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class SpaController {
 
     @GetMapping({
+            "/open-positions",
+            "/sign-in",
+            "/register",
+            "/portal",
             "/backoffice",
             "/backoffice/**",
             "/talent",
             "/talent/"
     })
-    public String forwardReactRoutes() {
+    public String forwardSpaRoutes() {
         return "forward:/index.html";
     }
 }
