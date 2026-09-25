@@ -1,16 +1,18 @@
 package com.example.talentpool.controller;
 
 import com.example.talentpool.dto.*;
+import com.example.talentpool.service.CandidateService;
 import com.example.talentpool.service.TalentPortalService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -20,9 +22,11 @@ import java.util.UUID;
 public class TalentPortalController {
 
     private final TalentPortalService service;
+    private final CandidateService candidateService;
 
-    public TalentPortalController(TalentPortalService service) {
+    public TalentPortalController(TalentPortalService service, CandidateService candidateService) {
         this.service = service;
+        this.candidateService = candidateService;
     }
 
     @GetMapping("/profile")
@@ -39,6 +43,19 @@ public class TalentPortalController {
             @RequestPart(value = "portfolioFiles", required = false) List<MultipartFile> portfolioFiles
     ) {
         return service.updateProfile(candidateId(jwt), request, cv, profilePicture, portfolioFiles);
+    }
+
+    @GetMapping("/profile/cv")
+    public ResponseEntity<?> downloadOwnCv(@AuthenticationPrincipal Jwt jwt) {
+        var file = candidateService.loadCv(candidateId(jwt));
+        ContentDisposition disposition = ContentDisposition.attachment()
+                .filename(file.filename(), StandardCharsets.UTF_8)
+                .build();
+
+        return ResponseEntity.ok()
+                .contentType(file.mediaType())
+                .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
+                .body(file.resource());
     }
 
     @GetMapping("/jobs")
