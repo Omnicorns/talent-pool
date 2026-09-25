@@ -639,6 +639,13 @@ function formatDateTime(value) {
   return new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
 }
 
+function formatMonthYear(value) {
+  if (!value) return '-';
+  const parsed = new Date(String(value).length === 10 ? value + 'T00:00:00' : value);
+  if (Number.isNaN(parsed.getTime())) return String(value);
+  return new Intl.DateTimeFormat('id-ID', { month: 'short', year: 'numeric' }).format(parsed);
+}
+
 function monthsToExperience(months) {
   if (!months) return '0 tahun';
   const years = Math.floor(months / 12);
@@ -1725,6 +1732,257 @@ body{overflow-x:hidden!important;background:#fff!important}
   .career-public .career-special-grid{grid-template-columns:1fr!important}.career-public .career-special-card:not(:last-child){border-right:1px solid #e6e8ec!important}
   .career-public .career-ready-panel{padding:34px 24px!important;border-radius:14px!important}
 }
+
+/* =========================================================
+   CANDIDATE PROFILE — premium portal inspired layout
+   ========================================================= */
+.career-public .candidate-portal-page.profile-redesign{
+  padding:34px 28px 84px;
+  background:#f5f7f8;
+  color:#172026;
+}
+.career-public .candidate-portal-page.profile-redesign .candidate-portal-wrap{
+  width:min(1240px,100%);
+}
+.career-public .candidate-profile-hero{
+  background:#fff;
+  border:1px solid #dfe4e8;
+  border-radius:18px;
+  box-shadow:0 8px 26px rgba(18,29,38,.035);
+  padding:26px 28px 0;
+  overflow:hidden;
+}
+.career-public .candidate-profile-main{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  gap:20px;
+  align-items:center;
+  padding-bottom:24px;
+}
+.career-public .candidate-profile-avatar{
+  width:76px;height:76px;border-radius:16px;
+  display:grid;place-items:center;
+  background:linear-gradient(145deg,#fff1ef,#f8dad6);
+  border:1px solid #f0cbc7;
+  color:#c9281e;
+  font-size:27px;font-weight:900;letter-spacing:-.04em;
+  flex:0 0 auto;
+}
+.career-public .candidate-profile-identity{min-width:0}
+.career-public .candidate-profile-name-row{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.career-public .candidate-profile-name-row h1{
+  margin:0;
+  font-size:clamp(24px,2.4vw,32px);
+  line-height:1.15;
+  letter-spacing:-.035em;
+  color:#182028;
+}
+.career-public .candidate-profile-name-row .candidate-pronoun{
+  color:#89919b;font-size:15px;font-weight:600;
+}
+.career-public .candidate-profile-headline{
+  margin:8px 0 0;color:#626b76;font-size:14px;line-height:1.55;
+}
+.career-public .candidate-profile-actions{
+  display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;
+}
+.career-public .candidate-availability{
+  display:inline-flex;align-items:center;gap:9px;
+  min-height:40px;padding:0 12px;
+  color:#59636d;font-size:13px;font-weight:700;
+  white-space:nowrap;
+}
+.career-public .candidate-availability i{
+  width:8px;height:8px;border-radius:50%;background:#42a5a8;
+  box-shadow:0 0 0 4px rgba(66,165,168,.09);
+}
+.career-public .candidate-profile-edit{
+  min-height:40px;padding:0 15px;
+  border:1px solid #dfaca7;border-radius:8px;
+  background:#fff;color:#c72a20;font-size:13px;font-weight:800;
+  display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+  transition:.18s ease;
+}
+.career-public .candidate-profile-edit:hover{
+  background:#fff5f3;border-color:#d87971;transform:translateY(-1px);
+}
+.career-public .candidate-contact-row{
+  border-top:1px solid #e7eaed;
+  min-height:66px;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  align-items:center;
+}
+.career-public .candidate-contact-item{
+  min-width:0;
+  display:flex;align-items:center;gap:9px;
+  padding:15px 16px 15px 0;
+  color:#68727d;font-size:13px;
+}
+.career-public .candidate-contact-item svg{color:#278d92;flex:0 0 auto}
+.career-public .candidate-contact-item span,
+.career-public .candidate-contact-item a{
+  min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:inherit;text-decoration:none;
+}
+.career-public .candidate-contact-item a:hover{color:#c9281e}
+.career-public .candidate-profile-tabs-card{
+  margin-top:22px;background:#fff;border:1px solid #dfe4e8;border-radius:18px;
+  box-shadow:0 8px 26px rgba(18,29,38,.025);overflow:hidden;
+}
+.career-public .candidate-profile-tabs{
+  min-height:58px;padding:0 22px;
+  display:flex;align-items:flex-end;gap:8px;
+  border-bottom:1px solid #e3e7ea;
+  overflow-x:auto;scrollbar-width:none;
+}
+.career-public .candidate-profile-tabs::-webkit-scrollbar{display:none}
+.career-public .candidate-profile-tab{
+  min-height:58px;padding:0 15px;border:0;background:transparent;
+  color:#707984;font-size:13px;font-weight:720;white-space:nowrap;
+  position:relative;cursor:pointer;
+}
+.career-public .candidate-profile-tab:hover{color:#c9281e}
+.career-public .candidate-profile-tab.active{color:#192128;font-weight:850}
+.career-public .candidate-profile-tab.active:after{
+  content:'';position:absolute;left:10px;right:10px;bottom:-1px;height:2px;
+  background:#d9271c;border-radius:999px;
+}
+.career-public .candidate-profile-content{padding:26px}
+.career-public .candidate-profile-section{
+  border-top:1px solid #edf0f2;
+  padding:26px 0;
+  scroll-margin-top:100px;
+}
+.career-public .candidate-profile-section:first-child{border-top:0;padding-top:0}
+.career-public .candidate-profile-section:last-child{padding-bottom:2px}
+.career-public .candidate-section-heading{
+  min-height:46px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:0 16px;margin-bottom:20px;
+  background:#f8f9fa;border-radius:10px;
+}
+.career-public .candidate-section-heading h2{
+  margin:0;font-size:17px;letter-spacing:-.02em;color:#182028;
+}
+.career-public .candidate-section-action{
+  border:0;background:transparent;color:#278d92;font-size:12px;font-weight:850;
+  display:inline-flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap;
+}
+.career-public .candidate-section-action:hover{color:#c9281e}
+.career-public .candidate-about-copy{
+  margin:0;padding:4px 2px 0;
+  color:#626d78;font-size:14px;line-height:1.8;
+}
+.career-public .candidate-timeline{display:grid;gap:0}
+.career-public .candidate-timeline-item{
+  display:grid;grid-template-columns:22px 46px minmax(0,1fr) auto;
+  gap:12px;position:relative;padding:5px 0 25px;
+}
+.career-public .candidate-timeline-item:last-child{padding-bottom:0}
+.career-public .candidate-timeline-marker{
+  position:relative;display:flex;justify-content:center;padding-top:9px;
+}
+.career-public .candidate-timeline-marker:before{
+  content:'';width:10px;height:10px;border-radius:50%;
+  border:2px solid #53aeb0;background:#fff;z-index:2;
+}
+.career-public .candidate-timeline-item:not(:last-child) .candidate-timeline-marker:after{
+  content:'';position:absolute;top:20px;bottom:-9px;width:1px;background:#dfe5e8;
+}
+.career-public .candidate-timeline-icon{
+  width:38px;height:38px;border-radius:8px;
+  display:grid;place-items:center;background:#e9f7f7;color:#278d92;
+}
+.career-public .candidate-timeline-body{min-width:0;padding-top:1px}
+.career-public .candidate-timeline-title{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.career-public .candidate-timeline-title h3{
+  margin:0;font-size:15px;color:#182028;letter-spacing:-.01em;
+}
+.career-public .candidate-timeline-title button{
+  border:0;background:transparent;color:#329a9e;padding:0;cursor:pointer;display:grid;place-items:center;
+}
+.career-public .candidate-timeline-meta{
+  margin:5px 0 0;color:#707984;font-size:12px;line-height:1.55;
+}
+.career-public .candidate-timeline-description{
+  margin:8px 0 0;color:#66717d;font-size:13px;line-height:1.65;
+}
+.career-public .candidate-timeline-period{
+  padding-top:2px;color:#9299a2;font-size:11px;white-space:nowrap;text-align:right;
+}
+.career-public .candidate-profile-empty{
+  border:1px dashed #d8dde1;background:#fafbfb;border-radius:10px;
+  padding:22px;color:#7a838d;font-size:13px;text-align:center;line-height:1.6;
+}
+.career-public .candidate-info-grid{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;
+}
+.career-public .candidate-info-box{
+  min-width:0;border:1px solid #e6eaed;border-radius:10px;padding:15px 16px;background:#fff;
+}
+.career-public .candidate-info-box>span{
+  display:block;margin-bottom:7px;color:#9299a2;font-size:10px;font-weight:850;
+  letter-spacing:.08em;text-transform:uppercase;
+}
+.career-public .candidate-info-box>strong{
+  display:block;color:#252d35;font-size:13px;line-height:1.55;overflow-wrap:anywhere;
+}
+.career-public .candidate-skill-list{
+  display:flex;flex-wrap:wrap;gap:7px;margin-top:8px;
+}
+.career-public .candidate-skill{
+  display:inline-flex;align-items:center;min-height:28px;padding:0 9px;
+  border-radius:999px;background:#f1f4f5;color:#59636d;font-size:11px;font-weight:750;
+}
+.career-public .candidate-portfolio-links{display:grid;gap:8px;margin-top:10px}
+.career-public .candidate-portfolio-link{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  color:#278d92;text-decoration:none;font-size:12px;font-weight:800;
+}
+.career-public .candidate-portal-applications{
+  margin-top:22px;background:#fff;border:1px solid #dfe4e8;border-radius:18px;
+  padding:24px 26px;box-shadow:0 8px 26px rgba(18,29,38,.025);
+}
+.career-public .candidate-portal-applications .candidate-portal-panel-head{margin-bottom:16px}
+.career-public .candidate-profile-loading{
+  min-height:280px;display:grid;place-items:center;background:#fff;border:1px solid #dfe4e8;border-radius:18px;
+  color:#7a838d;
+}
+@media(max-width:900px){
+  .career-public .candidate-profile-main{grid-template-columns:auto minmax(0,1fr)}
+  .career-public .candidate-profile-actions{grid-column:1/-1;justify-content:flex-start;padding-left:96px}
+  .career-public .candidate-contact-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .career-public .candidate-info-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:640px){
+  .career-public .candidate-portal-page.profile-redesign{padding:16px 12px 52px}
+  .career-public .candidate-profile-hero{padding:20px 18px 0;border-radius:14px}
+  .career-public .candidate-profile-main{grid-template-columns:58px minmax(0,1fr);gap:13px}
+  .career-public .candidate-profile-avatar{width:58px;height:58px;border-radius:12px;font-size:21px}
+  .career-public .candidate-profile-name-row h1{font-size:21px}
+  .career-public .candidate-profile-headline{font-size:12px}
+  .career-public .candidate-profile-actions{padding-left:0;gap:7px}
+  .career-public .candidate-availability{padding-left:0;font-size:11px}
+  .career-public .candidate-profile-edit{min-height:36px;font-size:11px}
+  .career-public .candidate-contact-row{grid-template-columns:1fr}
+  .career-public .candidate-contact-item{padding:10px 0}
+  .career-public .candidate-profile-tabs-card{margin-top:14px;border-radius:14px}
+  .career-public .candidate-profile-tabs{padding:0 10px}
+  .career-public .candidate-profile-tab{padding:0 10px;font-size:11px}
+  .career-public .candidate-profile-content{padding:18px}
+  .career-public .candidate-section-heading{padding:0 12px}
+  .career-public .candidate-timeline-item{grid-template-columns:18px 38px minmax(0,1fr)}
+  .career-public .candidate-timeline-icon{width:34px;height:34px}
+  .career-public .candidate-timeline-period{grid-column:3;justify-self:start;text-align:left;padding-top:0;margin-top:-15px}
+  .career-public .candidate-info-grid{grid-template-columns:1fr}
+  .career-public .candidate-portal-applications{margin-top:14px;padding:20px 18px;border-radius:14px}
+}
+
 `;
 
 function CandidatePortal({ onToast }) {
@@ -2708,46 +2966,306 @@ function CandidatePortal({ onToast }) {
       )}
 
       {publicPage === 'account' && (
-        <main className="candidate-portal-page">
+        <main className="candidate-portal-page profile-redesign">
           <div className="candidate-portal-wrap">
-            <div className="candidate-portal-head">
-              <div>
-                <span className="career-kicker">Candidate Portal</span>
-                <h1>Halo, {candidateSession?.fullName?.split(' ')[0] || 'Kandidat'}.</h1>
-                <p>Kelola profil Talent Pool dan pantau proses lamaran Anda di satu tempat.</p>
+            {candidatePortalLoading && !candidateProfile ? (
+              <div className="candidate-profile-loading">
+                <div className="table-loading"><span/><p>Memuat profil kandidat...</p></div>
               </div>
-              <div className="candidate-portal-actions">
-                <button type="button" className="candidate-portal-button" onClick={() => setPublicPage('security')}><Icon name="lock" size={16}/> Keamanan</button>
-                <button type="button" className="candidate-portal-button primary" onClick={() => requireCandidateLogin('talent-pool')}><Icon name="edit" size={16}/> Edit Profil</button>
-              </div>
-            </div>
+            ) : (
+              <>
+                <section className="candidate-profile-hero">
+                  <div className="candidate-profile-main">
+                    <div className="candidate-profile-avatar" aria-hidden="true">
+                      {initials(candidateProfile?.fullName || candidateSession?.fullName || 'Kandidat')}
+                    </div>
 
-            <div className="candidate-summary-grid">
-              <article className="candidate-summary-card"><span>Lowongan Aktif</span><strong>{publicJobs.length}</strong></article>
-              <article className="candidate-summary-card"><span>Lamaran Saya</span><strong>{candidateApplications.length}</strong></article>
-              <article className="candidate-summary-card"><span>Status Profil</span><strong>{candidateProfile?.status ? enumLabel(candidateProfile.status) : '-'}</strong></article>
-            </div>
-
-            <section className="candidate-portal-panel">
-              <div className="candidate-portal-panel-head"><h2>Lamaran Saya</h2><button type="button" className="candidate-portal-button" onClick={() => goPublicPage('open')}>Lihat Lowongan</button></div>
-              {candidatePortalLoading ? (
-                <div className="candidate-empty">Memuat data kandidat...</div>
-              ) : candidateApplications.length === 0 ? (
-                <div className="candidate-empty">Belum ada lamaran. Pilih posisi yang sesuai dari Open Positions.</div>
-              ) : (
-                <div className="candidate-app-list">
-                  {candidateApplications.map((application) => (
-                    <article className="candidate-app-item" key={application.id}>
-                      <div><h3>{application.jobTitle}</h3><p>Melamar {formatDateTime(application.appliedAt)} • Tahap {enumLabel(application.stage)}</p></div>
-                      <div className="candidate-app-side">
-                        <span className={`candidate-status ${String(application.status || '').toLowerCase()}`}>{enumLabel(application.status)}</span>
-                        {application.status === 'ACTIVE' && <button type="button" className="candidate-withdraw" onClick={() => withdrawCandidateApplication(application)}>Tarik lamaran</button>}
+                    <div className="candidate-profile-identity">
+                      <div className="candidate-profile-name-row">
+                        <h1>{candidateProfile?.fullName || candidateSession?.fullName || 'Kandidat Sarinah'}</h1>
                       </div>
-                    </article>
-                  ))}
+                      <p className="candidate-profile-headline">
+                        {candidateProfile?.workExperiences?.find((item) => item.currentJob)?.position
+                          ? `${candidateProfile.workExperiences.find((item) => item.currentJob).position} di ${candidateProfile.workExperiences.find((item) => item.currentJob).companyName}`
+                          : candidateProfile?.relatedJobPositions?.[0]
+                            ? `Minat posisi: ${candidateProfile.relatedJobPositions[0]}`
+                            : candidateProfile?.educations?.[0]?.institution
+                              ? `${candidateProfile.educations[0].major || candidateProfile.educations[0].level || 'Kandidat'} • ${candidateProfile.educations[0].institution}`
+                              : 'Talent Pool Candidate • PT Sarinah'}
+                      </p>
+                    </div>
+
+                    <div className="candidate-profile-actions">
+                      <span className="candidate-availability">
+                        <i/>
+                        {candidateProfile?.status === 'AVAILABLE'
+                          ? 'Terbuka dengan peluang'
+                          : candidateProfile?.status
+                            ? enumLabel(candidateProfile.status)
+                            : 'Talent Pool Sarinah'}
+                      </span>
+                      <button
+                        type="button"
+                        className="candidate-profile-edit"
+                        onClick={() => requireCandidateLogin('talent-pool')}
+                      >
+                        <Icon name="edit" size={16}/> Edit Profil
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="candidate-contact-row">
+                    <div className="candidate-contact-item">
+                      <Icon name="mail" size={18}/>
+                      <span>{candidateProfile?.email || candidateSession?.email || '-'}</span>
+                    </div>
+                    <div className="candidate-contact-item">
+                      <Icon name="phone" size={18}/>
+                      <span>{candidateProfile?.phone || 'Tambahkan nomor WhatsApp'}</span>
+                    </div>
+                    <div className="candidate-contact-item">
+                      <Icon name="location" size={18}/>
+                      <span>{candidateProfile?.preferredLocations?.length ? candidateProfile.preferredLocations.join(', ') : 'Lokasi belum ditentukan'}</span>
+                    </div>
+                    <div className="candidate-contact-item">
+                      <Icon name="external" size={18}/>
+                      {candidateProfile?.portfolios?.find((item) => item.url) ? (
+                        <a href={candidateProfile.portfolios.find((item) => item.url).url} target="_blank" rel="noreferrer">
+                          {candidateProfile.portfolios.find((item) => item.url).title || 'Portfolio'}
+                        </a>
+                      ) : (
+                        <span>Portfolio belum ditambahkan</span>
+                      )}
+                    </div>
+                  </div>
+                </section>
+
+                <section className="candidate-profile-tabs-card">
+                  <nav className="candidate-profile-tabs" aria-label="Navigasi profil kandidat">
+                    <button type="button" className="candidate-profile-tab active" onClick={() => document.getElementById('candidate-about')?.scrollIntoView({ behavior: 'smooth' })}>About</button>
+                    <button type="button" className="candidate-profile-tab" onClick={() => document.getElementById('candidate-experience')?.scrollIntoView({ behavior: 'smooth' })}>Experiences</button>
+                    <button type="button" className="candidate-profile-tab" onClick={() => document.getElementById('candidate-education')?.scrollIntoView({ behavior: 'smooth' })}>Education</button>
+                    <button type="button" className="candidate-profile-tab" onClick={() => document.getElementById('candidate-training')?.scrollIntoView({ behavior: 'smooth' })}>Training & Certification</button>
+                    <button type="button" className="candidate-profile-tab" onClick={() => document.getElementById('candidate-additional')?.scrollIntoView({ behavior: 'smooth' })}>Additional Information</button>
+                  </nav>
+
+                  <div className="candidate-profile-content">
+                    <section id="candidate-about" className="candidate-profile-section">
+                      <div className="candidate-section-heading">
+                        <h2>About</h2>
+                        <button type="button" className="candidate-section-action" onClick={() => requireCandidateLogin('talent-pool')}>
+                          <Icon name="edit" size={15}/> Edit
+                        </button>
+                      </div>
+                      <p className="candidate-about-copy">
+                        {candidateProfile?.workExperiences?.find((item) => item.description)?.description
+                          || candidateProfile?.educations?.find((item) => item.description)?.description
+                          || 'Lengkapi deskripsi pengalaman atau pendidikan Anda agar recruiter dapat memahami profil profesional Anda dengan lebih baik.'}
+                      </p>
+                    </section>
+
+                    <section id="candidate-experience" className="candidate-profile-section">
+                      <div className="candidate-section-heading">
+                        <h2>Work Experience</h2>
+                        <button type="button" className="candidate-section-action" onClick={() => requireCandidateLogin('talent-pool')}>
+                          <Icon name="plus" size={15}/> Add
+                        </button>
+                      </div>
+
+                      {candidateProfile?.workExperiences?.length ? (
+                        <div className="candidate-timeline">
+                          {candidateProfile.workExperiences.map((experience, index) => (
+                            <article className="candidate-timeline-item" key={experience.id || `experience-${index}`}>
+                              <div className="candidate-timeline-marker"/>
+                              <div className="candidate-timeline-icon"><Icon name="briefcase" size={18}/></div>
+                              <div className="candidate-timeline-body">
+                                <div className="candidate-timeline-title">
+                                  <h3>{experience.position || 'Posisi'}</h3>
+                                  <button type="button" onClick={() => requireCandidateLogin('talent-pool')} aria-label="Edit pengalaman kerja">
+                                    <Icon name="edit" size={15}/>
+                                  </button>
+                                </div>
+                                <p className="candidate-timeline-meta">{experience.companyName || '-'}</p>
+                                {experience.description && <p className="candidate-timeline-description">{experience.description}</p>}
+                              </div>
+                              <div className="candidate-timeline-period">
+                                {formatMonthYear(experience.startDate)} — {experience.currentJob ? 'Sekarang' : formatMonthYear(experience.endDate)}
+                              </div>
+                            </article>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="candidate-profile-empty">Belum ada pengalaman kerja. Tambahkan pengalaman untuk memperkuat profil Talent Pool Anda.</div>
+                      )}
+                    </section>
+
+                    <section id="candidate-education" className="candidate-profile-section">
+                      <div className="candidate-section-heading">
+                        <h2>Education</h2>
+                        <button type="button" className="candidate-section-action" onClick={() => requireCandidateLogin('talent-pool')}>
+                          <Icon name="plus" size={15}/> Add
+                        </button>
+                      </div>
+
+                      {candidateProfile?.educations?.filter((item) => item.type === 'FORMAL').length ? (
+                        <div className="candidate-timeline">
+                          {candidateProfile.educations.filter((item) => item.type === 'FORMAL').map((education, index) => (
+                            <article className="candidate-timeline-item" key={education.id || `education-${index}`}>
+                              <div className="candidate-timeline-marker"/>
+                              <div className="candidate-timeline-icon"><Icon name="file" size={18}/></div>
+                              <div className="candidate-timeline-body">
+                                <div className="candidate-timeline-title">
+                                  <h3>{education.institution || 'Institusi Pendidikan'}</h3>
+                                  <button type="button" onClick={() => requireCandidateLogin('talent-pool')} aria-label="Edit pendidikan">
+                                    <Icon name="edit" size={15}/>
+                                  </button>
+                                </div>
+                                <p className="candidate-timeline-meta">
+                                  {[education.level, education.major].filter(Boolean).join(' • ') || '-'}
+                                  {education.ipk ? ` • IPK ${education.ipk}` : ''}
+                                </p>
+                                {education.description && <p className="candidate-timeline-description">{education.description}</p>}
+                              </div>
+                              <div className="candidate-timeline-period">
+                                {education.startYear || '-'} — {education.endYear || 'Sekarang'}
+                              </div>
+                            </article>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="candidate-profile-empty">Belum ada pendidikan formal yang ditambahkan.</div>
+                      )}
+                    </section>
+
+                    <section id="candidate-training" className="candidate-profile-section">
+                      <div className="candidate-section-heading">
+                        <h2>Training & Certification</h2>
+                        <button type="button" className="candidate-section-action" onClick={() => requireCandidateLogin('talent-pool')}>
+                          <Icon name="plus" size={15}/> Add
+                        </button>
+                      </div>
+
+                      {candidateProfile?.educations?.filter((item) => item.type === 'INFORMAL').length ? (
+                        <div className="candidate-timeline">
+                          {candidateProfile.educations.filter((item) => item.type === 'INFORMAL').map((education, index) => (
+                            <article className="candidate-timeline-item" key={education.id || `training-${index}`}>
+                              <div className="candidate-timeline-marker"/>
+                              <div className="candidate-timeline-icon"><Icon name="check" size={18}/></div>
+                              <div className="candidate-timeline-body">
+                                <div className="candidate-timeline-title">
+                                  <h3>{education.major || education.level || 'Training / Certification'}</h3>
+                                  <button type="button" onClick={() => requireCandidateLogin('talent-pool')} aria-label="Edit training">
+                                    <Icon name="edit" size={15}/>
+                                  </button>
+                                </div>
+                                <p className="candidate-timeline-meta">{education.institution || '-'}</p>
+                                {education.description && <p className="candidate-timeline-description">{education.description}</p>}
+                              </div>
+                              <div className="candidate-timeline-period">
+                                {education.startYear || '-'}{education.endYear ? ` — ${education.endYear}` : ''}
+                              </div>
+                            </article>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="candidate-profile-empty">Belum ada training atau sertifikasi. Gunakan tipe pendidikan Informal saat menambahkan data.</div>
+                      )}
+                    </section>
+
+                    <section id="candidate-additional" className="candidate-profile-section">
+                      <div className="candidate-section-heading">
+                        <h2>Additional Information</h2>
+                        <button type="button" className="candidate-section-action" onClick={() => requireCandidateLogin('talent-pool')}>
+                          <Icon name="edit" size={15}/> Edit
+                        </button>
+                      </div>
+
+                      <div className="candidate-info-grid">
+                        <div className="candidate-info-box">
+                          <span>Languages</span>
+                          <strong>{candidateProfile?.languanges || '-'}</strong>
+                        </div>
+                        <div className="candidate-info-box">
+                          <span>Religion</span>
+                          <strong>{candidateProfile?.religion || '-'}</strong>
+                        </div>
+                        <div className="candidate-info-box">
+                          <span>Expected Salary</span>
+                          <strong>{candidateProfile?.expectedSalary != null ? formatCurrency(candidateProfile.expectedSalary) : '-'}</strong>
+                        </div>
+                        <div className="candidate-info-box">
+                          <span>Job Interests</span>
+                          <strong>{candidateProfile?.jobInterests?.length ? candidateProfile.jobInterests.join(', ') : '-'}</strong>
+                        </div>
+                        <div className="candidate-info-box">
+                          <span>Preferred Locations</span>
+                          <strong>{candidateProfile?.preferredLocations?.length ? candidateProfile.preferredLocations.join(', ') : '-'}</strong>
+                        </div>
+                        <div className="candidate-info-box">
+                          <span>Related Industries</span>
+                          <strong>{candidateProfile?.relatedIndustries?.length ? candidateProfile.relatedIndustries.join(', ') : '-'}</strong>
+                        </div>
+                      </div>
+
+                      {!!candidateProfile?.tools?.length && (
+                        <div className="candidate-skill-list">
+                          {candidateProfile.tools.map((tool, index) => <span className="candidate-skill" key={`${tool}-${index}`}>{tool}</span>)}
+                        </div>
+                      )}
+
+                      {!!candidateProfile?.portfolios?.filter((item) => item.url).length && (
+                        <div className="candidate-portfolio-links">
+                          {candidateProfile.portfolios.filter((item) => item.url).map((portfolio, index) => (
+                            <a className="candidate-portfolio-link" href={portfolio.url} target="_blank" rel="noreferrer" key={portfolio.id || `portfolio-${index}`}>
+                              <span>{portfolio.title || 'Portfolio'}</span><Icon name="external" size={15}/>
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </section>
+                  </div>
+                </section>
+
+                <section className="candidate-portal-applications">
+                  <div className="candidate-portal-panel-head">
+                    <div>
+                      <h2>Lamaran Saya</h2>
+                      <p style={{ margin: '5px 0 0', color: '#7a838d', fontSize: '12px' }}>Pantau status proses rekrutmen yang sedang berjalan.</p>
+                    </div>
+                    <button type="button" className="candidate-portal-button" onClick={() => goPublicPage('open')}>Lihat Lowongan</button>
+                  </div>
+
+                  {candidateApplications.length === 0 ? (
+                    <div className="candidate-empty">Belum ada lamaran. Pilih posisi yang sesuai dari Open Positions.</div>
+                  ) : (
+                    <div className="candidate-app-list">
+                      {candidateApplications.map((application) => (
+                        <article className="candidate-app-item" key={application.id}>
+                          <div>
+                            <h3>{application.jobTitle}</h3>
+                            <p>Melamar {formatDateTime(application.appliedAt)} • Tahap {enumLabel(application.stage)}</p>
+                          </div>
+                          <div className="candidate-app-side">
+                            <span className={`candidate-status ${String(application.status || '').toLowerCase()}`}>{enumLabel(application.status)}</span>
+                            {application.status === 'ACTIVE' && (
+                              <button type="button" className="candidate-withdraw" onClick={() => withdrawCandidateApplication(application)}>
+                                Tarik lamaran
+                              </button>
+                            )}
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  )}
+                </section>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '14px' }}>
+                  <button type="button" className="candidate-portal-button" onClick={() => setPublicPage('security')}>
+                    <Icon name="lock" size={16}/> Keamanan Akun
+                  </button>
                 </div>
-              )}
-            </section>
+              </>
+            )}
           </div>
         </main>
       )}
