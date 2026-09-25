@@ -17,6 +17,7 @@ public record CandidateResponse(
         String phone,
         LocalDate birthDate,
         String identityNumber,
+        String about,
         String languanges,
         String religion,
         String citizenIdAddress,
