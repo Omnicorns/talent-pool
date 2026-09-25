@@ -60,9 +60,7 @@ public class TalentPortalService {
 
     @Transactional
     public Page<JobListingResponse> jobs(String q, Pageable pageable) {
-        return jobListingService.search(q, JobListingStatus.PUBLISHED, pageable)
-                .map(job -> isOpen(job.applicationDeadline()) ? job : null)
-                .map(job -> job);
+        return jobListingService.searchPublicOpen(q, pageable);
     }
 
     @Transactional
@@ -102,7 +100,8 @@ public class TalentPortalService {
                 .orElseThrow(() -> new ResourceNotFoundException("Lamaran tidak ditemukan"));
 
         if (application.getStatus() == ApplicationStatus.HIRED
-                || application.getStatus() == ApplicationStatus.REJECTED) {
+                || application.getStatus() == ApplicationStatus.REJECTED
+                || application.getStatus() == ApplicationStatus.WITHDRAWN) {
             throw new BadRequestException("Lamaran dengan status " + application.getStatus() + " tidak dapat ditarik");
         }
 
