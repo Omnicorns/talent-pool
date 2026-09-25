@@ -8,17 +8,11 @@ public class SpaController {
 
     @GetMapping({
             "/backoffice",
-            "/backoffice/**"
-    })
-    public String forwardBackoffice() {
-        return "forward:/index.html";
-    }
-
-    @GetMapping({
+            "/backoffice/**",
             "/talent",
             "/talent/"
     })
-    public String forwardTalentPortal() {
-        return "forward:/talent/index.html";
+    public String forwardReactRoutes() {
+        return "forward:/index.html";
     }
 }
