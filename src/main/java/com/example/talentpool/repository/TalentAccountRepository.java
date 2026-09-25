@@ -8,6 +8,7 @@ import java.util.UUID;
 
 public interface TalentAccountRepository extends JpaRepository<TalentAccount, UUID> {
     Optional<TalentAccount> findByEmailIgnoreCase(String email);
+    Optional<TalentAccount> findByCandidateId(UUID candidateId);
     boolean existsByEmailIgnoreCase(String email);
     boolean existsByCandidateId(UUID candidateId);
 }
