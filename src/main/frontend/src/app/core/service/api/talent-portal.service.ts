@@ -11,7 +11,13 @@ export class TalentPortalService {
     return this.http.get<CandidateProfile>(`${API_BASE}/talent/profile`);
   }
 
-  saveProfile(profile: CandidateProfile) {
+  profilePicture() {
+    return this.http.get(`${API_BASE}/talent/profile/picture`, {
+      responseType: 'blob',
+    });
+  }
+
+  saveProfile(profile: CandidateProfile, profilePicture?: File | null) {
     const payload = {
       fullName: profile.fullName,
       email: profile.email,
@@ -44,6 +50,10 @@ export class TalentPortalService {
 
     const data = new FormData();
     data.append('data', new Blob([JSON.stringify(payload)], { type: 'application/json' }));
+
+    if (profilePicture) {
+      data.append('profilePicture', profilePicture);
+    }
 
     return this.http.put<CandidateProfile>(`${API_BASE}/talent/profile`, data);
   }
