@@ -27,7 +27,10 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
       <main class="profile-container">
         <section class="profile-hero-card">
           <div class="profile-main">
-            <div class="profile-avatar">{{ initials(profile.fullName) }}</div>
+            <div class="profile-avatar">
+              <img *ngIf="profilePictureUrl; else initialsTpl" [src]="profilePictureUrl" [alt]="profile.fullName">
+              <ng-template #initialsTpl>{{ initials(profile.fullName) }}</ng-template>
+            </div>
             <div>
               <h1>{{ profile.fullName }}</h1>
               <p>{{ headline }}</p>
@@ -147,6 +150,21 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
 
           <div class="drawer-body">
             <div class="drawer-form" *ngIf="drawerSection === 'profile'">
+              <div class="profile-photo-editor">
+                <div class="profile-photo-preview">
+                  <img *ngIf="profilePicturePreview || profilePictureUrl; else photoInitials" [src]="profilePicturePreview || profilePictureUrl" [alt]="profile.fullName">
+                  <ng-template #photoInitials>{{ initials(profile.fullName) }}</ng-template>
+                </div>
+                <div>
+                  <strong>Foto Profil</strong>
+                  <p>JPG, JPEG, atau PNG. Foto akan tampil di dashboard Talent.</p>
+                  <label class="photo-upload-button">
+                    Pilih Foto
+                    <input type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" (change)="onProfilePictureSelected($event)" hidden>
+                  </label>
+                  <small *ngIf="profilePictureFile">{{ profilePictureFile.name }}</small>
+                </div>
+              </div>
               <label>Nama Lengkap<input [(ngModel)]="profile.fullName"></label>
               <label>Email<input [ngModel]="profile.email" disabled></label>
               <label>WhatsApp<input [(ngModel)]="profile.phone"></label>
@@ -207,12 +225,44 @@ export class CandidatePortalComponent implements OnInit {
   snapshot: CandidateProfile | null = null;
   editExperience: WorkExperienceItem | null = null;
   editEducation: EducationItem | null = null;
+  profilePictureFile: File | null = null;
+  profilePictureUrl: string | null = null;
+  profilePicturePreview: string | null = null;
   saving = false;
 
   constructor(public auth: TalentAuthService, private portal: TalentPortalService) {}
 
   ngOnInit(): void {
     this.reload();
+    this.loadProfilePicture();
+  }
+
+  loadProfilePicture(): void {
+    this.portal.profilePicture().subscribe({
+      next: (blob) => {
+        if (this.profilePictureUrl) URL.revokeObjectURL(this.profilePictureUrl);
+        this.profilePictureUrl = URL.createObjectURL(blob);
+      },
+      error: () => {
+        this.profilePictureUrl = null;
+      },
+    });
+  }
+
+  onProfilePictureSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] || null;
+    if (!file) return;
+
+    const allowed = ['image/jpeg', 'image/png'];
+    if (!allowed.includes(file.type)) {
+      input.value = '';
+      return;
+    }
+
+    this.profilePictureFile = file;
+    if (this.profilePicturePreview) URL.revokeObjectURL(this.profilePicturePreview);
+    this.profilePicturePreview = URL.createObjectURL(file);
   }
 
   reload(): void {
@@ -304,11 +354,13 @@ export class CandidatePortalComponent implements OnInit {
     }
 
     this.saving = true;
-    this.portal.saveProfile(this.profile).subscribe({
+    this.portal.saveProfile(this.profile, this.profilePictureFile).subscribe({
       next: (profile) => {
         this.profile = profile;
         this.saving = false;
+        const photoChanged = !!this.profilePictureFile;
         this.closeDrawer();
+        if (photoChanged) this.loadProfilePicture();
       },
       error: () => this.saving = false,
     });
@@ -321,5 +373,8 @@ export class CandidatePortalComponent implements OnInit {
     this.snapshot = null;
     this.editExperience = null;
     this.editEducation = null;
+    this.profilePictureFile = null;
+    if (this.profilePicturePreview) URL.revokeObjectURL(this.profilePicturePreview);
+    this.profilePicturePreview = null;
   }
 }
