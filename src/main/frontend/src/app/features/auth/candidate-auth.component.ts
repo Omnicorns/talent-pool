@@ -35,7 +35,7 @@ import { TalentAuthService } from '../../core/service/api/talent-auth.service';
               <div class="password-field">
                 <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="password" minlength="8" required>
                 <button type="button" class="password-toggle" (click)="showPassword = !showPassword" [attr.aria-label]="showPassword ? 'Sembunyikan password' : 'Tampilkan password'">
-                  {{ showPassword ? '◉' : '◌' }}
+                  {{ showPassword ? '🙈' : '👁' }}
                 </button>
               </div>
             </label>
@@ -56,7 +56,7 @@ import { TalentAuthService } from '../../core/service/api/talent-auth.service';
               <div class="password-field">
                 <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="registerPassword" minlength="8" required>
                 <button type="button" class="password-toggle" (click)="showPassword = !showPassword" [attr.aria-label]="showPassword ? 'Sembunyikan password' : 'Tampilkan password'">
-                  {{ showPassword ? '◉' : '◌' }}
+                  {{ showPassword ? '🙈' : '👁' }}
                 </button>
               </div>
             </label>
