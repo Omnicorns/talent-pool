@@ -29,7 +29,7 @@ import { BackofficeAuthService } from '../../core/service/api/backoffice-auth.se
               <div class="password-field">
                 <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="password" required>
                 <button type="button" class="password-toggle" (click)="showPassword = !showPassword" [attr.aria-label]="showPassword ? 'Sembunyikan password' : 'Tampilkan password'">
-                  {{ showPassword ? '◉' : '◌' }}
+                  {{ showPassword ? '🙈' : '👁' }}
                 </button>
               </div>
             </label>
