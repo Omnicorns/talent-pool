@@ -45,6 +45,21 @@ public class TalentPortalController {
         return service.updateProfile(candidateId(jwt), request, cv, profilePicture, portfolioFiles);
     }
 
+    @GetMapping("/profile/picture")
+    public ResponseEntity<?> ownProfilePicture(@AuthenticationPrincipal Jwt jwt) {
+        var file = candidateService.loadProfilePicture(candidateId(jwt));
+
+        ContentDisposition disposition = ContentDisposition.inline()
+                .filename(file.filename(), StandardCharsets.UTF_8)
+                .build();
+
+        return ResponseEntity.ok()
+                .contentType(file.mediaType())
+                .cacheControl(CacheControl.noStore())
+                .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
+                .body(file.resource());
+    }
+
     @GetMapping("/profile/cv")
     public ResponseEntity<?> downloadOwnCv(@AuthenticationPrincipal Jwt jwt) {
         var file = candidateService.loadCv(candidateId(jwt));
