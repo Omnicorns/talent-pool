@@ -31,7 +31,14 @@ import { TalentAuthService } from '../../core/service/api/talent-auth.service';
           <p class="muted">Masuk menggunakan akun kandidat Anda.</p>
           <form (ngSubmit)="login()">
             <label>Email<input type="email" [(ngModel)]="email" name="email" required></label>
-            <label>Password<input type="password" [(ngModel)]="password" name="password" minlength="8" required></label>
+            <label>Password
+              <div class="password-field">
+                <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="password" minlength="8" required>
+                <button type="button" class="password-toggle" (click)="showPassword = !showPassword" [attr.aria-label]="showPassword ? 'Sembunyikan password' : 'Tampilkan password'">
+                  {{ showPassword ? '◉' : '◌' }}
+                </button>
+              </div>
+            </label>
             <button class="primary-button" [disabled]="loading">{{ loading ? 'Memproses...' : 'Sign In →' }}</button>
           </form>
         </div>
@@ -45,7 +52,14 @@ import { TalentAuthService } from '../../core/service/api/talent-auth.service';
               <label>Email<input type="email" [(ngModel)]="email" name="registerEmail" required></label>
               <label>WhatsApp<input [(ngModel)]="phone" name="phone" required></label>
             </div>
-            <label>Password<input type="password" [(ngModel)]="password" name="registerPassword" minlength="8" required></label>
+            <label>Password
+              <div class="password-field">
+                <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="registerPassword" minlength="8" required>
+                <button type="button" class="password-toggle" (click)="showPassword = !showPassword" [attr.aria-label]="showPassword ? 'Sembunyikan password' : 'Tampilkan password'">
+                  {{ showPassword ? '◉' : '◌' }}
+                </button>
+              </div>
+            </label>
             <label class="checkbox"><input type="checkbox" [(ngModel)]="termsAccepted" name="termsAccepted"> Saya menyetujui penggunaan data untuk proses rekrutmen.</label>
             <button class="primary-button" [disabled]="loading">{{ loading ? 'Memproses...' : 'Create Account →' }}</button>
           </form>
@@ -63,6 +77,7 @@ export class CandidateAuthComponent {
   phone = '';
   password = '';
   termsAccepted = false;
+  showPassword = false;
   loading = false;
   error = '';
 
