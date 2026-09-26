@@ -25,7 +25,14 @@ import { BackofficeAuthService } from '../../core/service/api/backoffice-auth.se
           <p>Gunakan akun Admin atau Recruiter.</p>
           <form (ngSubmit)="login()">
             <label>Username<input [(ngModel)]="username" name="username" required></label>
-            <label>Password<input type="password" [(ngModel)]="password" name="password" required></label>
+            <label>Password
+              <div class="password-field">
+                <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="password" required>
+                <button type="button" class="password-toggle" (click)="showPassword = !showPassword" [attr.aria-label]="showPassword ? 'Sembunyikan password' : 'Tampilkan password'">
+                  {{ showPassword ? '◉' : '◌' }}
+                </button>
+              </div>
+            </label>
             <button class="primary-button" [disabled]="loading">{{ loading ? 'Memproses...' : 'Masuk' }}</button>
           </form>
           <p class="form-error" *ngIf="error">{{ error }}</p>
@@ -37,6 +44,7 @@ import { BackofficeAuthService } from '../../core/service/api/backoffice-auth.se
 export class BackofficeLoginComponent {
   username = '';
   password = '';
+  showPassword = false;
   loading = false;
   error = '';
 
