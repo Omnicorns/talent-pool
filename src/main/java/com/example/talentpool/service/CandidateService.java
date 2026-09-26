@@ -181,6 +181,19 @@ public class CandidateService {
     }
 
     @Transactional
+    public DownloadedFile loadProfilePicture(UUID id) {
+        Candidate candidate = getEntity(id);
+        if (candidate.getProfilePictureStoredPath() == null) {
+            throw new ResourceNotFoundException("Foto profil belum tersedia");
+        }
+        return new DownloadedFile(
+                storage.load(candidate.getProfilePictureStoredPath()),
+                candidate.getProfilePictureOriginalName(),
+                mediaType(candidate.getProfilePictureOriginalName())
+        );
+    }
+
+    @Transactional
     public DownloadedFile loadCv(UUID id) {
         Candidate candidate = getEntity(id);
         if (candidate.getCvStoredPath() == null) throw new ResourceNotFoundException("CV belum tersedia");
