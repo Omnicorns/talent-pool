@@ -3,13 +3,54 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0f5bd3" />
+    <meta name="theme-color" content="#d9271c" />
     <meta name="description" content="Talent Pool candidate portal and recruiter back office" />
-    <title>Talent Pool</title>
-    <script type="module" crossorigin src="/sarinah-talent-pool/assets/index-D1PyjDf1.js"></script>
-    <link rel="stylesheet" crossorigin href="/sarinah-talent-pool/assets/index-3nC0IY-m.css">
+    <title>Sarinah Talent Pool</title>
+
+    <script>
+      (function () {
+        var path = window.location.pathname || '/';
+        var base = path.indexOf('/sarinah-talent-pool') === 0
+          ? '/sarinah-talent-pool'
+          : '';
+
+        window.__SARINAH_APP_BASE__ = base;
+
+        var css = document.createElement('link');
+        css.rel = 'stylesheet';
+        css.href = base + '/assets/index-3nC0IY-m.css';
+        css.onerror = function () {
+          document.documentElement.dataset.assetError = 'css';
+        };
+        document.head.appendChild(css);
+      })();
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="boot-status" style="font-family:Arial,sans-serif;padding:32px;color:#555">
+        Memuat Sarinah Talent Pool...
+      </div>
+    </div>
+
+    <script type="module">
+      const base = window.__SARINAH_APP_BASE__ || '';
+      const boot = document.getElementById('boot-status');
+
+      import(base + '/assets/index-Cy3TL9OY.js')
+        .catch((error) => {
+          console.error('Gagal memuat frontend Talent Pool:', error);
+
+          if (boot) {
+            boot.innerHTML =
+              '<div style="max-width:720px;margin:40px auto;padding:24px;border:1px solid #eee;border-radius:12px">' +
+              '<h2 style="margin:0 0 12px;color:#b81f17">Frontend gagal dimuat</h2>' +
+              '<p style="line-height:1.6">Asset JavaScript tidak dapat dimuat dari <strong>' +
+              (base || '/') +
+              '</strong>. Cek tab Network pada browser dan pastikan file di folder <code>assets</code> mendapat status 200.</p>' +
+              '</div>';
+          }
+        });
+    </script>
   </body>
 </html>

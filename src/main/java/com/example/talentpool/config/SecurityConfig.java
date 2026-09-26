@@ -4,66 +4,51 @@ import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import static org.springframework.security.config.Customizer.withDefaults;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
+    SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            JwtAuthenticationConverter talentJwtAuthenticationConverter
+    ) throws Exception {
         return http
-                // ============================================
-                // CSRF
-                // ============================================
                 .csrf(csrf -> csrf.disable())
-
-                // ============================================
-                // CORS
-                // ============================================
-                .cors(withDefaults())
-
-                // ============================================
-                // STATELESS
-                // ============================================
+                .cors(Customizer.withDefaults())
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS
-                        )
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-
-                // ============================================
-                // AUTHORIZATION
-                // ============================================
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
 
-                        // ============================================
-                        // STATIC RESOURCE SPRING BOOT
-                        // ============================================
-                        .requestMatchers(
-                                PathRequest.toStaticResources()
-                                        .atCommonLocations()
-                        )
-                        .permitAll()
-
-
-                        // ============================================
-                        // REACT / VITE STATIC
-                        // ============================================
                         .requestMatchers(
                                 "/",
                                 "/index.html",
                                 "/assets/**",
+                                "/images/**",
+                                "/talent",
+                                "/talent/",
+                                "/talent/**",
                                 "/favicon.ico",
                                 "/*.js",
                                 "/*.css",
@@ -72,155 +57,91 @@ public class SecurityConfig {
                                 "/*.jpeg",
                                 "/*.svg",
                                 "/*.ico"
-                        )
-                        .permitAll()
+                        ).permitAll()
 
+                        .requestMatchers("/backoffice", "/backoffice/**").permitAll()
+                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
 
-                        // ============================================
-                        // REACT ROUTES
-                        // ============================================
-                        .requestMatchers(
-                                "/backoffice",
-                                "/backoffice/**"
-                        )
-                        .permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/public/talents").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/public/talents/*/status").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/public/job-listings", "/api/public/job-listings/**").permitAll()
 
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/talent/auth/register",
+                                "/api/talent/auth/login"
+                        ).permitAll()
 
-                        // ============================================
-                        // ACTUATOR
-                        // ============================================
-                        .requestMatchers(
-                                "/actuator/health",
-                                "/actuator/info"
-                        )
-                        .permitAll()
+                        .requestMatchers("/api/talent/**").hasRole("TALENT")
 
+                        .requestMatchers("/api/backoffice/**")
+                        .hasAnyRole("ADMIN", "RECRUITER")
 
-                        // ============================================
-                        // PUBLIC API - TALENT
-                        // ============================================
-
-                        // Submit kandidat / Talent Pool
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/public/talents"
-                        )
-                        .permitAll()
-
-                        // Cek status kandidat
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/public/talents/*/status"
-                        )
-                        .permitAll()
-
-
-                        // ============================================
-                        // PUBLIC API - JOB LISTING
-                        // ============================================
-
-                        // List Job Listing
-                        //
-                        // GET:
-                        // /api/public/job-listings
-                        //
-                        // Bisa dengan query:
-                        // ?page=0&size=100&sort=updatedAt,desc
-                        //
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/public/job-listings"
-                        )
-                        .permitAll()
-
-                        // Detail Job Listing
-                        //
-                        // GET:
-                        // /api/public/job-listings/{id}
-                        //
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/public/job-listings/**"
-                        )
-                        .permitAll()
-
-
-                        // ============================================
-                        // BACKOFFICE API
-                        // ============================================
-                        .requestMatchers(
-                                "/api/backoffice/**"
-                        )
-                        .hasAnyRole(
-                                "ADMIN",
-                                "RECRUITER"
-                        )
-
-
-                        // ============================================
-                        // LAINNYA
-                        // ============================================
-                        .anyRequest()
-                        .permitAll()
+                        .anyRequest().permitAll()
                 )
-
-
-                // ============================================
-                // HTTP BASIC
-                // ============================================
-                .httpBasic(withDefaults())
-
+                .oauth2ResourceServer(oauth -> oauth.jwt(jwt ->
+                        jwt.jwtAuthenticationConverter(talentJwtAuthenticationConverter)
+                ))
+                .httpBasic(Customizer.withDefaults())
                 .build();
     }
 
+    @Bean
+    JwtAuthenticationConverter talentJwtAuthenticationConverter() {
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            String role = jwt.getClaimAsString("role");
+            if (role == null || role.isBlank()) {
+                return List.of();
+            }
+            return List.of(new SimpleGrantedAuthority("ROLE_" + role));
+        });
+        return converter;
+    }
 
-    // ============================================================
-    // USER BACKOFFICE
-    // ============================================================
     @Bean
     UserDetailsService userDetailsService(
             SecurityProperties properties,
             PasswordEncoder encoder
     ) {
-
-        var admin = User
-                .withUsername(
-                        properties.adminUsername()
-                )
-                .password(
-                        encoder.encode(
-                                properties.adminPassword()
-                        )
-                )
+        var admin = User.withUsername(properties.adminUsername())
+                .password(encoder.encode(properties.adminPassword()))
                 .roles("ADMIN")
                 .build();
 
-
-        var recruiter = User
-                .withUsername(
-                        properties.recruiterUsername()
-                )
-                .password(
-                        encoder.encode(
-                                properties.recruiterPassword()
-                        )
-                )
+        var recruiter = User.withUsername(properties.recruiterUsername())
+                .password(encoder.encode(properties.recruiterPassword()))
                 .roles("RECRUITER")
                 .build();
 
-
-        return new InMemoryUserDetailsManager(
-                admin,
-                recruiter
-        );
+        return new InMemoryUserDetailsManager(admin, recruiter);
     }
 
-
-    // ============================================================
-    // PASSWORD ENCODER
-    // ============================================================
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource(CorsProperties properties) {
+        CorsConfiguration configuration = new CorsConfiguration();
+        List<String> allowedOrigins = new ArrayList<>();
+        if (properties.allowedOrigins() != null) {
+            allowedOrigins.addAll(properties.allowedOrigins());
+        }
+        if (!allowedOrigins.contains("https://satudata.sarinah.com")) {
+            allowedOrigins.add("https://satudata.sarinah.com");
+        }
+
+        configuration.setAllowedOrigins(allowedOrigins);
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+        configuration.setExposedHeaders(List.of("Content-Disposition"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        // CORS hanya berlaku untuk API. Static asset JS/CSS/image tidak perlu
+        // diperiksa CORS karena dilayani same-origin melalui reverse proxy.
+        source.registerCorsConfiguration("/api/**", configuration);
+        return source;
     }
 }
