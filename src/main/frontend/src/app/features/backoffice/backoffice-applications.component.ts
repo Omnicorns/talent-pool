@@ -1,13 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { BackofficeLayoutComponent } from '../../shared/backoffice-layout.component';
 import { BackofficeApiService } from '../../core/service/api/backoffice-api.service';
 
 @Component({
   selector: 'app-backoffice-applications',
   standalone: true,
-  imports: [CommonModule, FormsModule, BackofficeLayoutComponent],
+  imports: [CommonModule, FormsModule, RouterLink, BackofficeLayoutComponent],
   template: `
     <app-backoffice-layout active="applications">
       <div class="bo-page-head">
@@ -22,7 +23,7 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
         <div class="bo-table-meta"><strong>{{ rows.length }} application</strong><span *ngIf="loading">Memuat...</span></div>
         <div class="bo-table-wrap">
           <table class="bo-table">
-            <thead><tr><th>Candidate</th><th>Position</th><th>Stage</th><th>Status</th><th>Applied</th></tr></thead>
+            <thead><tr><th>Candidate</th><th>Position</th><th>Stage</th><th>Status</th><th>Applied</th><th>Action</th></tr></thead>
             <tbody>
               <tr *ngFor="let item of rows">
                 <td><strong>{{ item.candidateName }}</strong></td>
@@ -34,6 +35,15 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
                 </td>
                 <td><span class="bo-badge" [class.green]="item.status === 'ACTIVE' || item.status === 'HIRED'" [class.red]="item.status === 'REJECTED'">{{ item.status }}</span></td>
                 <td>{{ item.appliedAt | date:'dd MMM yyyy' }}</td>
+                <td>
+                  <a
+                    *ngIf="item.stage === 'INTERVIEW'"
+                    routerLink="/backoffice/interviews"
+                    [queryParams]="{ candidateId: item.candidateId, jobId: item.jobListingId }"
+                    class="bo-link-action">
+                    Jadwalkan / Edit Interview →
+                  </a>
+                </td>
               </tr>
               <tr *ngIf="!rows.length && !loading"><td colspan="5" class="bo-empty-cell">Belum ada application.</td></tr>
             </tbody>
@@ -65,6 +75,14 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
               <option *ngFor="let stage of stages" [value]="stage">{{ label(stage) }}</option>
             </select>
           </label>
+
+          <a
+            *ngIf="item.stage === 'INTERVIEW'"
+            routerLink="/backoffice/interviews"
+            [queryParams]="{ candidateId: item.candidateId, jobId: item.jobListingId }"
+            class="bo-primary bo-mobile-interview-link">
+            Jadwalkan / Edit Interview
+          </a>
         </article>
 
         <div class="bo-empty-card" *ngIf="!rows.length && !loading">Belum ada application.</div>
