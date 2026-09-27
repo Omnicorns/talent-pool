@@ -5,11 +5,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.PropertyAccessorFactory;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.talentpool.repository.JobListingRepository;
+import com.example.talentpool.exception.ResourceNotFoundException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 
 
@@ -207,6 +210,22 @@ public class PublicJobListingController {
         );
 
         return response;
+    }
+
+
+    @GetMapping("/{id}")
+    public Map<String, Object> getPublicJobListing(@PathVariable UUID id) {
+        Object job = jobListingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Lowongan tidak ditemukan: " + id));
+
+        Map<String, Object> item = toPublicResponse(job);
+
+        if (!"PUBLISHED".equalsIgnoreCase(stringValue(item.get("status")))
+                || !isApplicationStillOpen(item.get("applicationDeadline"))) {
+            throw new ResourceNotFoundException("Lowongan tidak tersedia");
+        }
+
+        return item;
     }
 
 
