@@ -7,6 +7,9 @@ import { CandidatePortalComponent } from './features/candidate/candidate-portal.
 import { OpenPositionsComponent } from './features/public/open-positions.component';
 import { BackofficeLoginComponent } from './features/backoffice/backoffice-login.component';
 import { BackofficeDashboardComponent } from './features/backoffice/backoffice-dashboard.component';
+import { BackofficeCandidatesComponent } from './features/backoffice/backoffice-candidates.component';
+import { BackofficeJobListingsComponent } from './features/backoffice/backoffice-job-listings.component';
+import { BackofficeApplicationsComponent } from './features/backoffice/backoffice-applications.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -18,6 +21,21 @@ export const routes: Routes = [
   {
     path: 'backoffice/dashboard',
     component: BackofficeDashboardComponent,
+    canActivate: [backofficeAuthGuard],
+  },
+  {
+    path: 'backoffice/candidates',
+    component: BackofficeCandidatesComponent,
+    canActivate: [backofficeAuthGuard],
+  },
+  {
+    path: 'backoffice/job-listings',
+    component: BackofficeJobListingsComponent,
+    canActivate: [backofficeAuthGuard],
+  },
+  {
+    path: 'backoffice/applications',
+    component: BackofficeApplicationsComponent,
     canActivate: [backofficeAuthGuard],
   },
   { path: '**', redirectTo: '' },
