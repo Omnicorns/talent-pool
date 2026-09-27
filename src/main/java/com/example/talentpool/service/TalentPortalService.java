@@ -84,6 +84,14 @@ public class TalentPortalService {
 
     @Transactional
     public JobApplicationResponse apply(UUID candidateId, UUID jobId, String notes) {
+        CandidateResponse profile = candidateService.detail(candidateId);
+        if (profile.fullName() == null || profile.fullName().isBlank()
+                || profile.phone() == null || profile.phone().isBlank()
+                || profile.cvOriginalName() == null || profile.cvOriginalName().isBlank()
+                || !profile.termsAccepted()) {
+            throw new BadRequestException("Lengkapi profil dan CV sebelum melamar lowongan");
+        }
+
         JobListing job = jobListingRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Lowongan tidak ditemukan: " + jobId));
         ensureJobOpen(job);
