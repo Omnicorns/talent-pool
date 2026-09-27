@@ -69,6 +69,14 @@ export class TalentPortalService {
     return this.http.put<CandidateProfile>(`${API_BASE}/talent/profile`, data);
   }
 
+  activities() {
+    return this.http.get<any[]>(`${API_BASE}/talent/activities`);
+  }
+
+  interviews() {
+    return this.http.get<any[]>(`${API_BASE}/talent/interviews`);
+  }
+
   applications() {
     const params = new HttpParams()
       .set('page', '0')
