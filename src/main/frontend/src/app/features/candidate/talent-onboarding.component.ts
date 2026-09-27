@@ -200,7 +200,7 @@ export class TalentOnboardingComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    if (this.auth.session?.onboardingCompleted) {
+    if (this.auth.session?.onboardingCompleted !== false) {
       this.router.navigateByUrl('/portal');
       return;
     }
