@@ -268,3 +268,7 @@ img{max-width:100%}
   .profile-photo-editor{grid-template-columns:70px 1fr;padding:13px}
   .profile-photo-preview{width:70px;height:70px}
 }
+
+
+/* Landing anchor sections */
+#life,#faq{scroll-margin-top:96px}
