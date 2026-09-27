@@ -1,43 +1,76 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BackofficeAuthService } from '../../core/service/api/backoffice-auth.service';
-import { API_BASE } from '../../core/service/api/api-base';
+import { RouterLink } from '@angular/router';
+import { BackofficeLayoutComponent } from '../../shared/backoffice-layout.component';
+import { BackofficeApiService } from '../../core/service/api/backoffice-api.service';
 
 @Component({
   selector: 'app-backoffice-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink, BackofficeLayoutComponent],
   template: `
-    <div class="bo-shell">
-      <aside>
-        <img src="images/sarinah.png" alt="Sarinah">
-        <strong>Talent Management</strong>
-        <nav><button class="active">Dashboard</button><button>Candidates</button><button>Job Listings</button><button>Applications</button></nav>
-        <button class="logout" (click)="auth.logout()">Keluar</button>
-      </aside>
-      <main>
-        <header><div><h1>Dashboard</h1><p>Talent Pool & Recruitment Overview</p></div></header>
-        <section class="dashboard-grid">
-          <article><span>Total Candidate</span><strong>{{ dashboard?.totalCandidates ?? '-' }}</strong></article>
-          <article><span>Available Talent</span><strong>{{ dashboard?.availableCandidates ?? '-' }}</strong></article>
-          <article><span>Open Positions</span><strong>{{ dashboard?.openJobListings ?? '-' }}</strong></article>
-          <article><span>Applications</span><strong>{{ dashboard?.totalApplications ?? '-' }}</strong></article>
-        </section>
-        <section class="dashboard-panel"><h2>Back Office Angular</h2><p>Dashboard sudah berjalan dari Angular dan menggunakan API Spring Boot yang sama.</p></section>
-      </main>
-    </div>
+    <app-backoffice-layout active="dashboard">
+      <div class="bo-page-head">
+        <div>
+          <span class="bo-kicker">OVERVIEW</span>
+          <h1>Dashboard</h1>
+          <p>Pantau Talent Pool, lowongan, dan proses rekrutmen dalam satu tempat.</p>
+        </div>
+      </div>
+
+      <section class="dashboard-grid">
+        <a routerLink="/backoffice/candidates">
+          <span>Total Candidate</span>
+          <strong>{{ dashboard?.totalCandidates ?? '-' }}</strong>
+          <small>Lihat kandidat →</small>
+        </a>
+        <a routerLink="/backoffice/candidates">
+          <span>Available Talent</span>
+          <strong>{{ dashboard?.availableCandidates ?? '-' }}</strong>
+          <small>Talent siap proses →</small>
+        </a>
+        <a routerLink="/backoffice/job-listings">
+          <span>Open Positions</span>
+          <strong>{{ dashboard?.openJobListings ?? '-' }}</strong>
+          <small>Kelola lowongan →</small>
+        </a>
+        <a routerLink="/backoffice/applications">
+          <span>Applications</span>
+          <strong>{{ dashboard?.totalApplications ?? '-' }}</strong>
+          <small>Lihat pipeline →</small>
+        </a>
+      </section>
+
+      <section class="bo-dashboard-panels">
+        <article class="bo-dashboard-panel">
+          <div class="bo-panel-head">
+            <div>
+              <span class="bo-kicker">QUICK ACCESS</span>
+              <h2>Recruitment Workspace</h2>
+            </div>
+          </div>
+          <div class="bo-quick-grid">
+            <a routerLink="/backoffice/candidates"><b>👥</b><strong>Candidates</strong><span>Kelola profil dan status talent.</span></a>
+            <a routerLink="/backoffice/job-listings"><b>▤</b><strong>Job Listings</strong><span>Pantau posisi dan kebutuhan rekrutmen.</span></a>
+            <a routerLink="/backoffice/applications"><b>✓</b><strong>Applications</strong><span>Kelola pipeline kandidat per tahap.</span></a>
+          </div>
+        </article>
+
+        <article class="bo-dashboard-panel bo-highlight-panel">
+          <span class="bo-kicker">SARINAH TALENT MANAGEMENT</span>
+          <h2>Satu dashboard untuk seluruh proses kandidat.</h2>
+          <p>Gunakan menu di sebelah kiri untuk berpindah antara kandidat, lowongan, dan application pipeline tanpa kembali ke halaman login.</p>
+        </article>
+      </section>
+    </app-backoffice-layout>
   `,
 })
 export class BackofficeDashboardComponent implements OnInit {
   dashboard: any;
-
-  constructor(private http: HttpClient, public auth: BackofficeAuthService) {}
+  constructor(private api: BackofficeApiService) {}
 
   ngOnInit(): void {
-    const authorization = this.auth.authorization;
-    const headers = authorization ? new HttpHeaders({ Authorization: authorization }) : undefined;
-    this.http.get(`${API_BASE}/backoffice/dashboard`, { headers }).subscribe({
+    this.api.dashboard().subscribe({
       next: (value) => this.dashboard = value,
     });
   }
