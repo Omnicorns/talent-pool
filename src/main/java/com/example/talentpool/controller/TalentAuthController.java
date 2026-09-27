@@ -5,7 +5,11 @@ import com.example.talentpool.dto.TalentChangePasswordRequest;
 import com.example.talentpool.dto.TalentLoginRequest;
 import com.example.talentpool.dto.TalentMeResponse;
 import com.example.talentpool.dto.TalentRegisterRequest;
+import com.example.talentpool.dto.TalentResetPasswordRequest;
+import com.example.talentpool.dto.TalentForgotPasswordResponse;
+import com.example.talentpool.dto.TalentForgotPasswordRequest;
 import com.example.talentpool.service.TalentAuthService;
+import com.example.talentpool.service.TalentPasswordResetService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,9 +24,11 @@ import java.util.UUID;
 public class TalentAuthController {
 
     private final TalentAuthService service;
+    private final TalentPasswordResetService passwordResetService;
 
-    public TalentAuthController(TalentAuthService service) {
+    public TalentAuthController(TalentAuthService service, TalentPasswordResetService passwordResetService) {
         this.service = service;
+        this.passwordResetService = passwordResetService;
     }
 
     @PostMapping("/register")
@@ -34,6 +40,17 @@ public class TalentAuthController {
     @PostMapping("/login")
     public TalentAuthResponse login(@Valid @RequestBody TalentLoginRequest request) {
         return service.login(request);
+    }
+
+    @PostMapping("/forgot-password")
+    public TalentForgotPasswordResponse forgotPassword(@Valid @RequestBody TalentForgotPasswordRequest request) {
+        return passwordResetService.forgotPassword(request.email());
+    }
+
+    @PostMapping("/reset-password")
+    public Map<String, String> resetPassword(@Valid @RequestBody TalentResetPasswordRequest request) {
+        passwordResetService.resetPassword(request);
+        return Map.of("message", "Password berhasil direset");
     }
 
     @GetMapping("/me")

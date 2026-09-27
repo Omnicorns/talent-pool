@@ -48,6 +48,10 @@ import { TalentAuthService } from '../../core/service/api/talent-auth.service';
                 </button>
               </div>
             </label>
+            <div class="auth-helper-row">
+              <span></span>
+              <a routerLink="/forgot-password">Lupa Password?</a>
+            </div>
             <button class="primary-button" [disabled]="loading">{{ loading ? 'Memproses...' : 'Sign In →' }}</button>
           </form>
         </div>

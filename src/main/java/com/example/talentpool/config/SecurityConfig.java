@@ -68,7 +68,9 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.POST,
                                 "/api/talent/auth/register",
-                                "/api/talent/auth/login"
+                                "/api/talent/auth/login",
+                                "/api/talent/auth/forgot-password",
+                                "/api/talent/auth/reset-password"
                         ).permitAll()
 
                         .requestMatchers("/api/talent/**").hasRole("TALENT")

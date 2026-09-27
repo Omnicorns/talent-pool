@@ -27,6 +27,20 @@ export class TalentAuthService {
       .pipe(tap((session) => this.saveSession(session)));
   }
 
+  forgotPassword(email: string) {
+    return this.http.post<{ message: string; resetUrl?: string | null }>(
+      `${API_BASE}/talent/auth/forgot-password`,
+      { email }
+    );
+  }
+
+  resetPassword(token: string, newPassword: string) {
+    return this.http.post<{ message: string }>(
+      `${API_BASE}/talent/auth/reset-password`,
+      { token, newPassword }
+    );
+  }
+
   completeOnboarding() {
     return this.http.patch<any>(`${API_BASE}/talent/auth/onboarding-complete`, {}).pipe(
       tap(() => {

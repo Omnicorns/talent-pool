@@ -3,6 +3,8 @@ import { candidateAuthGuard, completedOnboardingGuard } from './core/guard/candi
 import { backofficeAuthGuard } from './core/guard/backoffice-auth.guard';
 import { LandingComponent } from './features/public/landing.component';
 import { CandidateAuthComponent } from './features/auth/candidate-auth.component';
+import { ForgotPasswordComponent } from './features/auth/forgot-password.component';
+import { ResetPasswordComponent } from './features/auth/reset-password.component';
 import { CandidatePortalComponent } from './features/candidate/candidate-portal.component';
 import { TalentOnboardingComponent } from './features/candidate/talent-onboarding.component';
 import { OpenPositionsComponent } from './features/public/open-positions.component';
@@ -18,6 +20,8 @@ export const routes: Routes = [
   { path: 'open-positions', component: OpenPositionsComponent },
   { path: 'sign-in', component: CandidateAuthComponent },
   { path: 'register', component: CandidateAuthComponent },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'reset-password', component: ResetPasswordComponent },
   { path: 'onboarding', component: TalentOnboardingComponent, canActivate: [candidateAuthGuard] },
   { path: 'portal', component: CandidatePortalComponent, canActivate: [completedOnboardingGuard] },
   { path: 'backoffice/login', component: BackofficeLoginComponent },
