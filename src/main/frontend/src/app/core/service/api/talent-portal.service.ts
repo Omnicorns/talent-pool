@@ -89,6 +89,10 @@ export class TalentPortalService {
     );
   }
 
+  job(id: string) {
+    return this.http.get<JobListing>(`${API_BASE}/talent/jobs/${id}`);
+  }
+
   jobs() {
     const params = new HttpParams().set('page', '0').set('size', '100');
     return this.http.get<{ content: JobListing[] }>(
