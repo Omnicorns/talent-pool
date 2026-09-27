@@ -27,6 +27,17 @@ export class TalentAuthService {
       .pipe(tap((session) => this.saveSession(session)));
   }
 
+  completeOnboarding() {
+    return this.http.patch<any>(`${API_BASE}/talent/auth/onboarding-complete`, {}).pipe(
+      tap(() => {
+        const current = this.session;
+        if (current) {
+          this.saveSession({ ...current, onboardingCompleted: true });
+        }
+      })
+    );
+  }
+
   changePassword(currentPassword: string, newPassword: string) {
     return this.http.patch(`${API_BASE}/talent/auth/change-password`, {
       currentPassword,
