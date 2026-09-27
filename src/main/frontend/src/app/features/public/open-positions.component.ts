@@ -1,20 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { CareerHeaderComponent } from '../../shared/career-header.component';
+import { TalentAuthService } from '../../core/service/api/talent-auth.service';
 import { PublicJobService } from '../../core/service/api/public-job.service';
 import { JobListing } from '../../core/models/talent.models';
 
 @Component({
   selector: 'app-open-positions',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, CareerHeaderComponent],
   template: `
     <div class="page-shell">
-      <header class="career-header">
-        <img class="danantara-logo" src="images/Danantara_Indonesia.png" alt="Danantara Indonesia">
-        <nav><a routerLink="/">Home</a><a routerLink="/open-positions" class="active">Open Positions</a></nav>
-        <div class="career-header-right"><a class="outline-link" routerLink="/sign-in">Masuk</a><img class="sarinah-logo" src="images/sarinah.png" alt="Sarinah"></div>
-      </header>
+      <app-career-header active="open"></app-career-header>
 
       <main class="jobs-page">
         <div class="page-title">
@@ -33,7 +31,9 @@ import { JobListing } from '../../core/models/talent.models';
               <h2>{{ job.title }}</h2>
               <p>{{ job.location || 'Jakarta' }} • {{ job.employmentType || 'Full Time' }}</p>
             </div>
-            <a routerLink="/sign-in" class="job-action">Apply →</a>
+            <a [routerLink]="auth.authenticated ? '/portal' : '/sign-in'" class="job-action">
+              {{ auth.authenticated ? 'Lihat di Talent Pool →' : 'Apply →' }}
+            </a>
           </article>
           <div class="empty-state" *ngIf="!jobs.length && !error">Belum ada posisi yang tersedia.</div>
         </div>
@@ -46,7 +46,7 @@ export class OpenPositionsComponent implements OnInit {
   loading = true;
   error = '';
 
-  constructor(private jobsApi: PublicJobService) {}
+  constructor(private jobsApi: PublicJobService, public auth: TalentAuthService) {}
 
   ngOnInit(): void {
     this.jobsApi.list().subscribe({
