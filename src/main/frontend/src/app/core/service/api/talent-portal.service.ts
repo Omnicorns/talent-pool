@@ -97,9 +97,9 @@ export class TalentPortalService {
     );
   }
 
-  apply(jobId: string) {
-    return this.http.post(`${API_BASE}/talent/jobs/${jobId}/apply`, {
-      notes: 'Dilamar melalui Sarinah Career Portal',
+  apply(jobId: string, notes?: string | null) {
+    return this.http.post<JobApplication>(`${API_BASE}/talent/jobs/${jobId}/apply`, {
+      notes: notes?.trim() || 'Dilamar melalui Sarinah Career Portal',
     });
   }
 
