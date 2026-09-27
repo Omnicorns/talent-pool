@@ -3,6 +3,9 @@ package com.example.talentpool.controller;
 import com.example.talentpool.domain.CandidateStatus;
 import com.example.talentpool.dto.*;
 import com.example.talentpool.service.CandidateService;
+import com.example.talentpool.service.CandidateViewService;
+import com.example.talentpool.domain.CandidateViewType;
+import org.springframework.security.core.Authentication;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -18,9 +21,11 @@ import java.util.UUID;
 @RequestMapping({"/api/backoffice/talents", "/api/backoffice/candidates"})
 public class BackofficeTalentController {
     private final CandidateService service;
+    private final CandidateViewService candidateViewService;
 
-    public BackofficeTalentController(CandidateService service) {
+    public BackofficeTalentController(CandidateService service, CandidateViewService candidateViewService) {
         this.service = service;
+        this.candidateViewService = candidateViewService;
     }
 
     @GetMapping
@@ -41,7 +46,8 @@ public class BackofficeTalentController {
     }
 
     @GetMapping("/{id}")
-    public CandidateResponse detail(@PathVariable UUID id) {
+    public CandidateResponse detail(@PathVariable UUID id, Authentication authentication) {
+        candidateViewService.record(id, CandidateViewType.PROFILE_VIEW, authentication == null ? null : authentication.getName());
         return service.detail(id);
     }
 
@@ -90,7 +96,8 @@ public class BackofficeTalentController {
     }
 
     @GetMapping("/{id}/cv")
-    public ResponseEntity<?> downloadCv(@PathVariable UUID id) {
+    public ResponseEntity<?> downloadCv(@PathVariable UUID id, Authentication authentication) {
+        candidateViewService.record(id, CandidateViewType.CV_VIEW, authentication == null ? null : authentication.getName());
         var file = service.loadCv(id);
         ContentDisposition disposition = ContentDisposition.attachment()
                 .filename(file.filename(), StandardCharsets.UTF_8)
