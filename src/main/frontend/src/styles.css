@@ -1519,3 +1519,178 @@ img{max-width:100%}
   gap:7px;
   line-height:1.35;
 }
+
+
+/* =========================================================
+   LANDING NAV SECTION + LIFE AT SARINAH VISUALS
+   ========================================================= */
+.career-main-nav .career-nav-button{
+  height:82px;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:inherit;
+  position:relative;
+  display:flex;
+  align-items:center;
+  font:inherit;
+  font-weight:800;
+  cursor:pointer;
+}
+.career-main-nav .career-nav-button:hover,
+.career-main-nav .career-nav-button.active{
+  color:var(--red);
+}
+.career-main-nav .career-nav-button.active:after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:16px;
+  height:3px;
+  border-radius:999px;
+  background:var(--red);
+}
+
+.life-section{
+  background:#fff;
+  overflow:hidden;
+}
+.life-intro{
+  display:grid;
+  grid-template-columns:minmax(0,.82fr) minmax(420px,1.18fr);
+  gap:46px;
+  align-items:center;
+}
+.life-section .section-head{
+  margin-bottom:0;
+}
+.life-lead{
+  margin:20px 0 0;
+  color:#68727c;
+  font-size:16px;
+  line-height:1.8;
+  max-width:660px;
+}
+.life-feature-photo{
+  min-height:470px;
+  border-radius:22px;
+  overflow:hidden;
+  position:relative;
+  background:
+    linear-gradient(180deg,rgba(10,14,18,.06),rgba(10,14,18,.7)),
+    url("https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1500&q=88") center/cover;
+  box-shadow:0 24px 55px rgba(15,23,42,.13);
+}
+.life-photo-copy{
+  position:absolute;
+  left:28px;
+  right:28px;
+  bottom:28px;
+  color:#fff;
+}
+.life-photo-copy>span,
+.life-gallery-card span{
+  display:block;
+  color:#ffb8b2;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.13em;
+  margin-bottom:9px;
+}
+.life-photo-copy strong{
+  display:block;
+  font-size:27px;
+  letter-spacing:-.025em;
+}
+.life-photo-copy p{
+  max-width:560px;
+  margin:9px 0 0;
+  color:rgba(255,255,255,.82);
+  line-height:1.65;
+  font-size:13px;
+}
+.life-gallery{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+  margin-top:28px;
+}
+.life-gallery-card{
+  min-height:260px;
+  border-radius:18px;
+  position:relative;
+  overflow:hidden;
+  background-position:center;
+  background-size:cover;
+}
+.life-gallery-card:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,rgba(10,14,18,.05),rgba(10,14,18,.72));
+}
+.life-gallery-one{
+  background-image:url("https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1200&q=86");
+}
+.life-gallery-two{
+  background-image:url("https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=86");
+}
+.life-gallery-card>div{
+  position:absolute;
+  z-index:2;
+  left:24px;
+  right:24px;
+  bottom:22px;
+  color:#fff;
+}
+.life-gallery-card h3{
+  margin:0;
+  max-width:520px;
+  font-size:22px;
+  line-height:1.25;
+  letter-spacing:-.02em;
+}
+.life-values{
+  margin-top:28px;
+}
+.life-values article{
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.life-values article:hover{
+  transform:translateY(-4px);
+  border-color:#e8bbb7;
+  box-shadow:0 14px 28px rgba(15,23,42,.06);
+}
+@media(max-width:1050px){
+  .life-intro{
+    grid-template-columns:1fr;
+  }
+  .life-feature-photo{
+    min-height:400px;
+  }
+}
+@media(max-width:700px){
+  .career-main-nav .career-nav-button{
+    height:auto;
+    min-height:44px;
+  }
+  .life-feature-photo{
+    min-height:330px;
+    border-radius:16px;
+  }
+  .life-gallery{
+    grid-template-columns:1fr;
+  }
+  .life-gallery-card{
+    min-height:230px;
+  }
+  .life-photo-copy{
+    left:20px;
+    right:20px;
+    bottom:20px;
+  }
+  .life-photo-copy strong{
+    font-size:22px;
+  }
+}
