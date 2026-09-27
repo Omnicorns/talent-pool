@@ -3597,52 +3597,53 @@ img{max-width:100%}
 }
 
 
+
+
 /* =========================================================
-   SARINAH HEADER WORDMARK CROP FIX
-   The PNG contains generous transparent canvas, so scale the
-   image content while reserving enough layout space.
+   SARINAH HEADER WORDMARK — precise clipped layout
    ========================================================= */
 @media(min-width:901px){
   .career-header{
-    grid-template-columns:220px minmax(0,1fr) 430px;
+    grid-template-columns:220px minmax(0,1fr) 390px;
   }
 
   .career-header-right{
-    gap:18px;
+    gap:14px;
     overflow:visible;
   }
 
   .sarinah-brand-link{
-    width:145px;
-    height:58px;
-    flex:0 0 145px;
-    display:flex;
-    align-items:center;
-    justify-content:flex-end;
-    overflow:visible;
+    position:relative;
+    width:120px;
+    height:50px;
+    flex:0 0 120px;
+    overflow:hidden;
+    display:block;
   }
 
   .sarinah-brand-link .sarinah-logo{
-    width:155px;
-    height:52px;
+    position:absolute;
+    top:50%;
+    right:-16px;
+    width:205px;
+    height:auto;
     max-width:none;
+    transform:translateY(-50%);
     object-fit:contain;
-    object-position:right center;
-    transform:scale(2.15);
-    transform-origin:right center;
+    object-position:center;
   }
 }
 
 @media(min-width:901px) and (max-width:1180px){
   .career-header{
-    grid-template-columns:185px minmax(0,1fr) 350px;
-    gap:14px;
+    grid-template-columns:185px minmax(0,1fr) 320px;
+    gap:12px;
     padding-left:3vw;
     padding-right:3vw;
   }
 
   .career-header nav{
-    gap:22px;
+    gap:20px;
     font-size:12px;
   }
 
@@ -3651,11 +3652,12 @@ img{max-width:100%}
   }
 
   .sarinah-brand-link{
-    width:115px;
-    flex-basis:115px;
+    width:92px;
+    flex-basis:92px;
   }
 
   .sarinah-brand-link .sarinah-logo{
-    transform:scale(1.8);
+    width:170px;
+    right:-18px;
   }
 }
