@@ -107,6 +107,10 @@ export class TalentPortalService {
     });
   }
 
+  applicationHistory(applicationId: string) {
+    return this.http.get<any[]>(`${API_BASE}/talent/applications/${applicationId}/history`);
+  }
+
   withdraw(applicationId: string) {
     return this.http.patch(
       `${API_BASE}/talent/applications/${applicationId}/withdraw`,
