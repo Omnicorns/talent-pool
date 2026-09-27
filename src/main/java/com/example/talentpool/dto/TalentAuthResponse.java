@@ -8,6 +8,7 @@ public record TalentAuthResponse(
         long expiresIn,
         UUID candidateId,
         String email,
-        String fullName
+        String fullName,
+        boolean onboardingCompleted
 ) {
 }
