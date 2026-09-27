@@ -9,6 +9,7 @@ import com.example.talentpool.exception.BadRequestException;
 import com.example.talentpool.exception.ResourceNotFoundException;
 import com.example.talentpool.repository.JobApplicationRepository;
 import com.example.talentpool.repository.JobListingRepository;
+import com.example.talentpool.repository.InterviewRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,19 +28,25 @@ public class TalentPortalService {
     private final JobListingRepository jobListingRepository;
     private final JobApplicationRepository applicationRepository;
     private final JobApplicationService applicationService;
+    private final CandidateViewService candidateViewService;
+    private final InterviewRepository interviewRepository;
 
     public TalentPortalService(
             CandidateService candidateService,
             JobListingService jobListingService,
             JobListingRepository jobListingRepository,
             JobApplicationRepository applicationRepository,
-            JobApplicationService applicationService
+            JobApplicationService applicationService,
+            CandidateViewService candidateViewService,
+            InterviewRepository interviewRepository
     ) {
         this.candidateService = candidateService;
         this.jobListingService = jobListingService;
         this.jobListingRepository = jobListingRepository;
         this.applicationRepository = applicationRepository;
         this.applicationService = applicationService;
+        this.candidateViewService = candidateViewService;
+        this.interviewRepository = interviewRepository;
     }
 
     @Transactional
@@ -111,6 +118,27 @@ public class TalentPortalService {
 
         application.setStatus(ApplicationStatus.WITHDRAWN);
         return applicationService.toResponse(applicationRepository.save(application));
+    }
+
+    @Transactional
+    public List<TalentActivityResponse> activities(UUID candidateId) {
+        return candidateViewService.recent(candidateId);
+    }
+
+    @Transactional
+    public List<TalentInterviewResponse> interviews(UUID candidateId) {
+        return interviewRepository.findTop10ByCandidateIdOrderByScheduledAtDesc(candidateId)
+                .stream()
+                .map(interview -> new TalentInterviewResponse(
+                        interview.getId(),
+                        interview.getJobListing() == null ? null : interview.getJobListing().getTitle(),
+                        interview.getScheduledAt(),
+                        interview.getDurationMinutes(),
+                        interview.getMode(),
+                        interview.getLocationOrLink(),
+                        interview.getStatus()
+                ))
+                .toList();
     }
 
     private void ensureJobOpen(JobListing job) {
