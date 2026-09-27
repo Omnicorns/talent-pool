@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TalentAuthService } from '../../core/service/api/talent-auth.service';
 
 @Component({
@@ -225,14 +225,31 @@ export class CandidateAuthComponent {
   showPassword = false;
   loading = false;
   error = '';
+  returnUrl = '/portal';
 
-  constructor(private auth: TalentAuthService, private router: Router) {}
+  constructor(
+    private auth: TalentAuthService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
+    const requested = this.route.snapshot.queryParamMap.get('returnUrl');
+    if (requested && requested.startsWith('/') && !requested.startsWith('//')) {
+      this.returnUrl = requested;
+    }
+  }
 
   login(): void {
     this.error = '';
     this.loading = true;
     this.auth.login(this.email.trim().toLowerCase(), this.password).subscribe({
-      next: (session) => this.router.navigateByUrl(session.onboardingCompleted ? '/portal' : '/onboarding'),
+      next: (session) => {
+        this.loading = false;
+        if (session.onboardingCompleted === false) {
+          this.router.navigate(['/onboarding'], { queryParams: { returnUrl: this.returnUrl } });
+          return;
+        }
+        this.router.navigateByUrl(this.returnUrl);
+      },
       error: (error) => {
         this.error = error?.error?.message || 'Sign in gagal.';
         this.loading = false;
@@ -290,7 +307,11 @@ export class CandidateAuthComponent {
       next: (session) => {
         this.loading = false;
         this.termsModalOpen = false;
-        this.router.navigateByUrl(session.onboardingCompleted ? '/portal' : '/onboarding');
+        if (session.onboardingCompleted === false) {
+          this.router.navigate(['/onboarding'], { queryParams: { returnUrl: this.returnUrl } });
+          return;
+        }
+        this.router.navigateByUrl(this.returnUrl);
       },
       error: (error) => {
         this.error = error?.error?.message || 'Pembuatan akun gagal.';
