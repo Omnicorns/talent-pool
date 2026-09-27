@@ -21,7 +21,7 @@ export const completedOnboardingGuard: CanActivateFn = () => {
     return router.createUrlTree(['/sign-in']);
   }
 
-  return auth.session?.onboardingCompleted
+  return auth.session?.onboardingCompleted !== false
     ? true
     : router.createUrlTree(['/onboarding']);
 };
