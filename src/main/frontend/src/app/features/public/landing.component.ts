@@ -1,25 +1,14 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { CareerHeaderComponent } from '../../shared/career-header.component';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, CareerHeaderComponent],
   template: `
     <div class="career-shell">
-      <header class="career-header">
-        <img class="danantara-logo" src="images/Danantara_Indonesia.png" alt="Danantara Indonesia">
-        <nav>
-          <a routerLink="/" class="active">Home</a>
-          <a routerLink="/" fragment="life">Life at Sarinah</a>
-          <a routerLink="/open-positions">Open Positions</a>
-          <a routerLink="/" fragment="faq">FAQ</a>
-        </nav>
-        <div class="career-header-right">
-          <a class="outline-link" routerLink="/sign-in">Masuk</a>
-          <img class="sarinah-logo" src="images/sarinah.png" alt="Sarinah">
-        </div>
-      </header>
+      <app-career-header active="home"></app-career-header>
 
       <main>
         <section class="hero">
