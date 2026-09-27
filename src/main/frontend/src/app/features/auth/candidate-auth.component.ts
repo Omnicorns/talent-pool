@@ -87,7 +87,7 @@ export class CandidateAuthComponent {
     this.error = '';
     this.loading = true;
     this.auth.login(this.email.trim().toLowerCase(), this.password).subscribe({
-      next: () => this.router.navigateByUrl('/portal'),
+      next: (session) => this.router.navigateByUrl(session.onboardingCompleted ? '/portal' : '/onboarding'),
       error: (error) => {
         this.error = error?.error?.message || 'Sign in gagal.';
         this.loading = false;
