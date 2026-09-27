@@ -165,11 +165,26 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
 
         <section id="my-applications" class="applications-card">
           <div class="section-title"><h2>Lamaran Saya</h2><a routerLink="/open-positions">Lihat Lowongan</a></div>
-          <article class="application-row" *ngFor="let app of applications">
-            <div>
+          <article class="application-row application-progress-row" *ngFor="let app of applications">
+            <div class="application-main-copy">
               <h3>{{ app.jobTitle }}</h3>
-              <p>{{ app.stage || '-' }} • {{ app.appliedAt | date:'dd MMM yyyy' }}</p>
+              <p>Applied {{ app.appliedAt | date:'dd MMM yyyy' }}</p>
+
+              <div class="application-stage-progress" *ngIf="app.status !== 'REJECTED' && app.status !== 'WITHDRAWN'">
+                <div
+                  *ngFor="let stage of applicationStages; let i = index"
+                  [class.active]="applicationStageIndex(app.stage) >= i"
+                  [class.current]="applicationStageIndex(app.stage) === i">
+                  <span>{{ applicationStageIndex(app.stage) > i ? '✓' : i + 1 }}</span>
+                  <b>{{ stage.label }}</b>
+                </div>
+              </div>
+
+              <div class="application-terminal-status" *ngIf="app.status === 'REJECTED' || app.status === 'WITHDRAWN'">
+                {{ app.status === 'REJECTED' ? 'Lamaran tidak dilanjutkan' : 'Lamaran telah ditarik' }}
+              </div>
             </div>
+
             <div class="application-row-actions">
               <span class="candidate-status">{{ app.status || '-' }}</span>
               <button
@@ -279,6 +294,13 @@ export class CandidatePortalComponent implements OnInit {
   profilePicturePreview: string | null = null;
   saving = false;
   applicationSubmitted = false;
+  applicationStages = [
+    { value: 'NEW_CANDIDATE', label: 'Applied' },
+    { value: 'SCREENING', label: 'Screening' },
+    { value: 'INTERVIEW', label: 'Interview' },
+    { value: 'OFFER', label: 'Offer' },
+    { value: 'HIRED', label: 'Hired' },
+  ];
 
   constructor(
     public auth: TalentAuthService,
@@ -300,6 +322,11 @@ export class CandidatePortalComponent implements OnInit {
         });
       }, 250);
     }
+  }
+
+  applicationStageIndex(stage: string | null | undefined): number {
+    const index = this.applicationStages.findIndex((item) => item.value === stage);
+    return index < 0 ? 0 : index;
   }
 
   withdrawApplication(app: JobApplication): void {
