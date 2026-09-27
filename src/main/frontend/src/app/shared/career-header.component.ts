@@ -13,16 +13,26 @@ import { TalentAuthService } from '../core/service/api/talent-auth.service';
         <img class="danantara-logo" src="images/Danantara_Indonesia.png" alt="Danantara Indonesia">
       </a>
 
-      <nav class="career-main-nav" aria-label="Navigasi utama">
-        <a routerLink="/" [class.active]="active === 'home' && sectionActive === ''" (click)="sectionActive = ''">Home</a>
-        <button type="button" class="career-nav-button" [class.active]="sectionActive === 'life'" (click)="goToSection('life')">Life at Sarinah</button>
-        <a routerLink="/open-positions" [class.active]="active === 'open'">Open Positions</a>
-        <button type="button" class="career-nav-button" [class.active]="sectionActive === 'faq'" (click)="goToSection('faq')">FAQ</button>
+      <button
+        type="button"
+        class="mobile-menu-toggle"
+        (click)="mobileMenuOpen = !mobileMenuOpen"
+        [attr.aria-expanded]="mobileMenuOpen"
+        aria-label="Buka menu navigasi">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="career-main-nav" [class.mobile-open]="mobileMenuOpen" aria-label="Navigasi utama">
+        <a routerLink="/" [class.active]="active === 'home' && sectionActive === ''" (click)="sectionActive = ''; mobileMenuOpen = false">Home</a>
+        <button type="button" class="career-nav-button" [class.active]="sectionActive === 'life'" (click)="goToSection('life'); mobileMenuOpen = false">Life at Sarinah</button>
+        <a routerLink="/open-positions" [class.active]="active === 'open'" (click)="mobileMenuOpen = false">Open Positions</a>
+        <button type="button" class="career-nav-button" [class.active]="sectionActive === 'faq'" (click)="goToSection('faq'); mobileMenuOpen = false">FAQ</button>
         <a
           *ngIf="auth.authenticated"
           routerLink="/portal"
           class="talent-pool-nav"
           [class.active]="active === 'portal'"
+          (click)="mobileMenuOpen = false"
         >
           Talent Pool
         </a>
@@ -55,6 +65,7 @@ import { TalentAuthService } from '../core/service/api/talent-auth.service';
 export class CareerHeaderComponent {
   @Input() active: 'home' | 'open' | 'portal' | '' = '';
   sectionActive: 'life' | 'faq' | '' = '';
+  mobileMenuOpen = false;
 
   constructor(public auth: TalentAuthService, private router: Router) {}
 
