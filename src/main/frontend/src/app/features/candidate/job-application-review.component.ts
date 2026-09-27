@@ -27,6 +27,13 @@ import { TalentPortalService } from '../../core/service/api/talent-portal.servic
 
         <section class="apply-review-grid">
           <article class="apply-review-card">
+            <div class="apply-sarinah-brand">
+              <img src="images/sarinah.png" alt="Sarinah">
+              <div>
+                <strong>Sarinah Career</strong>
+                <span>Talent Recruitment</span>
+              </div>
+            </div>
             <span class="bo-kicker">REVIEW APPLICATION</span>
             <h1>{{ job.title }}</h1>
             <p class="apply-subtitle">{{ job.department || 'Sarinah' }} • {{ job.location || '-' }} • {{ job.employmentType || '-' }}</p>
