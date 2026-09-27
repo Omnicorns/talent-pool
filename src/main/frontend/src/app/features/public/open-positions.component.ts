@@ -11,9 +11,9 @@ import { JobListing } from '../../core/models/talent.models';
   template: `
     <div class="page-shell">
       <header class="career-header">
-        <img class="danantara-logo" src="/images/Danantara_Indonesia.png" alt="Danantara Indonesia">
+        <img class="danantara-logo" src="images/Danantara_Indonesia.png" alt="Danantara Indonesia">
         <nav><a routerLink="/">Home</a><a routerLink="/open-positions" class="active">Open Positions</a></nav>
-        <div class="career-header-right"><a class="outline-link" routerLink="/sign-in">Masuk</a><img class="sarinah-logo" src="/images/sarinah.png" alt="Sarinah"></div>
+        <div class="career-header-right"><a class="outline-link" routerLink="/sign-in">Masuk</a><img class="sarinah-logo" src="images/sarinah.png" alt="Sarinah"></div>
       </header>
 
       <main class="jobs-page">
