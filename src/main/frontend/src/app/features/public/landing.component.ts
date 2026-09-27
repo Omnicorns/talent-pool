@@ -29,12 +29,43 @@ import { CareerHeaderComponent } from '../../shared/career-header.component';
           </div>
         </section>
 
-        <section id="life" class="section">
-          <div class="section-head">
-            <span>WHY SARINAH</span>
-            <h2>Build, learn, and make an impact together.</h2>
+        <section id="life" class="section life-section">
+          <div class="life-intro">
+            <div class="section-head">
+              <span>LIFE AT SARINAH</span>
+              <h2>Grow together, create meaningful retail experiences.</h2>
+              <p class="life-lead">
+                Di Sarinah, pekerjaan bukan hanya tentang menyelesaikan tugas. Anda bekerja bersama tim lintas fungsi,
+                bertemu ide baru, belajar dari pengalaman nyata, dan ikut membawa identitas Indonesia ke pengalaman retail modern.
+              </p>
+            </div>
+
+            <div class="life-feature-photo">
+              <div class="life-photo-copy">
+                <span>COLLABORATE • LEARN • GROW</span>
+                <strong>Tempat untuk berkarya bersama.</strong>
+                <p>Berinteraksi dengan berbagai fungsi bisnis dan membangun solusi yang berdampak langsung pada pelanggan.</p>
+              </div>
+            </div>
           </div>
-          <div class="feature-grid">
+
+          <div class="life-gallery">
+            <article class="life-gallery-card life-gallery-one">
+              <div>
+                <span>OUR PEOPLE</span>
+                <h3>Collaboration that moves ideas forward.</h3>
+              </div>
+            </article>
+
+            <article class="life-gallery-card life-gallery-two">
+              <div>
+                <span>OUR GROWTH</span>
+                <h3>Learn through real projects and shared experience.</h3>
+              </div>
+            </article>
+          </div>
+
+          <div class="feature-grid life-values">
             <article><b>01</b><h3>Collaborative Spirit</h3><p>Kolaborasi lintas fungsi untuk menciptakan pengalaman retail yang relevan.</p></article>
             <article><b>02</b><h3>Meaningful Growth</h3><p>Kesempatan berkembang melalui project, mentoring, dan pengalaman nyata.</p></article>
             <article><b>03</b><h3>Indonesian Legacy</h3><p>Berkarier sambil membawa cerita dan kreativitas Indonesia lebih jauh.</p></article>
