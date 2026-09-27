@@ -1307,3 +1307,91 @@ img{max-width:100%}
     width:100%;
   }
 }
+
+
+/* Candidate detail drawer + talent activity */
+.bo-row-action{
+  border:0;
+  background:transparent;
+  color:#c72b21;
+  font-size:10px;
+  font-weight:850;
+  white-space:nowrap;
+}
+.bo-candidate-drawer{width:min(720px,100vw)}
+.bo-candidate-summary{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding:18px;
+  border:1px solid #e3e7ea;
+  border-radius:14px;
+  background:#fff;
+}
+.bo-candidate-avatar-lg{
+  width:68px;height:68px;border-radius:50%;
+  display:grid;place-items:center;
+  background:#fff0ee;color:#c72b21;
+  font-size:20px;font-weight:900;flex:0 0 auto;
+}
+.bo-candidate-summary h3{margin:0;font-size:20px}
+.bo-candidate-summary p{margin:5px 0 9px;color:#75808a;font-size:12px}
+.bo-candidate-actions{
+  display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 6px;
+}
+.bo-secondary{
+  min-height:42px;padding:0 16px;
+  border:1px solid #d9dee3;border-radius:9px;
+  background:#fff;color:#4f5962;font-weight:800;
+}
+.bo-detail-section{
+  margin-top:20px;padding-top:20px;border-top:1px solid #edf0f2;
+}
+.bo-detail-section>.section-title{margin-bottom:14px}
+.bo-detail-section>p{color:#68727c;line-height:1.7;font-size:12px}
+.bo-detail-item{
+  display:grid;gap:4px;padding:12px 0;border-bottom:1px solid #f0f2f4;
+}
+.bo-detail-item strong{font-size:12px}
+.bo-detail-item span{color:#78818a;font-size:10px}
+.bo-detail-item p{margin:3px 0 0;color:#69737d;font-size:11px;line-height:1.6}
+.bo-portfolio-link{
+  display:block;padding:10px 0;color:#278d92;font-size:11px;font-weight:800;
+  border-bottom:1px solid #f0f2f4;
+}
+.bo-drawer-loading{min-height:300px}
+.candidate-insight-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+  margin-top:24px;
+}
+.candidate-insight-card{
+  background:#fff;border:1px solid #dfe4e8;border-radius:18px;
+  padding:22px 24px;box-shadow:0 8px 26px rgba(18,29,38,.025);
+}
+.candidate-activity-list,.candidate-interview-list{display:grid;gap:10px}
+.candidate-activity-item{
+  display:grid;grid-template-columns:40px 1fr;gap:11px;align-items:center;
+  padding:11px 0;border-bottom:1px solid #eef1f3;
+}
+.candidate-activity-icon{
+  width:36px;height:36px;border-radius:10px;background:#fff0ee;color:#c72b21;
+  display:grid;place-items:center;font-size:10px;font-weight:900;
+}
+.candidate-activity-item strong{display:block;font-size:12px;color:#2a333b}
+.candidate-activity-item small{display:block;margin-top:4px;color:#8a929a;font-size:10px}
+.candidate-interview-item{
+  display:flex;justify-content:space-between;gap:14px;align-items:center;
+  padding:13px 0;border-bottom:1px solid #eef1f3;
+}
+.candidate-interview-item strong{font-size:12px}
+.candidate-interview-item p{margin:4px 0;color:#6e7882;font-size:11px}
+.candidate-interview-item small{color:#8a929a;font-size:10px}
+.candidate-status{
+  padding:5px 8px;border-radius:999px;background:#eef7f3;color:#23785c;
+  font-size:9px;font-weight:900;white-space:nowrap;
+}
+@media(max-width:800px){
+  .candidate-insight-grid{grid-template-columns:1fr}
+}
