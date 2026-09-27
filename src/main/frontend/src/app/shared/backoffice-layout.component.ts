@@ -31,6 +31,9 @@ import { BackofficeAuthService } from '../core/service/api/backoffice-auth.servi
           <a routerLink="/backoffice/applications" [class.active]="active === 'applications'">
             <span>✓</span><b>Applications</b>
           </a>
+          <a routerLink="/backoffice/interviews" [class.active]="active === 'interviews'">
+            <span>◷</span><b>Interviews</b>
+          </a>
         </nav>
 
         <div class="bo-sidebar-footer">
@@ -46,6 +49,6 @@ import { BackofficeAuthService } from '../core/service/api/backoffice-auth.servi
   `,
 })
 export class BackofficeLayoutComponent {
-  @Input() active: 'dashboard' | 'candidates' | 'jobs' | 'applications' = 'dashboard';
+  @Input() active: 'dashboard' | 'candidates' | 'jobs' | 'applications' | 'interviews' = 'dashboard';
   constructor(public auth: BackofficeAuthService) {}
 }
