@@ -3310,3 +3310,35 @@ img{max-width:100%}
   }
   .apply-steps i{width:28px;flex:0 0 auto}
 }
+
+
+/* Talent application lifecycle */
+.application-row-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+.withdraw-button{
+  min-height:34px;
+  padding:0 10px;
+  border:1px solid #ebc7c3;
+  border-radius:8px;
+  background:#fff;
+  color:#b72b22;
+  font-size:9px;
+  font-weight:850;
+}
+.withdraw-button:hover{background:#fff4f2}
+#my-applications{scroll-margin-top:96px}
+@media(max-width:620px){
+  .application-row{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .application-row-actions{
+    width:100%;
+    justify-content:space-between;
+  }
+}
