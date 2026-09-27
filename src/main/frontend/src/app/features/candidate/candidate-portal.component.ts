@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { CareerHeaderComponent } from '../../shared/career-header.component';
 import { CandidateProfile, EducationItem, JobApplication, WorkExperienceItem } from '../../core/models/talent.models';
 import { TalentAuthService } from '../../core/service/api/talent-auth.service';
 import { TalentPortalService } from '../../core/service/api/talent-portal.service';
@@ -11,18 +12,10 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
 @Component({
   selector: 'app-candidate-portal',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, CareerHeaderComponent],
   template: `
     <div class="portal-page" *ngIf="profile; else loadingTpl">
-      <header class="career-header">
-        <img class="danantara-logo" src="images/Danantara_Indonesia.png" alt="Danantara Indonesia">
-        <nav><a routerLink="/">Home</a><a routerLink="/open-positions">Open Positions</a></nav>
-        <div class="career-header-right">
-          <span class="portal-user">{{ profile.fullName }}</span>
-          <button class="text-button" (click)="auth.logout()">Keluar</button>
-          <img class="sarinah-logo" src="images/sarinah.png" alt="Sarinah">
-        </div>
-      </header>
+      <app-career-header active="portal"></app-career-header>
 
       <main class="profile-container">
         <section class="profile-hero-card">
