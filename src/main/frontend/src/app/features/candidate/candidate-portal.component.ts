@@ -163,11 +163,23 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
           </article>
         </section>
 
-        <section class="applications-card">
+        <section id="my-applications" class="applications-card">
           <div class="section-title"><h2>Lamaran Saya</h2><a routerLink="/open-positions">Lihat Lowongan</a></div>
           <article class="application-row" *ngFor="let app of applications">
-            <div><h3>{{ app.jobTitle }}</h3><p>{{ app.stage || '-' }}</p></div>
-            <span>{{ app.status || '-' }}</span>
+            <div>
+              <h3>{{ app.jobTitle }}</h3>
+              <p>{{ app.stage || '-' }} • {{ app.appliedAt | date:'dd MMM yyyy' }}</p>
+            </div>
+            <div class="application-row-actions">
+              <span class="candidate-status">{{ app.status || '-' }}</span>
+              <button
+                *ngIf="app.status === 'ACTIVE'"
+                type="button"
+                class="withdraw-button"
+                (click)="withdrawApplication(app)">
+                Tarik Lamaran
+              </button>
+            </div>
           </article>
           <div class="empty-state" *ngIf="!applications.length">Belum ada lamaran.</div>
         </section>
@@ -279,6 +291,29 @@ export class CandidatePortalComponent implements OnInit {
   ngOnInit(): void {
     this.reload();
     this.loadProfilePicture();
+
+    if (this.applicationSubmitted) {
+      setTimeout(() => {
+        document.getElementById('my-applications')?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }, 250);
+    }
+  }
+
+  withdrawApplication(app: JobApplication): void {
+    if (!window.confirm(`Tarik lamaran untuk "${app.jobTitle}"?`)) return;
+
+    this.portal.withdraw(app.id).subscribe({
+      next: (updated: any) => {
+        app.status = updated.status;
+        app.stage = updated.stage;
+      },
+      error: (error) => {
+        window.alert(error?.error?.message || 'Lamaran tidak dapat ditarik.');
+      },
+    });
   }
 
   loadProfilePicture(): void {
