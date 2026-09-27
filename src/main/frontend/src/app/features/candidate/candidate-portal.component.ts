@@ -36,7 +36,6 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
               <p>{{ headline }}</p>
             </div>
             <div class="profile-actions">
-              <span class="availability"><i></i>{{ profile.status || 'POTENTIAL' }}</span>
               <button class="outline-button" (click)="openDrawer('profile')">✎ Edit Profil</button>
             </div>
           </div>
@@ -50,11 +49,11 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
 
         <section class="profile-content-card">
           <nav class="profile-tabs">
-            <a href="#about">About</a>
-            <a href="#experiences">Experiences</a>
-            <a href="#education">Education</a>
-            <a href="#training">Training & Certification</a>
-            <a href="#additional">Additional Information</a>
+            <button type="button" (click)="scrollToSection('about')">About</button>
+            <button type="button" (click)="scrollToSection('experiences')">Experiences</button>
+            <button type="button" (click)="scrollToSection('education')">Education</button>
+            <button type="button" (click)="scrollToSection('training')">Training & Certification</button>
+            <button type="button" (click)="scrollToSection('additional')">Additional Information</button>
           </nav>
 
           <div class="profile-sections">
@@ -186,7 +185,12 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
             </div>
 
             <div class="application-row-actions">
-              <span class="candidate-status">{{ app.status || '-' }}</span>
+              <button
+                type="button"
+                class="application-history-button"
+                (click)="openApplicationHistory(app)">
+                Lihat Riwayat
+              </button>
               <button
                 *ngIf="app.status === 'ACTIVE'"
                 type="button"
@@ -199,6 +203,41 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
           <div class="empty-state" *ngIf="!applications.length">Belum ada lamaran.</div>
         </section>
       </main>
+
+      <div class="drawer-backdrop" *ngIf="applicationHistoryOpen" (click)="closeApplicationHistoryOnBackdrop($event)">
+        <aside class="side-drawer application-history-drawer">
+          <header>
+            <div>
+              <span class="bo-kicker">APPLICATION HISTORY</span>
+              <h2>{{ selectedApplication?.jobTitle || 'Riwayat Lamaran' }}</h2>
+              <p>Perjalanan proses rekrutmen untuk lowongan ini.</p>
+            </div>
+            <button (click)="closeApplicationHistory()">×</button>
+          </header>
+
+          <div class="drawer-body">
+            <div class="application-history-loading" *ngIf="applicationHistoryLoading">Memuat riwayat...</div>
+
+            <div class="application-history-timeline" *ngIf="!applicationHistoryLoading && applicationHistory.length">
+              <article *ngFor="let item of applicationHistory; let i = index">
+                <div class="application-history-marker">
+                  <span>{{ i + 1 }}</span>
+                  <i *ngIf="i < applicationHistory.length - 1"></i>
+                </div>
+                <div>
+                  <strong>{{ historyTitle(item) }}</strong>
+                  <p>{{ historyDescription(item) }}</p>
+                  <small>{{ item.changedAt | date:'dd MMM yyyy, HH:mm' }}</small>
+                </div>
+              </article>
+            </div>
+
+            <div class="empty-state" *ngIf="!applicationHistoryLoading && !applicationHistory.length">
+              Belum ada riwayat proses.
+            </div>
+          </div>
+        </aside>
+      </div>
 
       <div class="drawer-backdrop" *ngIf="drawerOpen" (click)="backdropClose($event)">
         <aside class="side-drawer">
@@ -294,6 +333,10 @@ export class CandidatePortalComponent implements OnInit {
   profilePicturePreview: string | null = null;
   saving = false;
   applicationSubmitted = false;
+  applicationHistoryOpen = false;
+  applicationHistoryLoading = false;
+  applicationHistory: any[] = [];
+  selectedApplication: JobApplication | null = null;
   applicationStages = [
     { value: 'NEW_CANDIDATE', label: 'Applied' },
     { value: 'SCREENING', label: 'Screening' },
@@ -322,6 +365,66 @@ export class CandidatePortalComponent implements OnInit {
         });
       }, 250);
     }
+  }
+
+  scrollToSection(id: string): void {
+    document.getElementById(id)?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  }
+
+  openApplicationHistory(app: JobApplication): void {
+    this.selectedApplication = app;
+    this.applicationHistory = [];
+    this.applicationHistoryLoading = true;
+    this.applicationHistoryOpen = true;
+
+    this.portal.applicationHistory(app.id).subscribe({
+      next: (items) => {
+        this.applicationHistory = items || [];
+        this.applicationHistoryLoading = false;
+      },
+      error: () => {
+        this.applicationHistory = [];
+        this.applicationHistoryLoading = false;
+      },
+    });
+  }
+
+  closeApplicationHistory(): void {
+    this.applicationHistoryOpen = false;
+    this.applicationHistoryLoading = false;
+    this.applicationHistory = [];
+    this.selectedApplication = null;
+  }
+
+  closeApplicationHistoryOnBackdrop(event: MouseEvent): void {
+    if ((event.target as HTMLElement).classList.contains('drawer-backdrop')) {
+      this.closeApplicationHistory();
+    }
+  }
+
+  historyTitle(item: any): string {
+    if (item.eventType === 'APPLIED') return 'Lamaran dikirim';
+    if (item.eventType === 'WITHDRAWN') return 'Lamaran ditarik';
+    if (item.stage === 'SCREENING') return 'Masuk tahap screening';
+    if (item.stage === 'INTERVIEW') return 'Masuk tahap interview';
+    if (item.stage === 'OFFER') return 'Masuk tahap offer';
+    if (item.stage === 'HIRED') return 'Proses selesai';
+    if (item.stage === 'REJECTED') return 'Proses dihentikan';
+    return 'Status lamaran diperbarui';
+  }
+
+  historyDescription(item: any): string {
+    if (item.eventType === 'APPLIED') return 'Lamaran Anda telah diterima oleh sistem.';
+    if (item.eventType === 'WITHDRAWN') return 'Anda menarik lamaran ini.';
+    if (item.stage === 'SCREENING') return 'Profil dan CV sedang ditinjau oleh tim rekrutmen.';
+    if (item.stage === 'INTERVIEW') return 'Lamaran dilanjutkan ke proses interview.';
+    if (item.stage === 'OFFER') return 'Lamaran telah masuk ke tahap penawaran.';
+    if (item.stage === 'HIRED') return 'Proses rekrutmen untuk lowongan ini telah selesai.';
+    if (item.stage === 'REJECTED') return 'Lamaran tidak dilanjutkan ke tahap berikutnya.';
+    return item.notes || 'Tim rekrutmen memperbarui proses lamaran Anda.';
   }
 
   applicationStageIndex(stage: string | null | undefined): number {
