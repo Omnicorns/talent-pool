@@ -31,8 +31,8 @@ import { JobListing } from '../../core/models/talent.models';
               <h2>{{ job.title }}</h2>
               <p>{{ job.location || 'Jakarta' }} • {{ job.employmentType || 'Full Time' }}</p>
             </div>
-            <a [routerLink]="auth.authenticated ? '/portal' : '/sign-in'" class="job-action">
-              {{ auth.authenticated ? 'Lihat di Talent Pool →' : 'Apply →' }}
+            <a [routerLink]="['/jobs', job.id]" class="job-action">
+              Lihat Detail →
             </a>
           </article>
           <div class="empty-state" *ngIf="!jobs.length && !error">Belum ada posisi yang tersedia.</div>
