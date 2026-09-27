@@ -1077,3 +1077,233 @@ img{max-width:100%}
   .onboarding-footer>div{justify-content:flex-end}
   .portfolio-link-row{grid-template-columns:1fr}
 }
+
+
+/* Backoffice analytics charts */
+.bo-analytics-grid{
+  display:grid;
+  grid-template-columns:1.05fr 1.2fr .9fr;
+  gap:16px;
+  margin-top:18px;
+}
+.bo-analytics-card{
+  min-width:0;
+  background:#fff;
+  border:1px solid #e0e4e8;
+  border-radius:16px;
+  padding:20px;
+  box-shadow:0 8px 26px rgba(15,23,42,.025);
+}
+.bo-panel-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:14px;
+}
+.bo-panel-head h2{
+  margin:0;
+  font-size:18px;
+  letter-spacing:-.02em;
+}
+.bo-panel-head>a{
+  color:#c72b21;
+  font-size:10px;
+  font-weight:850;
+  white-space:nowrap;
+}
+.bo-donut-layout{
+  display:grid;
+  grid-template-columns:160px minmax(0,1fr);
+  gap:18px;
+  align-items:center;
+  margin-top:22px;
+}
+.bo-donut{
+  width:156px;
+  height:156px;
+  border-radius:50%;
+  position:relative;
+  display:grid;
+  place-items:center;
+}
+.bo-donut:after{
+  content:"";
+  position:absolute;
+  inset:25px;
+  background:#fff;
+  border-radius:50%;
+  box-shadow:0 0 0 1px #f0f2f3;
+}
+.bo-donut-center{
+  position:relative;
+  z-index:2;
+  text-align:center;
+  display:grid;
+  gap:2px;
+}
+.bo-donut-center strong{
+  font-size:28px;
+  line-height:1;
+  color:#182028;
+}
+.bo-donut-center span{
+  font-size:9px;
+  color:#89919a;
+  text-transform:uppercase;
+  letter-spacing:.07em;
+}
+.bo-chart-legend{
+  display:grid;
+  gap:8px;
+}
+.bo-chart-legend>div{
+  min-width:0;
+  display:grid;
+  grid-template-columns:9px minmax(0,1fr) auto;
+  gap:7px;
+  align-items:center;
+  font-size:10px;
+  color:#68717b;
+}
+.bo-chart-legend i{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+}
+.bo-chart-legend span{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.bo-chart-legend strong{
+  color:#242d35;
+  font-size:10px;
+}
+.bo-bar-chart{
+  display:grid;
+  gap:14px;
+  margin-top:24px;
+}
+.bo-bar-row{
+  display:grid;
+  grid-template-columns:105px minmax(0,1fr) 26px;
+  gap:10px;
+  align-items:center;
+}
+.bo-bar-label{
+  color:#69727c;
+  font-size:10px;
+  font-weight:750;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.bo-bar-track{
+  height:10px;
+  background:#f0f2f4;
+  border-radius:999px;
+  overflow:hidden;
+}
+.bo-bar-fill{
+  height:100%;
+  min-width:3px;
+  border-radius:999px;
+  background:linear-gradient(90deg,#d9271c,#ed5c51);
+  transition:width .25s ease;
+}
+.bo-bar-row>strong{
+  text-align:right;
+  color:#2b343d;
+  font-size:11px;
+}
+.bo-job-status-list{
+  display:grid;
+  gap:17px;
+  margin-top:24px;
+}
+.bo-job-status-row{
+  display:grid;
+  gap:7px;
+}
+.bo-job-status-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+.bo-job-status-head>span{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  color:#68717b;
+  font-size:10px;
+  font-weight:750;
+}
+.bo-job-status-head i{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+}
+.bo-job-status-head strong{
+  font-size:11px;
+  color:#252e36;
+}
+.bo-job-status-track{
+  height:8px;
+  background:#f0f2f4;
+  border-radius:999px;
+  overflow:hidden;
+}
+.bo-job-status-fill{
+  height:100%;
+  min-width:3px;
+  border-radius:999px;
+  transition:width .25s ease;
+}
+.bo-job-status-total{
+  margin-top:22px;
+  padding-top:15px;
+  border-top:1px solid #edf0f2;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.bo-job-status-total span{
+  color:#848c95;
+  font-size:10px;
+}
+.bo-job-status-total strong{
+  font-size:22px;
+}
+.bo-chart-empty{
+  padding:24px 0;
+  color:#969da5;
+  font-size:10px!important;
+  text-align:center;
+}
+@media(max-width:1250px){
+  .bo-analytics-grid{
+    grid-template-columns:1fr 1fr;
+  }
+  .bo-job-status-card{
+    grid-column:1/-1;
+  }
+}
+@media(max-width:850px){
+  .bo-analytics-grid{
+    grid-template-columns:1fr;
+  }
+  .bo-job-status-card{
+    grid-column:auto;
+  }
+}
+@media(max-width:500px){
+  .bo-donut-layout{
+    grid-template-columns:1fr;
+    justify-items:center;
+  }
+  .bo-chart-legend{
+    width:100%;
+  }
+}
