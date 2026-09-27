@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CareerHeaderComponent } from '../../shared/career-header.component';
 import { CandidateProfile, EducationItem, JobApplication, WorkExperienceItem } from '../../core/models/talent.models';
 import { TalentAuthService } from '../../core/service/api/talent-auth.service';
@@ -18,6 +18,13 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
       <app-career-header active="portal"></app-career-header>
 
       <main class="profile-container">
+        <div class="application-success-banner" *ngIf="applicationSubmitted">
+          <div>
+            <strong>✓ Lamaran berhasil dikirim</strong>
+            <span>Status lamaran sekarang dapat dipantau di bagian “Lamaran Saya”.</span>
+          </div>
+          <button type="button" (click)="applicationSubmitted = false">×</button>
+        </div>
         <section class="profile-hero-card">
           <div class="profile-main">
             <div class="profile-avatar">
@@ -259,8 +266,15 @@ export class CandidatePortalComponent implements OnInit {
   profilePictureUrl: string | null = null;
   profilePicturePreview: string | null = null;
   saving = false;
+  applicationSubmitted = false;
 
-  constructor(public auth: TalentAuthService, private portal: TalentPortalService) {}
+  constructor(
+    public auth: TalentAuthService,
+    private portal: TalentPortalService,
+    private route: ActivatedRoute
+  ) {
+    this.applicationSubmitted = !!this.route.snapshot.queryParamMap.get('applied');
+  }
 
   ngOnInit(): void {
     this.reload();
