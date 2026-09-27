@@ -55,7 +55,7 @@ import { TalentAuthService } from '../../core/service/api/talent-auth.service';
         <div *ngIf="mode === 'register'">
           <h2>Create Candidate Account</h2>
           <p class="muted">Buat akun untuk mengelola profil dan lamaran Anda.</p>
-          <form (ngSubmit)="register()">
+          <form (ngSubmit)="requestRegister()">
             <label>Nama Lengkap<input [(ngModel)]="fullName" name="fullName" required></label>
             <div class="two-col">
               <label>Email<input type="email" [(ngModel)]="email" name="registerEmail" required></label>
@@ -85,6 +85,127 @@ import { TalentAuthService } from '../../core/service/api/talent-auth.service';
 
         <p class="form-error" *ngIf="error">{{ error }}</p>
       </section>
+
+      <div class="terms-modal-backdrop" *ngIf="termsModalOpen" (click)="closeTermsOnBackdrop($event)">
+        <section class="terms-modal" role="dialog" aria-modal="true" aria-labelledby="terms-title">
+          <header class="terms-modal-header">
+            <div>
+              <span class="bo-kicker">PERLINDUNGAN DATA PRIBADI</span>
+              <h2 id="terms-title">Syarat dan Ketentuan Penggunaan Data untuk Kebutuhan Rekrutmen</h2>
+            </div>
+            <button type="button" class="terms-modal-close" (click)="closeTermsModal()" aria-label="Tutup">×</button>
+          </header>
+
+          <div class="terms-modal-body">
+            <p>
+              Dengan menyetujui syarat dan ketentuan ini, Anda memberikan izin kepada
+              <strong>PT Aviasi Pariwisata Indonesia (Persero)</strong> untuk memproses data pribadi Anda
+              yang telah dikirimkan sehubungan dengan proses rekrutmen. Berikut adalah ketentuan penggunaannya:
+            </p>
+
+            <section>
+              <h3>1. Data yang Dikumpulkan</h3>
+              <p>Kami dapat mengumpulkan dan memproses informasi pribadi Anda, termasuk namun tidak terbatas pada:</p>
+              <ul>
+                <li>Nama lengkap.</li>
+                <li>Informasi kontak seperti alamat email, nomor telepon, dan alamat rumah.</li>
+                <li>Data profesional seperti riwayat pendidikan, pengalaman kerja, sertifikasi, dan keahlian.</li>
+                <li>Dokumen yang relevan seperti CV, portofolio, dan surat lamaran.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h3>2. Tujuan Penggunaan Data</h3>
+              <p>Data Anda akan digunakan untuk:</p>
+              <ul>
+                <li>Menilai kecocokan Anda dengan posisi pekerjaan yang dilamar.</li>
+                <li>Menghubungi Anda selama proses rekrutmen.</li>
+                <li>Menyimpan informasi untuk pertimbangan pada lowongan pekerjaan lain yang relevan, jika diizinkan.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h3>3. Penyimpanan Data</h3>
+              <p>
+                Data Anda akan disimpan selama 2 tahun setelah akhir proses rekrutmen, kecuali jika Anda meminta
+                penghapusan lebih awal. Data akan dihapus atau dianonimkan jika tidak lagi diperlukan.
+              </p>
+            </section>
+
+            <section>
+              <h3>4. Pembagian Data</h3>
+              <p>Data Anda dapat dibagikan dengan pihak yang terkait dengan proses rekrutmen, termasuk:</p>
+              <ul>
+                <li>Tim rekrutmen internal atau konsultan rekrutmen pihak ketiga.</li>
+              </ul>
+              <p>
+                Kami tidak akan menjual atau memberikan data Anda kepada pihak lain untuk tujuan pemasaran tanpa
+                persetujuan Anda.
+              </p>
+            </section>
+
+            <section>
+              <h3>5. Hak Anda</h3>
+              <p>Anda memiliki hak sebagai berikut:</p>
+              <ul>
+                <li><strong>Hak Akses:</strong> meminta salinan data pribadi yang kami simpan.</li>
+                <li><strong>Hak Koreksi:</strong> memperbaiki data pribadi yang tidak akurat.</li>
+                <li><strong>Hak Penghapusan:</strong> meminta penghapusan data pribadi Anda dalam batas hukum yang berlaku.</li>
+                <li><strong>Hak Keberatan:</strong> menarik persetujuan kapan saja tanpa memengaruhi sahnya pemrosesan sebelum penarikan.</li>
+              </ul>
+              <p>Permintaan terkait hak Anda dapat diajukan melalui email atau nomor kontak perusahaan.</p>
+            </section>
+
+            <section>
+              <h3>6. Keamanan Data</h3>
+              <p>
+                Kami berkomitmen untuk melindungi data pribadi Anda dengan menerapkan langkah-langkah keamanan fisik,
+                teknis, dan administratif sesuai standar industri.
+              </p>
+            </section>
+
+            <section>
+              <h3>7. Persetujuan</h3>
+              <p>Dengan mengirimkan aplikasi Anda, Anda menyatakan bahwa:</p>
+              <ul>
+                <li>Data yang diberikan adalah benar dan akurat.</li>
+                <li>Anda memberikan persetujuan kepada Perusahaan untuk memproses data pribadi Anda sebagaimana diuraikan dalam syarat dan ketentuan ini.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h3>8. Perubahan Kebijakan</h3>
+              <p>
+                Kami dapat memperbarui kebijakan ini sewaktu-waktu. Anda akan diberitahu melalui email atau
+                pengumuman di situs web kami mengenai perubahan tersebut.
+              </p>
+              <p>
+                PT Aviasi Pariwisata Indonesia (Persero) berkomitmen mematuhi ketentuan
+                <strong>Undang-Undang Nomor 27 Tahun 2022 tentang Perlindungan Data Pribadi</strong>.
+              </p>
+            </section>
+          </div>
+
+          <footer class="terms-modal-footer">
+            <label class="terms-confirm-check">
+              <input type="checkbox" [(ngModel)]="termsConfirmed" name="termsConfirmed">
+              <span>Saya telah membaca dan menyetujui syarat dan ketentuan ini.</span>
+            </label>
+
+            <div class="terms-modal-actions">
+              <button type="button" class="cancel-button" (click)="closeTermsModal()" [disabled]="loading">Batal</button>
+              <button
+                type="button"
+                class="primary-button"
+                (click)="confirmTermsAndRegister()"
+                [disabled]="!termsConfirmed || loading">
+                {{ loading ? 'Memproses...' : 'Konfirmasi' }}
+              </button>
+            </div>
+          </footer>
+        </section>
+      </div>
+
     </main>
   `,
 })
@@ -95,6 +216,8 @@ export class CandidateAuthComponent {
   phone = '';
   password = '';
   termsAccepted = false;
+  termsModalOpen = false;
+  termsConfirmed = false;
   showPassword = false;
   loading = false;
   error = '';
@@ -113,13 +236,46 @@ export class CandidateAuthComponent {
     });
   }
 
-  register(): void {
+  requestRegister(): void {
+    this.error = '';
+
+    if (!this.fullName.trim() || !this.email.trim() || !this.phone.trim() || !this.password) {
+      this.error = 'Nama lengkap, email, WhatsApp, dan password wajib diisi.';
+      return;
+    }
+
+    if (this.password.length < 8) {
+      this.error = 'Password minimal 8 karakter.';
+      return;
+    }
+
     if (!this.termsAccepted) {
       this.error = 'Persetujuan penggunaan data wajib dicentang.';
       return;
     }
+
+    this.termsConfirmed = false;
+    this.termsModalOpen = true;
+  }
+
+  closeTermsModal(): void {
+    if (this.loading) return;
+    this.termsModalOpen = false;
+    this.termsConfirmed = false;
+  }
+
+  closeTermsOnBackdrop(event: MouseEvent): void {
+    if ((event.target as HTMLElement).classList.contains('terms-modal-backdrop')) {
+      this.closeTermsModal();
+    }
+  }
+
+  confirmTermsAndRegister(): void {
+    if (!this.termsConfirmed || this.loading) return;
+
     this.error = '';
     this.loading = true;
+
     this.auth.register({
       fullName: this.fullName.trim(),
       email: this.email.trim().toLowerCase(),
@@ -127,10 +283,16 @@ export class CandidateAuthComponent {
       password: this.password,
       termsAccepted: true,
     }).subscribe({
-      next: () => this.router.navigateByUrl('/portal'),
+      next: (session) => {
+        this.loading = false;
+        this.termsModalOpen = false;
+        this.router.navigateByUrl(session.onboardingCompleted ? '/portal' : '/onboarding');
+      },
       error: (error) => {
         this.error = error?.error?.message || 'Pembuatan akun gagal.';
         this.loading = false;
+        this.termsModalOpen = false;
+        this.termsConfirmed = false;
       },
     });
   }
