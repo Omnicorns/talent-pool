@@ -28,7 +28,7 @@ spring:
   mail:
     host: ${MAIL_HOST:localhost}
     port: ${MAIL_PORT:25}
-    username: ${MAIL_USERNAME:}
+    username: ${MAIL_USERNAME:talentpool@sarinah.co.id}
     password: ${MAIL_PASSWORD:}
     properties:
       mail:
@@ -50,7 +50,7 @@ app:
     public-url: ${APP_PUBLIC_URL:https://satudata.sarinah.com/sarinah-talent-pool}
   mail:
     enabled: ${APP_MAIL_ENABLED:false}
-    from: ${APP_MAIL_FROM:no-reply@sarinah.com}
+    from: ${APP_MAIL_FROM:talentpool@sarinah.co.id}
   password-reset:
     expiration-minutes: ${PASSWORD_RESET_EXPIRATION_MINUTES:30}
     expose-reset-url: ${PASSWORD_RESET_EXPOSE_URL:false}
