@@ -8,6 +8,7 @@ import com.example.talentpool.exception.BadRequestException;
 import com.example.talentpool.exception.ResourceNotFoundException;
 import com.example.talentpool.repository.CandidateRepository;
 import com.example.talentpool.repository.JobApplicationRepository;
+import com.example.talentpool.repository.JobApplicationHistoryRepository;
 import com.example.talentpool.repository.JobListingRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
@@ -19,15 +20,18 @@ import java.util.UUID;
 @Service
 public class JobApplicationService {
     private final JobApplicationRepository repository;
+    private final JobApplicationHistoryRepository historyRepository;
     private final CandidateRepository candidateRepository;
     private final JobListingRepository jobListingRepository;
 
     public JobApplicationService(
             JobApplicationRepository repository,
+            JobApplicationHistoryRepository historyRepository,
             CandidateRepository candidateRepository,
             JobListingRepository jobListingRepository
     ) {
         this.repository = repository;
+        this.historyRepository = historyRepository;
         this.candidateRepository = candidateRepository;
         this.jobListingRepository = jobListingRepository;
     }
@@ -59,7 +63,13 @@ public class JobApplicationService {
 
         syncCandidate(candidate, job, stage);
         candidateRepository.save(candidate);
-        return toResponse(repository.save(application));
+        JobApplication saved = repository.save(application);
+        if (newApplication) {
+            recordHistory(saved, "APPLIED", request == null ? null : request.notes());
+        } else if (saved.getStage() == HiringStage.INTERVIEW && historyRepository.findByApplicationIdOrderByChangedAtAsc(saved.getId()).isEmpty()) {
+            recordHistory(saved, "STAGE_CHANGED", "Application moved to interview");
+        }
+        return toResponse(saved);
     }
 
     @Transactional
@@ -72,7 +82,9 @@ public class JobApplicationService {
         }
         syncCandidate(application.getCandidate(), application.getJobListing(), request.stage());
         candidateRepository.save(application.getCandidate());
-        return toResponse(repository.save(application));
+        JobApplication saved = repository.save(application);
+        recordHistory(saved, "STAGE_CHANGED", request.notes());
+        return toResponse(saved);
     }
 
     @Transactional
@@ -115,6 +127,16 @@ public class JobApplicationService {
                 application.getJobListing().getId(), application.getJobListing().getTitle(), application.getStage(),
                 application.getStatus(), application.getNotes(), application.getAppliedAt(), application.getUpdatedAt()
         );
+    }
+
+    public void recordHistory(JobApplication application, String eventType, String notes) {
+        JobApplicationHistory history = new JobApplicationHistory();
+        history.setApplication(application);
+        history.setStage(application.getStage());
+        history.setStatus(application.getStatus());
+        history.setEventType(eventType);
+        history.setNotes(trimToNull(notes));
+        historyRepository.save(history);
     }
 
     private JobApplication getEntity(UUID id) {
