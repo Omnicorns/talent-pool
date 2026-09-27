@@ -728,3 +728,352 @@ img{max-width:100%}
   .bo-search{width:100%}
   .bo-card-grid,.dashboard-grid,.bo-quick-grid{grid-template-columns:1fr}
 }
+
+
+/* =========================================================
+   TALENT ONBOARDING — seven step profile completion
+   ========================================================= */
+.onboarding-page{
+  min-height:100vh;
+  padding:28px 18px 54px;
+  background:#f4f6f8;
+}
+.onboarding-top{
+  width:min(1440px,100%);
+  margin:0 auto 14px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:20px;
+}
+.onboarding-top h1{
+  margin:0;
+  font-size:28px;
+  letter-spacing:-.035em;
+  color:#182028;
+}
+.onboarding-top p{
+  margin:6px 0 0;
+  color:#77808a;
+  font-size:13px;
+}
+.onboarding-back{
+  min-height:42px;
+  padding:0 16px;
+  border-radius:999px;
+  background:#fff;
+  color:#c92c22;
+  display:inline-flex;
+  align-items:center;
+  font-size:12px;
+  font-weight:750;
+  box-shadow:0 6px 18px rgba(15,23,42,.05);
+}
+.onboarding-progress{
+  width:min(1440px,100%);
+  height:4px;
+  margin:0 auto 12px;
+  background:#e5e8eb;
+  border-radius:999px;
+  overflow:hidden;
+}
+.onboarding-progress span{
+  display:block;
+  height:100%;
+  background:linear-gradient(90deg,#d9271c,#f05245);
+  transition:width .2s ease;
+}
+.onboarding-card{
+  width:min(1440px,100%);
+  margin:0 auto;
+  background:#fff;
+  border:1px solid #e5e8eb;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 10px 28px rgba(15,23,42,.035);
+}
+.onboarding-steps{
+  display:grid;
+  grid-template-columns:repeat(7,minmax(0,1fr));
+  gap:12px;
+  padding:18px 28px 14px;
+  border-bottom:1px solid #eceff2;
+  overflow:auto;
+}
+.onboarding-steps button{
+  min-width:145px;
+  min-height:58px;
+  border:0;
+  border-bottom:1px solid #dde2e6;
+  background:transparent;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  color:#89929c;
+  text-align:left;
+}
+.onboarding-steps button span{
+  width:29px;
+  height:29px;
+  border-radius:50%;
+  flex:0 0 auto;
+  display:grid;
+  place-items:center;
+  background:#b6c0cc;
+  color:#fff;
+  font-size:11px;
+  font-weight:900;
+}
+.onboarding-steps button b{
+  font-size:12px;
+  font-weight:700;
+  white-space:nowrap;
+}
+.onboarding-steps button.done{color:#287fae}
+.onboarding-steps button.done span{background:#2ca58d}
+.onboarding-steps button.active{color:#26313b}
+.onboarding-steps button.active span{
+  background:#e62d22;
+  box-shadow:0 5px 12px rgba(230,45,34,.22);
+}
+.onboarding-body{
+  padding:30px 32px;
+  min-height:430px;
+}
+.onboarding-section-head{
+  display:flex;
+  align-items:flex-start;
+  gap:15px;
+  margin-bottom:26px;
+}
+.onboarding-section-head>span{
+  width:42px;
+  height:42px;
+  border-radius:10px;
+  display:grid;
+  place-items:center;
+  background:#eef5fb;
+  color:#287fc1;
+  font-size:12px;
+  font-weight:900;
+}
+.onboarding-section-head h2{
+  margin:0;
+  font-size:22px;
+  letter-spacing:-.025em;
+}
+.onboarding-section-head p{
+  margin:5px 0 0;
+  color:#7c8590;
+  font-size:12px;
+}
+.onboarding-form{
+  display:grid;
+  gap:18px;
+}
+.onboarding-form label{
+  display:grid;
+  gap:7px;
+  color:#34404b;
+  font-size:11px;
+  font-weight:800;
+}
+.onboarding-form input,
+.onboarding-form textarea,
+.onboarding-form select{
+  width:100%;
+  min-height:42px;
+  border:1px solid #d7dde3;
+  border-radius:8px;
+  background:#fff;
+  padding:9px 11px;
+  color:#222b33;
+  outline:none;
+}
+.onboarding-form textarea{min-height:90px;resize:vertical}
+.onboarding-form input:focus,
+.onboarding-form textarea:focus{
+  border-color:#e1918a;
+  box-shadow:0 0 0 3px rgba(217,39,28,.07);
+}
+.form-grid.two{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+}
+.upload-zone{
+  min-height:180px;
+  border:1px dashed #bfcbd6!important;
+  border-radius:12px;
+  background:#fbfcfd;
+  display:flex!important;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  gap:6px!important;
+  cursor:pointer;
+}
+.upload-zone:hover{
+  border-color:#e1918a!important;
+  background:#fffafa;
+}
+.upload-icon{
+  width:52px;
+  height:52px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:#eef5fb;
+  color:#287fc1;
+  font-size:27px;
+  margin-bottom:8px;
+}
+.upload-zone strong{
+  color:#2d3741;
+  font-size:12px;
+}
+.upload-zone small{
+  color:#89929c;
+  font-size:11px;
+  font-weight:500;
+}
+.step-hint{
+  margin:0;
+  color:#7c8590;
+  font-size:11px;
+}
+.repeat-card{
+  border:1px solid #e4e8eb;
+  border-radius:12px;
+  padding:18px;
+  background:#fbfcfc;
+  display:grid;
+  gap:14px;
+}
+.repeat-card-head{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:center;
+}
+.repeat-card-head strong{font-size:13px}
+.repeat-card-head button,
+.portfolio-link-row>button{
+  border:0;
+  background:transparent;
+  color:#c92c22;
+  font-size:11px;
+  font-weight:850;
+}
+.secondary-action{
+  width:max-content;
+  min-height:40px;
+  padding:0 16px;
+  border:1px solid #c9d8e5;
+  border-radius:8px;
+  background:#fff;
+  color:#317eb8;
+  font-weight:750;
+}
+.onboarding-check{
+  width:max-content;
+  padding:12px 14px;
+  border:1px solid #e2e6e9;
+  border-radius:9px;
+  background:#fff;
+}
+.portfolio-upload-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:20px;
+}
+.portfolio-link-row{
+  display:grid;
+  grid-template-columns:210px 1fr 32px;
+  gap:12px;
+  align-items:end;
+}
+.portfolio-link-row>button{
+  height:42px;
+  border:1px solid #efd0cd;
+  border-radius:8px;
+  background:#fff6f5;
+}
+.onboarding-ready{
+  padding:16px 18px;
+  border-radius:10px;
+  background:#f0f8f5;
+  border:1px solid #d5ebe3;
+}
+.onboarding-ready strong{
+  display:block;
+  color:#22785d;
+  margin-bottom:4px;
+}
+.onboarding-ready p{
+  margin:0;
+  color:#60726c;
+  font-size:11px;
+  line-height:1.6;
+}
+.onboarding-error{
+  margin:18px 0 0;
+  padding:11px 13px;
+  border-radius:8px;
+  background:#fff1ef;
+  color:#b42318;
+  font-size:11px;
+  font-weight:700;
+}
+.onboarding-footer{
+  min-height:80px;
+  border-top:1px solid #e9ecef;
+  padding:16px 28px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:18px;
+  background:#fcfdfd;
+}
+.onboarding-footer>span{
+  color:#7b848e;
+  font-size:10px;
+}
+.onboarding-footer>div{
+  display:flex;
+  gap:10px;
+}
+.onboarding-prev,
+.onboarding-next{
+  min-height:42px;
+  padding:0 18px;
+  border-radius:8px;
+  font-weight:800;
+}
+.onboarding-prev{
+  border:1px solid #cbd9e5;
+  color:#317ab0;
+  background:#fff;
+}
+.onboarding-next{
+  border:1px solid #ac1d15;
+  background:#c5291f;
+  color:#fff;
+  box-shadow:0 2px 0 #73140e;
+}
+.onboarding-next:disabled{opacity:.55;cursor:not-allowed}
+@media(max-width:900px){
+  .onboarding-top{flex-direction:column}
+  .form-grid.two,.portfolio-upload-grid{grid-template-columns:1fr}
+  .portfolio-link-row{grid-template-columns:1fr 1fr 32px}
+}
+@media(max-width:620px){
+  .onboarding-page{padding:14px 8px 36px}
+  .onboarding-top h1{font-size:23px}
+  .onboarding-body{padding:22px 16px}
+  .onboarding-steps{padding:12px 14px}
+  .onboarding-footer{align-items:stretch;flex-direction:column}
+  .onboarding-footer>div{justify-content:flex-end}
+  .portfolio-link-row{grid-template-columns:1fr}
+}
