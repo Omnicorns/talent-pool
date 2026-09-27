@@ -1694,3 +1694,34 @@ img{max-width:100%}
     font-size:22px;
   }
 }
+
+
+/* Job listing actions */
+.bo-job-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:18px;
+  padding-top:16px;
+  border-top:1px solid #edf0f2;
+}
+.bo-job-actions button{
+  min-height:36px;
+  padding:0 12px;
+  border-radius:8px;
+  font-size:10px;
+  font-weight:850;
+}
+.bo-job-actions .bo-primary{min-height:36px}
+.bo-warning{
+  border:1px solid #f0c26f;
+  background:#fff8e8;
+  color:#9b6807;
+}
+.bo-warning:hover{background:#fff1cc}
+.bo-danger{
+  border:1px solid #edc1bc;
+  background:#fff5f3;
+  color:#bd2a20;
+}
+.bo-danger:hover{background:#ffe9e6}
