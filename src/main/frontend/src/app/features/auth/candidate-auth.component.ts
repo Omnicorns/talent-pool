@@ -11,7 +11,7 @@ import { TalentAuthService } from '../../core/service/api/talent-auth.service';
   template: `
     <main class="auth-page">
       <section class="auth-visual">
-        <img src="/images/sarinah.png" class="auth-brand" alt="Sarinah">
+        <img src="images/sarinah.png" class="auth-brand" alt="Sarinah">
         <div>
           <span>SARINAH CAREER</span>
           <h1>{{ mode === 'login' ? 'Continue your career journey.' : 'Build your career journey with Sarinah.' }}</h1>
@@ -35,7 +35,16 @@ import { TalentAuthService } from '../../core/service/api/talent-auth.service';
               <div class="password-field">
                 <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="password" minlength="8" required>
                 <button type="button" class="password-toggle" (click)="showPassword = !showPassword" [attr.aria-label]="showPassword ? 'Sembunyikan password' : 'Tampilkan password'">
-                  {{ showPassword ? '🙈' : '👁' }}
+                  <svg *ngIf="!showPassword" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path>
+                    <circle cx="12" cy="12" r="2.75"></circle>
+                  </svg>
+                  <svg *ngIf="showPassword" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 3l18 18"></path>
+                    <path d="M10.6 6.2A9.8 9.8 0 0 1 12 6c6 0 9.5 6 9.5 6a15.8 15.8 0 0 1-2.2 3"></path>
+                    <path d="M6.6 6.7C4 8.3 2.5 12 2.5 12s3.5 6 9.5 6a9.9 9.9 0 0 0 3.4-.6"></path>
+                    <path d="M10.1 10.1a2.75 2.75 0 0 0 3.8 3.8"></path>
+                  </svg>
                 </button>
               </div>
             </label>
@@ -56,7 +65,16 @@ import { TalentAuthService } from '../../core/service/api/talent-auth.service';
               <div class="password-field">
                 <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="registerPassword" minlength="8" required>
                 <button type="button" class="password-toggle" (click)="showPassword = !showPassword" [attr.aria-label]="showPassword ? 'Sembunyikan password' : 'Tampilkan password'">
-                  {{ showPassword ? '🙈' : '👁' }}
+                  <svg *ngIf="!showPassword" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path>
+                    <circle cx="12" cy="12" r="2.75"></circle>
+                  </svg>
+                  <svg *ngIf="showPassword" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 3l18 18"></path>
+                    <path d="M10.6 6.2A9.8 9.8 0 0 1 12 6c6 0 9.5 6 9.5 6a15.8 15.8 0 0 1-2.2 3"></path>
+                    <path d="M6.6 6.7C4 8.3 2.5 12 2.5 12s3.5 6 9.5 6a9.9 9.9 0 0 0 3.4-.6"></path>
+                    <path d="M10.1 10.1a2.75 2.75 0 0 0 3.8 3.8"></path>
+                  </svg>
                 </button>
               </div>
             </label>
