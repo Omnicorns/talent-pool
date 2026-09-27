@@ -1852,3 +1852,536 @@ img{max-width:100%}
     justify-content:flex-end;
   }
 }
+
+
+/* =========================================================
+   MOBILE RESPONSIVE FINAL OVERRIDES
+   ========================================================= */
+.mobile-menu-toggle{
+  display:none;
+  width:42px;
+  height:42px;
+  border:1px solid #e1e5e8;
+  border-radius:10px;
+  background:#fff;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  gap:4px;
+  padding:0;
+}
+.mobile-menu-toggle span{
+  width:18px;
+  height:2px;
+  border-radius:999px;
+  background:#2d343b;
+}
+
+@media(max-width:900px){
+  html,body{overflow-x:hidden}
+
+  /* Public header */
+  .career-header{
+    min-height:70px;
+    height:auto;
+    grid-template-columns:minmax(0,1fr) auto auto;
+    gap:10px;
+    padding:10px 14px;
+    position:sticky;
+  }
+  .danantara-logo{
+    width:135px;
+    height:48px;
+  }
+  .sarinah-brand-link{
+    display:none;
+  }
+  .mobile-menu-toggle{
+    display:flex;
+    grid-column:2;
+    grid-row:1;
+  }
+  .career-header-right{
+    grid-column:3;
+    grid-row:1;
+    gap:8px;
+  }
+  .career-main-nav{
+    display:none!important;
+    grid-column:1/-1;
+    grid-row:2;
+    width:100%;
+    padding:8px;
+    border:1px solid #e5e8eb;
+    border-radius:12px;
+    background:#fff;
+    box-shadow:0 14px 32px rgba(15,23,42,.08);
+  }
+  .career-main-nav.mobile-open{
+    display:grid!important;
+    grid-template-columns:1fr;
+    gap:4px!important;
+  }
+  .career-main-nav a,
+  .career-main-nav .career-nav-button{
+    width:100%;
+    height:auto!important;
+    min-height:44px;
+    padding:0 12px!important;
+    justify-content:flex-start;
+    border-radius:9px;
+  }
+  .career-main-nav a.active,
+  .career-main-nav .career-nav-button.active{
+    background:#fff3f1;
+  }
+  .career-main-nav a.active:after,
+  .career-main-nav .career-nav-button.active:after{
+    display:none;
+  }
+  .join-talent-button{
+    display:none!important;
+  }
+  .outline-link{
+    min-height:40px;
+    padding:0 12px;
+    font-size:12px;
+  }
+  .header-user-chip{
+    width:42px;
+    max-width:42px;
+    padding:3px;
+    border-radius:50%;
+  }
+  .header-user-copy,
+  .header-logout{
+    display:none!important;
+  }
+
+  /* Landing */
+  .hero{
+    min-height:auto;
+    grid-template-columns:1fr;
+  }
+  .hero-copy{
+    padding:52px 22px 42px;
+  }
+  .hero h1{
+    font-size:clamp(40px,12vw,58px);
+    line-height:1.02;
+  }
+  .hero p{
+    font-size:16px;
+  }
+  .hero-photo{
+    min-height:340px;
+  }
+  .hero-card{
+    right:18px;
+    left:18px;
+    bottom:18px;
+  }
+  .section{
+    padding:52px 20px;
+  }
+  .section-head h2{
+    font-size:36px;
+  }
+  .feature-grid,
+  .faq-grid{
+    grid-template-columns:1fr;
+  }
+  .life-intro{
+    grid-template-columns:1fr;
+    gap:26px;
+  }
+  .life-feature-photo{
+    min-height:330px;
+  }
+  .life-gallery{
+    grid-template-columns:1fr;
+  }
+
+  /* Jobs */
+  .jobs-page{
+    width:calc(100% - 28px);
+    padding:36px 0 60px;
+  }
+  .page-title h1{
+    font-size:36px;
+  }
+  .job-card{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  /* Auth */
+  .auth-page{
+    grid-template-columns:1fr;
+  }
+  .auth-visual{
+    min-height:280px;
+    padding:28px 22px;
+  }
+  .auth-visual h1{
+    font-size:42px;
+  }
+  .auth-panel{
+    padding:34px 20px 44px;
+  }
+  .auth-tabs{
+    margin-bottom:24px;
+  }
+  .two-col{
+    grid-template-columns:1fr;
+  }
+
+  /* Portal */
+  .profile-container{
+    width:calc(100% - 20px);
+    padding:18px 0 50px;
+  }
+  .profile-hero-card{
+    padding:18px 16px 0;
+  }
+  .profile-main{
+    grid-template-columns:62px minmax(0,1fr);
+    gap:14px;
+  }
+  .profile-avatar{
+    width:62px;
+    height:62px;
+    border-radius:14px;
+    font-size:20px;
+  }
+  .profile-main h1{
+    font-size:24px;
+  }
+  .profile-actions{
+    grid-column:1/-1;
+    justify-content:space-between;
+    flex-wrap:wrap;
+  }
+  .contact-grid{
+    grid-template-columns:1fr;
+    gap:10px;
+    padding:14px 0;
+  }
+  .profile-tabs{
+    padding:0 14px;
+    gap:4px;
+  }
+  .profile-tabs a{
+    min-height:54px;
+    padding:0 10px;
+  }
+  .profile-sections{
+    padding:18px 16px;
+  }
+  .info-grid{
+    grid-template-columns:1fr;
+  }
+  .timeline-item{
+    grid-template-columns:18px 38px minmax(0,1fr);
+  }
+  .timeline-item time{
+    grid-column:3;
+  }
+  .candidate-insight-grid{
+    grid-template-columns:1fr;
+  }
+  .candidate-insight-card,
+  .applications-card{
+    padding:18px 16px;
+  }
+
+  /* Drawers */
+  .drawer-backdrop{
+    align-items:stretch;
+  }
+  .side-drawer,
+  .bo-candidate-drawer{
+    width:100vw;
+    max-width:none;
+    height:100dvh;
+  }
+  .side-drawer>header{
+    padding:16px;
+  }
+  .drawer-body{
+    padding:16px;
+  }
+  .side-drawer>footer{
+    padding:12px 16px;
+  }
+  .drawer-grid{
+    grid-template-columns:1fr;
+  }
+
+  /* Onboarding */
+  .onboarding-page{
+    padding:14px 8px 34px;
+  }
+  .onboarding-top{
+    padding:0 6px;
+  }
+  .onboarding-top h1{
+    font-size:24px;
+  }
+  .onboarding-back{
+    width:max-content;
+  }
+  .onboarding-steps{
+    display:flex;
+    overflow-x:auto;
+    scroll-snap-type:x proximity;
+    padding:10px 12px;
+  }
+  .onboarding-steps button{
+    min-width:138px;
+    flex:0 0 auto;
+    scroll-snap-align:start;
+  }
+  .onboarding-body{
+    padding:20px 14px;
+    min-height:0;
+  }
+  .onboarding-section-head{
+    gap:10px;
+  }
+  .onboarding-section-head h2{
+    font-size:20px;
+  }
+  .form-grid.two,
+  .portfolio-upload-grid{
+    grid-template-columns:1fr;
+  }
+  .portfolio-link-row{
+    grid-template-columns:1fr;
+  }
+  .upload-zone{
+    min-height:150px;
+  }
+  .onboarding-footer{
+    padding:12px 14px;
+    align-items:stretch;
+    flex-direction:column;
+  }
+  .onboarding-footer>div{
+    width:100%;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+  }
+  .onboarding-footer>div button:only-child{
+    grid-column:1/-1;
+  }
+
+  /* Consent modal */
+  .terms-modal-backdrop{
+    padding:8px;
+  }
+  .terms-modal{
+    width:100%;
+    max-height:96dvh;
+    border-radius:12px;
+  }
+  .terms-modal-header{
+    padding:16px 14px 12px;
+  }
+  .terms-modal-header h2{
+    font-size:18px;
+  }
+  .terms-modal-body{
+    padding:16px 14px;
+    font-size:11px;
+  }
+  .terms-modal-footer{
+    padding:12px 14px;
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .terms-modal-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+  }
+
+  /* Backoffice */
+  .bo-shell{
+    grid-template-columns:1fr;
+  }
+  .bo-sidebar{
+    position:sticky;
+    top:0;
+    z-index:200;
+    height:auto;
+    padding:10px 12px;
+    gap:10px;
+    border-right:0;
+    border-bottom:1px solid #e4e8eb;
+  }
+  .bo-brand{
+    padding:0 0 10px;
+  }
+  .bo-brand img{
+    width:94px;
+  }
+  .bo-nav{
+    display:flex;
+    overflow-x:auto;
+    gap:6px;
+    padding-bottom:2px;
+  }
+  .bo-nav a{
+    min-width:max-content;
+    min-height:40px;
+    padding:0 10px;
+  }
+  .bo-nav a span{
+    width:auto;
+  }
+  .bo-sidebar-footer{
+    display:none;
+  }
+  .bo-content{
+    padding:22px 12px 44px;
+  }
+  .bo-page-head{
+    align-items:stretch;
+    flex-direction:column;
+    gap:16px;
+    margin-bottom:20px;
+  }
+  .bo-page-head h1{
+    font-size:32px;
+  }
+  .bo-head-actions{
+    width:100%;
+    flex-wrap:wrap;
+  }
+  .bo-search{
+    width:100%;
+    flex:1 1 100%;
+  }
+  .bo-head-actions .bo-primary{
+    flex:1;
+  }
+  .dashboard-grid{
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .dashboard-grid a{
+    padding:16px;
+  }
+  .bo-analytics-grid,
+  .bo-dashboard-panels{
+    grid-template-columns:1fr;
+  }
+  .bo-job-status-card{
+    grid-column:auto;
+  }
+  .bo-card-grid{
+    grid-template-columns:1fr;
+  }
+  .bo-job-card{
+    padding:16px;
+  }
+  .bo-job-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+  }
+  .bo-job-actions button{
+    width:100%;
+  }
+  .bo-table-card{
+    border-radius:12px;
+  }
+  .bo-table-wrap{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  .bo-table{
+    min-width:760px;
+  }
+  .bo-donut-layout{
+    grid-template-columns:1fr;
+    justify-items:center;
+  }
+  .bo-chart-legend{
+    width:100%;
+  }
+}
+
+@media(max-width:560px){
+  .career-header{
+    grid-template-columns:minmax(0,1fr) auto auto;
+  }
+  .danantara-logo{
+    width:120px;
+  }
+  .outline-link{
+    padding:0 10px;
+  }
+  .hero-copy{
+    padding:40px 18px 34px;
+  }
+  .hero h1{
+    font-size:42px;
+  }
+  .section{
+    padding:44px 16px;
+  }
+  .section-head h2{
+    font-size:31px;
+  }
+  .life-feature-photo{
+    min-height:285px;
+  }
+  .life-gallery-card{
+    min-height:210px;
+  }
+  .auth-visual{
+    min-height:230px;
+  }
+  .auth-visual h1{
+    font-size:34px;
+  }
+  .auth-panel{
+    padding:28px 16px 38px;
+  }
+  .profile-main{
+    grid-template-columns:54px minmax(0,1fr);
+  }
+  .profile-avatar{
+    width:54px;
+    height:54px;
+  }
+  .profile-main h1{
+    font-size:21px;
+  }
+  .profile-actions{
+    display:grid;
+    grid-template-columns:1fr;
+  }
+  .profile-actions .outline-button{
+    width:100%;
+  }
+  .dashboard-grid{
+    grid-template-columns:1fr;
+  }
+  .bo-donut{
+    width:140px;
+    height:140px;
+  }
+  .bo-bar-row{
+    grid-template-columns:82px minmax(0,1fr) 24px;
+  }
+  .bo-job-actions{
+    grid-template-columns:1fr;
+  }
+  .onboarding-footer>div{
+    grid-template-columns:1fr;
+  }
+  .onboarding-footer>div button{
+    width:100%;
+  }
+}
