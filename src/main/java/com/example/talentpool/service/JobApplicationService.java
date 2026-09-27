@@ -49,6 +49,8 @@ public class JobApplicationService {
         JobApplication application = repository.findByCandidateIdAndJobListingId(candidateId, jobListingId)
                 .orElseGet(JobApplication::new);
         boolean newApplication = application.getId() == null;
+        HiringStage previousStage = application.getStage();
+        ApplicationStatus previousStatus = application.getStatus();
         HiringStage stage = request != null && request.stage() != null
                 ? request.stage()
                 : newApplication ? HiringStage.NEW_CANDIDATE : application.getStage();
@@ -66,8 +68,8 @@ public class JobApplicationService {
         JobApplication saved = repository.save(application);
         if (newApplication) {
             recordHistory(saved, "APPLIED", request == null ? null : request.notes());
-        } else if (saved.getStage() == HiringStage.INTERVIEW && historyRepository.findByApplicationIdOrderByChangedAtAsc(saved.getId()).isEmpty()) {
-            recordHistory(saved, "STAGE_CHANGED", "Application moved to interview");
+        } else if (previousStage != saved.getStage() || previousStatus != saved.getStatus()) {
+            recordHistory(saved, "STAGE_CHANGED", request == null ? null : request.notes());
         }
         return toResponse(saved);
     }
