@@ -13,6 +13,7 @@ public interface InterviewRepository extends JpaRepository<Interview, UUID>, Jpa
     long countByStatusAndScheduledAtAfter(InterviewStatus status, Instant after);
     long countByStatusAndScheduledAtBetween(InterviewStatus status, Instant from, Instant to);
     List<Interview> findTop5ByStatusAndScheduledAtAfterOrderByScheduledAtAsc(InterviewStatus status, Instant after);
+    List<Interview> findTop10ByCandidateIdOrderByScheduledAtDesc(UUID candidateId);
     boolean existsByJobListingId(UUID jobListingId);
     void deleteByCandidateId(UUID candidateId);
 }
