@@ -41,6 +41,11 @@ public class TalentAuthController {
         return service.me(candidateId(jwt));
     }
 
+    @PatchMapping("/onboarding-complete")
+    public TalentMeResponse completeOnboarding(@AuthenticationPrincipal Jwt jwt) {
+        return service.completeOnboarding(candidateId(jwt));
+    }
+
     @PatchMapping("/change-password")
     public Map<String, String> changePassword(
             @AuthenticationPrincipal Jwt jwt,
