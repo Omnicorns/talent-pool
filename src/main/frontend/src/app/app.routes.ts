@@ -8,6 +8,8 @@ import { ResetPasswordComponent } from './features/auth/reset-password.component
 import { CandidatePortalComponent } from './features/candidate/candidate-portal.component';
 import { TalentOnboardingComponent } from './features/candidate/talent-onboarding.component';
 import { OpenPositionsComponent } from './features/public/open-positions.component';
+import { JobDetailComponent } from './features/public/job-detail.component';
+import { JobApplicationReviewComponent } from './features/candidate/job-application-review.component';
 import { BackofficeLoginComponent } from './features/backoffice/backoffice-login.component';
 import { BackofficeDashboardComponent } from './features/backoffice/backoffice-dashboard.component';
 import { BackofficeCandidatesComponent } from './features/backoffice/backoffice-candidates.component';
@@ -18,6 +20,8 @@ import { BackofficeInterviewsComponent } from './features/backoffice/backoffice-
 export const routes: Routes = [
   { path: '', component: LandingComponent },
   { path: 'open-positions', component: OpenPositionsComponent },
+  { path: 'jobs/:id', component: JobDetailComponent },
+  { path: 'jobs/:id/apply', component: JobApplicationReviewComponent, canActivate: [completedOnboardingGuard] },
   { path: 'sign-in', component: CandidateAuthComponent },
   { path: 'register', component: CandidateAuthComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
