@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CandidateProfile, EducationItem, WorkExperienceItem } from '../../core/models/talent.models';
 import { TalentAuthService } from '../../core/service/api/talent-auth.service';
 import { TalentPortalService } from '../../core/service/api/talent-portal.service';
@@ -190,18 +190,25 @@ export class TalentOnboardingComponent implements OnInit {
   noExperience = false;
   saving = false;
   error = '';
+  returnUrl = '/portal';
 
   steps = ['Upload CV','Informasi Pribadi','Pendidikan','Pengalaman Kerja','Kompensasi','Portofolio','Additional Info'];
 
   constructor(
     private portal: TalentPortalService,
     private auth: TalentAuthService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
+    const requested = this.route.snapshot.queryParamMap.get('returnUrl');
+    if (requested && requested.startsWith('/') && !requested.startsWith('//')) {
+      this.returnUrl = requested;
+    }
+  }
 
   ngOnInit(): void {
     if (this.auth.session?.onboardingCompleted !== false) {
-      this.router.navigateByUrl('/portal');
+      this.router.navigateByUrl(this.returnUrl);
       return;
     }
 
@@ -358,7 +365,7 @@ export class TalentOnboardingComponent implements OnInit {
     this.portal.saveProfile(this.profile, this.profilePicture, this.cvFile, this.portfolioFiles).subscribe({
       next: () => {
         this.auth.completeOnboarding().subscribe({
-          next: () => this.router.navigateByUrl('/portal'),
+          next: () => this.router.navigateByUrl(this.returnUrl),
           error: (error) => {
             this.saving = false;
             this.error = error?.error?.message || 'Status onboarding gagal diperbarui.';
