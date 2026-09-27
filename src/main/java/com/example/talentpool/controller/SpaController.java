@@ -8,6 +8,7 @@ public class SpaController {
 
     @GetMapping({
             "/open-positions",
+            "/jobs/**",
             "/sign-in",
             "/register",
             "/forgot-password",
