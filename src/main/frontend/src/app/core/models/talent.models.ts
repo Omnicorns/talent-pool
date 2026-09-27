@@ -5,6 +5,7 @@ export interface TalentSession {
   candidateId: string;
   email: string;
   fullName: string;
+  onboardingCompleted: boolean;
 }
 
 export interface EducationItem {
