@@ -30,6 +30,9 @@ public class TalentAccount {
     @Column(nullable = false)
     private boolean enabled = true;
 
+    @Column(name = "onboarding_completed")
+    private Boolean onboardingCompleted;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -47,6 +50,8 @@ public class TalentAccount {
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
     public boolean isEnabled() { return enabled; }
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
+    public boolean isOnboardingCompleted() { return onboardingCompleted == null || onboardingCompleted; }
+    public void setOnboardingCompleted(boolean onboardingCompleted) { this.onboardingCompleted = onboardingCompleted; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 }
