@@ -43,6 +43,14 @@ export class BackofficeApiService {
     return this.http.post<any>(`${API_BASE}/backoffice/interviews`, payload, { headers: this.headers });
   }
 
+  updateInterview(id: string, payload: any) {
+    return this.http.put<any>(`${API_BASE}/backoffice/interviews/${id}`, payload, { headers: this.headers });
+  }
+
+  deleteInterview(id: string) {
+    return this.http.delete<void>(`${API_BASE}/backoffice/interviews/${id}`, { headers: this.headers });
+  }
+
   updateInterviewStatus(id: string, status: string, result?: string | null, feedback?: string | null) {
     return this.http.patch<any>(
       `${API_BASE}/backoffice/interviews/${id}/status`,
