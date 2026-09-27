@@ -8,6 +8,7 @@ import com.example.talentpool.dto.*;
 import com.example.talentpool.exception.BadRequestException;
 import com.example.talentpool.exception.ResourceNotFoundException;
 import com.example.talentpool.repository.JobApplicationRepository;
+import com.example.talentpool.repository.JobApplicationHistoryRepository;
 import com.example.talentpool.repository.JobListingRepository;
 import com.example.talentpool.repository.InterviewRepository;
 import jakarta.transaction.Transactional;
@@ -27,6 +28,7 @@ public class TalentPortalService {
     private final JobListingService jobListingService;
     private final JobListingRepository jobListingRepository;
     private final JobApplicationRepository applicationRepository;
+    private final JobApplicationHistoryRepository applicationHistoryRepository;
     private final JobApplicationService applicationService;
     private final CandidateViewService candidateViewService;
     private final InterviewRepository interviewRepository;
@@ -36,6 +38,7 @@ public class TalentPortalService {
             JobListingService jobListingService,
             JobListingRepository jobListingRepository,
             JobApplicationRepository applicationRepository,
+            JobApplicationHistoryRepository applicationHistoryRepository,
             JobApplicationService applicationService,
             CandidateViewService candidateViewService,
             InterviewRepository interviewRepository
@@ -44,6 +47,7 @@ public class TalentPortalService {
         this.jobListingService = jobListingService;
         this.jobListingRepository = jobListingRepository;
         this.applicationRepository = applicationRepository;
+        this.applicationHistoryRepository = applicationHistoryRepository;
         this.applicationService = applicationService;
         this.candidateViewService = candidateViewService;
         this.interviewRepository = interviewRepository;
@@ -125,7 +129,62 @@ public class TalentPortalService {
         }
 
         application.setStatus(ApplicationStatus.WITHDRAWN);
-        return applicationService.toResponse(applicationRepository.save(application));
+        JobApplication saved = applicationRepository.save(application);
+        applicationService.recordHistory(saved, "WITHDRAWN", "Lamaran ditarik oleh kandidat");
+        return applicationService.toResponse(saved);
+    }
+
+    @Transactional
+    public List<TalentApplicationHistoryResponse> applicationHistory(UUID candidateId, UUID applicationId) {
+        JobApplication application = applicationRepository.findByIdAndCandidateId(applicationId, candidateId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lamaran tidak ditemukan"));
+
+        List<TalentApplicationHistoryResponse> history = applicationHistoryRepository
+                .findByApplicationIdOrderByChangedAtAsc(applicationId)
+                .stream()
+                .map(item -> new TalentApplicationHistoryResponse(
+                        item.getId(),
+                        item.getStage(),
+                        item.getStatus(),
+                        item.getEventType(),
+                        item.getNotes(),
+                        item.getChangedAt()
+                ))
+                .toList();
+
+        if (!history.isEmpty()) {
+            return history;
+        }
+
+        if (application.getAppliedAt().equals(application.getUpdatedAt())) {
+            return List.of(new TalentApplicationHistoryResponse(
+                    null,
+                    application.getStage(),
+                    application.getStatus(),
+                    "APPLIED",
+                    null,
+                    application.getAppliedAt()
+            ));
+        }
+
+        return List.of(
+                new TalentApplicationHistoryResponse(
+                        null,
+                        com.example.talentpool.domain.HiringStage.NEW_CANDIDATE,
+                        ApplicationStatus.ACTIVE,
+                        "APPLIED",
+                        null,
+                        application.getAppliedAt()
+                ),
+                new TalentApplicationHistoryResponse(
+                        null,
+                        application.getStage(),
+                        application.getStatus(),
+                        "CURRENT_STATUS",
+                        null,
+                        application.getUpdatedAt()
+                )
+        );
     }
 
     @Transactional
