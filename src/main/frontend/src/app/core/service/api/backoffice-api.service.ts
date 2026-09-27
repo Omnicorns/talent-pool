@@ -61,6 +61,26 @@ export class BackofficeApiService {
     return this.http.get<any>(`${API_BASE}/backoffice/job-listings`, { headers: this.headers, params });
   }
 
+  createJobListing(payload: any) {
+    return this.http.post<any>(`${API_BASE}/backoffice/job-listings`, payload, { headers: this.headers });
+  }
+
+  updateJobListing(id: string, payload: any) {
+    return this.http.put<any>(`${API_BASE}/backoffice/job-listings/${id}`, payload, { headers: this.headers });
+  }
+
+  updateJobListingStatus(id: string, status: 'DRAFT' | 'PUBLISHED' | 'CLOSED') {
+    return this.http.patch<any>(
+      `${API_BASE}/backoffice/job-listings/${id}/status`,
+      { status },
+      { headers: this.headers }
+    );
+  }
+
+  deleteJobListing(id: string) {
+    return this.http.delete<void>(`${API_BASE}/backoffice/job-listings/${id}`, { headers: this.headers });
+  }
+
   applications() {
     const params = new HttpParams().set('page', '0').set('size', '100').set('sort', 'updatedAt,desc');
     return this.http.get<any>(`${API_BASE}/backoffice/applications`, { headers: this.headers, params });
