@@ -73,6 +73,16 @@ public class TalentPortalController {
                 .body(file.resource());
     }
 
+    @GetMapping("/activities")
+    public List<TalentActivityResponse> activities(@AuthenticationPrincipal Jwt jwt) {
+        return service.activities(candidateId(jwt));
+    }
+
+    @GetMapping("/interviews")
+    public List<TalentInterviewResponse> interviews(@AuthenticationPrincipal Jwt jwt) {
+        return service.interviews(candidateId(jwt));
+    }
+
     @GetMapping("/jobs")
     public PageResponse<JobListingResponse> jobs(
             @RequestParam(required = false) String q,
