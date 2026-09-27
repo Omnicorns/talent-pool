@@ -5,6 +5,7 @@ import java.util.UUID;
 public record TalentMeResponse(
         UUID candidateId,
         String email,
-        String fullName
+        String fullName,
+        boolean onboardingCompleted
 ) {
 }
