@@ -76,6 +76,7 @@ public class TalentAuthService {
         account.setEmail(email);
         account.setPasswordHash(passwordEncoder.encode(request.password()));
         account.setEnabled(true);
+        account.setOnboardingCompleted(false);
         accountRepository.save(account);
 
         return issueToken(account);
@@ -101,7 +102,23 @@ public class TalentAuthService {
         return new TalentMeResponse(
                 account.getCandidate().getId(),
                 account.getEmail(),
-                account.getCandidate().getFullName()
+                account.getCandidate().getFullName(),
+                account.isOnboardingCompleted()
+        );
+    }
+
+    @Transactional
+    public TalentMeResponse completeOnboarding(UUID candidateId) {
+        TalentAccount account = accountRepository.findByCandidateId(candidateId)
+                .orElseThrow(() -> new BadRequestException("Akun kandidat tidak ditemukan"));
+        account.setOnboardingCompleted(true);
+        accountRepository.save(account);
+
+        return new TalentMeResponse(
+                account.getCandidate().getId(),
+                account.getEmail(),
+                account.getCandidate().getFullName(),
+                true
         );
     }
 
@@ -148,7 +165,8 @@ public class TalentAuthService {
                 expirationMinutes * 60,
                 candidateId,
                 account.getEmail(),
-                account.getCandidate().getFullName()
+                account.getCandidate().getFullName(),
+                account.isOnboardingCompleted()
         );
     }
 
