@@ -272,3 +272,77 @@ img{max-width:100%}
 
 /* Landing anchor sections */
 #life,#faq{scroll-margin-top:96px}
+
+
+/* Shared career header */
+.career-brand-link{display:flex;align-items:center;min-width:0}
+.career-main-nav{min-width:0}
+.join-talent-button{
+  min-height:40px;
+  padding:0 15px;
+  border-radius:10px;
+  background:var(--red);
+  color:#fff!important;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  font-weight:850;
+  white-space:nowrap;
+}
+.join-talent-button:hover{background:var(--red-dark)}
+.header-user-chip{
+  min-width:0;
+  max-width:210px;
+  min-height:44px;
+  padding:4px 10px 4px 5px;
+  border:1px solid #e2e6e9;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:#fff;
+}
+.header-user-avatar{
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:#fff0ee;
+  color:#c92c22;
+  font-size:11px;
+  font-weight:900;
+  flex:0 0 auto;
+}
+.header-user-copy{
+  min-width:0;
+  display:grid;
+  line-height:1.15;
+}
+.header-user-copy strong{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:11px;
+  color:#20272e;
+}
+.header-user-copy small{
+  color:#8a929a;
+  font-size:9px;
+  margin-top:2px;
+}
+.header-logout{padding:0 8px}
+.career-main-nav .talent-pool-nav{color:#b6261d}
+@media(max-width:1180px){
+  .career-header{
+    grid-template-columns:175px 1fr 260px;
+    gap:14px;
+    padding-left:22px;
+    padding-right:22px;
+  }
+  .career-header nav{gap:18px}
+  .join-talent-button{display:none}
+  .header-user-copy{display:none}
+  .header-user-chip{width:44px;padding:4px}
+}
