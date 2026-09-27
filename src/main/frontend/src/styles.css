@@ -3490,3 +3490,108 @@ img{max-width:100%}
     grid-template-columns:repeat(5,100px);
   }
 }
+
+
+/* Talent portal navigation + application history */
+.profile-tabs button{
+  min-height:62px;
+  padding:0 13px;
+  border:0;
+  border-bottom:2px solid transparent;
+  background:transparent;
+  color:#68727c;
+  font-size:13px;
+  font-weight:750;
+  white-space:nowrap;
+}
+.profile-tabs button:hover{
+  color:#c72b21;
+}
+.profile-tabs button:first-child{
+  color:#111;
+  border-bottom-color:var(--red);
+}
+
+.application-history-button{
+  min-height:34px;
+  padding:0 11px;
+  border:1px solid #d7e5e6;
+  border-radius:8px;
+  background:#fff;
+  color:#278d92;
+  font-size:9px;
+  font-weight:850;
+}
+.application-history-button:hover{
+  background:#f2fafa;
+  border-color:#aed1d3;
+}
+.application-history-drawer{
+  width:min(560px,100vw);
+}
+.application-history-loading{
+  padding:28px 0;
+  text-align:center;
+  color:#87909a;
+  font-size:11px;
+}
+.application-history-timeline{
+  display:grid;
+  gap:0;
+}
+.application-history-timeline article{
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr);
+  gap:12px;
+  min-height:88px;
+}
+.application-history-marker{
+  position:relative;
+  display:flex;
+  justify-content:center;
+}
+.application-history-marker span{
+  position:relative;
+  z-index:2;
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:#d9271c;
+  color:#fff;
+  font-size:9px;
+  font-weight:900;
+}
+.application-history-marker i{
+  position:absolute;
+  top:28px;
+  bottom:-4px;
+  width:2px;
+  background:#e3e7ea;
+}
+.application-history-timeline strong{
+  display:block;
+  color:#29323a;
+  font-size:12px;
+}
+.application-history-timeline p{
+  margin:5px 0;
+  color:#6d7780;
+  font-size:11px;
+  line-height:1.55;
+}
+.application-history-timeline small{
+  color:#929aa2;
+  font-size:9px;
+}
+
+@media(max-width:700px){
+  .profile-tabs button{
+    min-height:54px;
+    padding:0 10px;
+  }
+  .application-history-drawer{
+    width:100vw;
+  }
+}
