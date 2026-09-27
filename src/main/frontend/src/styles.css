@@ -346,3 +346,385 @@ img{max-width:100%}
   .header-user-copy{display:none}
   .header-user-chip{width:44px;padding:4px}
 }
+
+
+/* =========================================================
+   BACK OFFICE — functional workspace
+   ========================================================= */
+.bo-shell{
+  min-height:100vh;
+  display:grid;
+  grid-template-columns:270px minmax(0,1fr);
+  background:#f4f6f8;
+}
+.bo-sidebar{
+  position:sticky;
+  top:0;
+  height:100vh;
+  background:#fff;
+  border-right:1px solid #e4e8eb;
+  padding:24px 18px 18px;
+  display:flex;
+  flex-direction:column;
+  gap:22px;
+}
+.bo-brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:0 4px 18px;
+  border-bottom:1px solid #eef1f3;
+}
+.bo-brand img{width:118px}
+.bo-brand div{display:grid;gap:2px}
+.bo-brand strong{font-size:11px;color:#2b343d}
+.bo-brand span{font-size:9px;color:#8b929a;text-transform:uppercase;letter-spacing:.08em}
+.bo-nav{display:grid;gap:6px}
+.bo-nav a{
+  min-height:48px;
+  padding:0 14px;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  gap:11px;
+  color:#5f6872;
+  font-size:13px;
+  transition:.16s ease;
+}
+.bo-nav a:hover{background:#f8f9fa;color:#222b33}
+.bo-nav a.active{
+  background:#fff0ee;
+  color:#c72b21;
+}
+.bo-nav a span{
+  width:26px;
+  display:grid;
+  place-items:center;
+  font-size:14px;
+}
+.bo-sidebar-footer{
+  margin-top:auto;
+  display:grid;
+  gap:10px;
+}
+.bo-portal-link{
+  min-height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:9px;
+  color:#68727c;
+  font-size:11px;
+  font-weight:800;
+  background:#f7f8f9;
+}
+.bo-sidebar .logout{
+  min-height:44px;
+  border:1px solid #ecc5c1;
+  border-radius:9px;
+  background:#fff;
+  color:#c72b21;
+  font-weight:850;
+}
+.bo-content{
+  min-width:0;
+  padding:38px clamp(24px,4vw,54px) 64px;
+}
+.bo-page-head{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:24px;
+  margin-bottom:28px;
+}
+.bo-kicker{
+  display:block;
+  color:#c72b21;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.12em;
+  margin-bottom:7px;
+}
+.bo-page-head h1{
+  margin:0;
+  color:#182028;
+  font-size:38px;
+  line-height:1.05;
+  letter-spacing:-.04em;
+}
+.bo-page-head p{
+  margin:9px 0 0;
+  color:#747d87;
+  font-size:14px;
+}
+.bo-head-actions{
+  display:flex;
+  gap:9px;
+  align-items:center;
+}
+.bo-search{
+  width:min(330px,38vw);
+  min-height:42px;
+  border:1px solid #dbe0e4;
+  border-radius:10px;
+  background:#fff;
+  padding:0 13px;
+  outline:none;
+}
+.bo-search:focus{
+  border-color:#e08f88;
+  box-shadow:0 0 0 3px rgba(217,39,28,.07);
+}
+.bo-primary{
+  min-height:42px;
+  padding:0 16px;
+  border:0;
+  border-radius:9px;
+  background:#d9271c;
+  color:#fff;
+  font-weight:850;
+}
+.bo-table-card{
+  background:#fff;
+  border:1px solid #e0e4e8;
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:0 8px 26px rgba(15,23,42,.025);
+}
+.bo-table-meta{
+  min-height:58px;
+  padding:0 20px;
+  border-bottom:1px solid #edf0f2;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+.bo-table-meta strong{font-size:13px}
+.bo-table-meta span{font-size:11px;color:#8a929a}
+.bo-table-wrap{overflow:auto}
+.bo-table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:900px;
+}
+.bo-table th{
+  position:sticky;
+  top:0;
+  z-index:1;
+  background:#fafbfb;
+  color:#7d858f;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.07em;
+  text-align:left;
+  padding:12px 18px;
+  border-bottom:1px solid #e8ebee;
+}
+.bo-table td{
+  padding:15px 18px;
+  border-bottom:1px solid #f0f2f4;
+  font-size:12px;
+  color:#505a64;
+  vertical-align:middle;
+}
+.bo-table tbody tr:hover{background:#fcfdfd}
+.bo-table td strong{display:block;color:#212a32;font-size:12px}
+.bo-table td small{display:block;color:#8a929b;margin-top:4px;font-size:10px}
+.bo-person{display:flex;align-items:center;gap:10px}
+.bo-person-avatar{
+  width:38px;height:38px;border-radius:50%;
+  display:grid;place-items:center;
+  background:#fff0ee;color:#c92c22;font-size:11px;font-weight:900;
+  flex:0 0 auto;
+}
+.bo-tags{display:flex;gap:5px;flex-wrap:wrap}
+.bo-tags span{
+  padding:4px 7px;
+  border-radius:999px;
+  background:#f1f4f5;
+  color:#68727c;
+  font-size:9px;
+  font-weight:750;
+}
+.bo-status-select,.bo-stage-select{
+  min-height:34px;
+  border:1px solid #dfe3e6;
+  border-radius:8px;
+  background:#fff;
+  padding:0 8px;
+  color:#4f5962;
+  font-size:10px;
+  font-weight:750;
+}
+.bo-empty-cell{
+  padding:34px!important;
+  text-align:center;
+  color:#9299a2!important;
+}
+.bo-card-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:16px;
+}
+.bo-job-card{
+  background:#fff;
+  border:1px solid #e0e5e8;
+  border-radius:15px;
+  padding:20px;
+  box-shadow:0 7px 22px rgba(15,23,42,.025);
+}
+.bo-job-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.bo-job-top small{color:#8b929a;font-size:10px}
+.bo-job-card h2{
+  margin:18px 0 8px;
+  font-size:19px;
+  letter-spacing:-.02em;
+}
+.bo-job-card>p{margin:0;color:#747d86;font-size:12px}
+.bo-job-info{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-top:20px;
+  padding-top:16px;
+  border-top:1px solid #edf0f2;
+}
+.bo-job-info span{min-width:0}
+.bo-job-info b{
+  display:block;
+  font-size:12px;
+  color:#29313a;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.bo-job-info small{font-size:9px;color:#9299a2}
+.bo-badge{
+  display:inline-flex;
+  min-height:25px;
+  align-items:center;
+  padding:0 8px;
+  border-radius:999px;
+  background:#f1f3f4;
+  color:#69717a;
+  font-size:9px;
+  font-weight:900;
+}
+.bo-badge.green{background:#ecf8f2;color:#24825b}
+.bo-badge.red{background:#fff0ee;color:#c92c22}
+.bo-badge.gray{background:#f2f4f5;color:#707981}
+.bo-empty-card{
+  grid-column:1/-1;
+  border:1px dashed #dce1e5;
+  border-radius:14px;
+  padding:40px;
+  text-align:center;
+  color:#8b939c;
+  background:#fff;
+}
+.dashboard-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:15px;
+  margin-top:0;
+}
+.dashboard-grid a{
+  background:#fff;
+  border:1px solid #e0e4e8;
+  border-radius:15px;
+  padding:20px;
+  color:inherit;
+  transition:.16s ease;
+}
+.dashboard-grid a:hover{
+  transform:translateY(-2px);
+  border-color:#e8bbb7;
+  box-shadow:0 12px 24px rgba(15,23,42,.045);
+}
+.dashboard-grid span{display:block;color:#7d858f;font-size:11px}
+.dashboard-grid strong{display:block;font-size:30px;margin:10px 0 13px;color:#182028}
+.dashboard-grid small{font-size:10px;color:#c72b21;font-weight:800}
+.bo-dashboard-panels{
+  display:grid;
+  grid-template-columns:1.35fr .65fr;
+  gap:16px;
+  margin-top:18px;
+}
+.bo-dashboard-panel{
+  background:#fff;
+  border:1px solid #e0e4e8;
+  border-radius:16px;
+  padding:22px;
+}
+.bo-panel-head h2,.bo-dashboard-panel h2{
+  margin:0;
+  font-size:20px;
+  letter-spacing:-.02em;
+}
+.bo-quick-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-top:18px;
+}
+.bo-quick-grid a{
+  min-height:135px;
+  padding:16px;
+  border:1px solid #e7eaed;
+  border-radius:12px;
+  background:#fbfcfc;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:6px;
+}
+.bo-quick-grid a:hover{border-color:#dfaaa5;background:#fff7f5}
+.bo-quick-grid b{font-size:20px}
+.bo-quick-grid strong{font-size:13px}
+.bo-quick-grid span{font-size:10px;color:#7b848e;line-height:1.5}
+.bo-highlight-panel{
+  background:linear-gradient(145deg,#d52c21,#ed3a2d);
+  color:#fff;
+  border-color:transparent;
+}
+.bo-highlight-panel .bo-kicker{color:#ffd3cf}
+.bo-highlight-panel p{
+  color:rgba(255,255,255,.82);
+  line-height:1.7;
+  font-size:12px;
+}
+@media(max-width:1100px){
+  .bo-card-grid{grid-template-columns:repeat(2,1fr)}
+  .dashboard-grid{grid-template-columns:repeat(2,1fr)}
+  .bo-dashboard-panels{grid-template-columns:1fr}
+}
+@media(max-width:760px){
+  .bo-shell{grid-template-columns:1fr}
+  .bo-sidebar{
+    position:static;
+    height:auto;
+    padding:15px;
+  }
+  .bo-brand{padding-bottom:12px}
+  .bo-nav{
+    display:flex;
+    gap:7px;
+    overflow:auto;
+  }
+  .bo-nav a{
+    min-width:max-content;
+    min-height:42px;
+  }
+  .bo-sidebar-footer{display:none}
+  .bo-content{padding:24px 14px 46px}
+  .bo-page-head{align-items:stretch;flex-direction:column}
+  .bo-head-actions{width:100%}
+  .bo-search{width:100%}
+  .bo-card-grid,.dashboard-grid,.bo-quick-grid{grid-template-columns:1fr}
+}
