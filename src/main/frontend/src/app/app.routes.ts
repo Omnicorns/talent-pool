@@ -11,6 +11,7 @@ import { BackofficeDashboardComponent } from './features/backoffice/backoffice-d
 import { BackofficeCandidatesComponent } from './features/backoffice/backoffice-candidates.component';
 import { BackofficeJobListingsComponent } from './features/backoffice/backoffice-job-listings.component';
 import { BackofficeApplicationsComponent } from './features/backoffice/backoffice-applications.component';
+import { BackofficeInterviewsComponent } from './features/backoffice/backoffice-interviews.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -38,6 +39,11 @@ export const routes: Routes = [
   {
     path: 'backoffice/applications',
     component: BackofficeApplicationsComponent,
+    canActivate: [backofficeAuthGuard],
+  },
+  {
+    path: 'backoffice/interviews',
+    component: BackofficeInterviewsComponent,
     canActivate: [backofficeAuthGuard],
   },
   { path: '**', redirectTo: '' },
