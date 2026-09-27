@@ -121,6 +121,41 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
           </div>
         </section>
 
+        <section class="candidate-insight-grid">
+          <article class="candidate-insight-card">
+            <div class="section-title"><h2>Recruiter Activity</h2></div>
+            <div class="candidate-activity-list" *ngIf="activities.length; else noActivity">
+              <div class="candidate-activity-item" *ngFor="let item of activities">
+                <span class="candidate-activity-icon">{{ item.type === 'CV_VIEW' ? 'CV' : '👁' }}</span>
+                <div>
+                  <strong>{{ item.message }}</strong>
+                  <small>{{ item.viewedAt | date:'dd MMM yyyy, HH:mm' }}</small>
+                </div>
+              </div>
+            </div>
+            <ng-template #noActivity>
+              <div class="empty-state">Belum ada aktivitas recruiter pada profil Anda.</div>
+            </ng-template>
+          </article>
+
+          <article class="candidate-insight-card">
+            <div class="section-title"><h2>Jadwal Interview</h2></div>
+            <div class="candidate-interview-list" *ngIf="interviews.length; else noInterview">
+              <article class="candidate-interview-item" *ngFor="let item of interviews">
+                <div>
+                  <strong>{{ item.jobTitle || 'Talent Pool Interview' }}</strong>
+                  <p>{{ item.scheduledAt | date:'dd MMM yyyy, HH:mm' }} • {{ item.durationMinutes }} menit</p>
+                  <small>{{ item.mode }} • {{ item.locationOrLink || '-' }}</small>
+                </div>
+                <span class="candidate-status">{{ item.status }}</span>
+              </article>
+            </div>
+            <ng-template #noInterview>
+              <div class="empty-state">Belum ada jadwal interview.</div>
+            </ng-template>
+          </article>
+        </section>
+
         <section class="applications-card">
           <div class="section-title"><h2>Lamaran Saya</h2><a routerLink="/open-positions">Lihat Lowongan</a></div>
           <article class="application-row" *ngFor="let app of applications">
@@ -212,6 +247,8 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
 export class CandidatePortalComponent implements OnInit {
   profile!: CandidateProfile;
   applications: JobApplication[] = [];
+  activities: any[] = [];
+  interviews: any[] = [];
   drawerOpen = false;
   drawerSection: DrawerSection | null = null;
   drawerIndex: number | null = null;
@@ -261,6 +298,8 @@ export class CandidatePortalComponent implements OnInit {
   reload(): void {
     this.portal.profile().subscribe((profile) => this.profile = profile);
     this.portal.applications().subscribe((result) => this.applications = result?.content || []);
+    this.portal.activities().subscribe((items) => this.activities = items || []);
+    this.portal.interviews().subscribe((items) => this.interviews = items || []);
   }
 
   get formalEducations(): EducationItem[] { return (this.profile?.educations || []).filter((item) => item.type === 'FORMAL'); }
