@@ -66,6 +66,37 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
         </div>
       </section>
 
+      <section class="bo-mobile-list bo-candidate-mobile-list">
+        <article class="bo-mobile-card" *ngFor="let item of rows">
+          <div class="bo-mobile-card-head">
+            <div class="bo-person">
+              <span class="bo-person-avatar">{{ initials(item.fullName) }}</span>
+              <div><strong>{{ item.fullName }}</strong><small>{{ item.email }}</small></div>
+            </div>
+            <span class="bo-badge green">{{ item.status }}</span>
+          </div>
+
+          <div class="bo-mobile-meta-grid">
+            <div><span>Position</span><strong>{{ item.relatedPosition || '-' }}</strong></div>
+            <div><span>Experience</span><strong>{{ experience(item.experienceMonths) }}</strong></div>
+            <div><span>Source</span><strong>{{ item.source || '-' }}</strong></div>
+          </div>
+
+          <div class="bo-tags" *ngIf="item.tools?.length">
+            <span *ngFor="let tool of item.tools?.slice(0,4)">{{ tool }}</span>
+          </div>
+
+          <div class="bo-mobile-card-actions">
+            <select class="bo-status-select" [ngModel]="item.status" (ngModelChange)="changeStatus(item, $event)">
+              <option *ngFor="let status of statuses" [value]="status">{{ status }}</option>
+            </select>
+            <button class="bo-primary" (click)="openCandidate(item)">Lihat Profil</button>
+          </div>
+        </article>
+
+        <div class="bo-empty-card" *ngIf="!rows.length && !loading">Belum ada kandidat.</div>
+      </section>
+
       <div class="drawer-backdrop bo-candidate-backdrop" *ngIf="drawerOpen" (click)="closeOnBackdrop($event)">
         <aside class="side-drawer bo-candidate-drawer">
           <header>
