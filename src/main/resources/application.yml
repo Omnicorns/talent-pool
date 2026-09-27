@@ -25,6 +25,18 @@ spring:
       max-request-size: 110MB
   jackson:
     default-property-inclusion: non_null
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:25}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:false}
+          starttls:
+            enable: ${MAIL_STARTTLS_ENABLE:false}
+            required: ${MAIL_STARTTLS_REQUIRED:false}
 
 management:
   endpoints:
@@ -35,6 +47,13 @@ management:
 app:
   web:
     base-path: ${APP_WEB_BASE_PATH:/sarinah-talent-pool}
+    public-url: ${APP_PUBLIC_URL:https://satudata.sarinah.com/sarinah-talent-pool}
+  mail:
+    enabled: ${APP_MAIL_ENABLED:false}
+    from: ${APP_MAIL_FROM:no-reply@sarinah.com}
+  password-reset:
+    expiration-minutes: ${PASSWORD_RESET_EXPIRATION_MINUTES:30}
+    expose-reset-url: ${PASSWORD_RESET_EXPOSE_URL:false}
   storage:
     root: ${STORAGE_ROOT:./uploads}
   security:
