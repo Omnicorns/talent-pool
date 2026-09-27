@@ -26,6 +26,31 @@ export class BackofficeApiService {
     return this.http.get<any>(`${API_BASE}/backoffice/candidates/${id}`, { headers: this.headers });
   }
 
+  candidateCv(id: string) {
+    return this.http.get(`${API_BASE}/backoffice/candidates/${id}/cv`, {
+      headers: this.headers,
+      responseType: 'blob',
+      observe: 'response',
+    });
+  }
+
+  interviews() {
+    const params = new HttpParams().set('page', '0').set('size', '50').set('sort', 'scheduledAt,asc');
+    return this.http.get<any>(`${API_BASE}/backoffice/interviews`, { headers: this.headers, params });
+  }
+
+  createInterview(payload: any) {
+    return this.http.post<any>(`${API_BASE}/backoffice/interviews`, payload, { headers: this.headers });
+  }
+
+  updateInterviewStatus(id: string, status: string, result?: string | null, feedback?: string | null) {
+    return this.http.patch<any>(
+      `${API_BASE}/backoffice/interviews/${id}/status`,
+      { status, result: result || null, feedback: feedback || null },
+      { headers: this.headers }
+    );
+  }
+
   updateCandidateStatus(id: string, status: string) {
     return this.http.patch<any>(`${API_BASE}/backoffice/candidates/${id}/status`, { status }, { headers: this.headers });
   }
