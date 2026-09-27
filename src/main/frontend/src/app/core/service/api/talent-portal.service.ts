@@ -17,7 +17,12 @@ export class TalentPortalService {
     });
   }
 
-  saveProfile(profile: CandidateProfile, profilePicture?: File | null) {
+  saveProfile(
+    profile: CandidateProfile,
+    profilePicture?: File | null,
+    cv?: File | null,
+    portfolioFiles?: File[]
+  ) {
     const payload = {
       fullName: profile.fullName,
       email: profile.email,
@@ -53,6 +58,12 @@ export class TalentPortalService {
 
     if (profilePicture) {
       data.append('profilePicture', profilePicture);
+    }
+    if (cv) {
+      data.append('cv', cv);
+    }
+    for (const file of portfolioFiles || []) {
+      data.append('portfolioFiles', file);
     }
 
     return this.http.put<CandidateProfile>(`${API_BASE}/talent/profile`, data);
