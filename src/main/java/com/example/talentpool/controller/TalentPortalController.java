@@ -114,6 +114,14 @@ public class TalentPortalController {
         return PageResponse.from(service.applications(candidateId(jwt), pageable));
     }
 
+    @GetMapping("/applications/{id}/history")
+    public List<TalentApplicationHistoryResponse> applicationHistory(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID id
+    ) {
+        return service.applicationHistory(candidateId(jwt), id);
+    }
+
     @PatchMapping("/applications/{id}/withdraw")
     public JobApplicationResponse withdraw(
             @AuthenticationPrincipal Jwt jwt,
