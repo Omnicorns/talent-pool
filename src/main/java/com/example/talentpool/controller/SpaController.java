@@ -10,6 +10,7 @@ public class SpaController {
             "/open-positions",
             "/sign-in",
             "/register",
+            "/onboarding",
             "/portal",
             "/backoffice",
             "/backoffice/**",
