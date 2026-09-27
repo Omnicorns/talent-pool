@@ -6,5 +6,22 @@ export const candidateAuthGuard: CanActivateFn = () => {
   const auth = inject(TalentAuthService);
   const router = inject(Router);
 
-  return auth.authenticated ? true : router.createUrlTree(['/sign-in']);
+  if (!auth.authenticated) {
+    return router.createUrlTree(['/sign-in']);
+  }
+
+  return true;
+};
+
+export const completedOnboardingGuard: CanActivateFn = () => {
+  const auth = inject(TalentAuthService);
+  const router = inject(Router);
+
+  if (!auth.authenticated) {
+    return router.createUrlTree(['/sign-in']);
+  }
+
+  return auth.session?.onboardingCompleted
+    ? true
+    : router.createUrlTree(['/onboarding']);
 };
