@@ -76,6 +76,11 @@ public class JobApplicationService {
     }
 
     @Transactional
+    public Page<JobApplicationResponse> list(Pageable pageable) {
+        return repository.findAll(pageable).map(this::toResponse);
+    }
+
+    @Transactional
     public Page<JobApplicationResponse> listByJob(UUID jobListingId, Pageable pageable) {
         if (!jobListingRepository.existsById(jobListingId)) {
             throw new ResourceNotFoundException("Job listing tidak ditemukan: " + jobListingId);
