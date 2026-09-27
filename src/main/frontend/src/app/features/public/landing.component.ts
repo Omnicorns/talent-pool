@@ -8,16 +8,16 @@ import { RouterLink } from '@angular/router';
   template: `
     <div class="career-shell">
       <header class="career-header">
-        <img class="danantara-logo" src="/images/Danantara_Indonesia.png" alt="Danantara Indonesia">
+        <img class="danantara-logo" src="images/Danantara_Indonesia.png" alt="Danantara Indonesia">
         <nav>
           <a routerLink="/" class="active">Home</a>
-          <a href="#life">Life at Sarinah</a>
+          <a routerLink="/" fragment="life">Life at Sarinah</a>
           <a routerLink="/open-positions">Open Positions</a>
-          <a href="#faq">FAQ</a>
+          <a routerLink="/" fragment="faq">FAQ</a>
         </nav>
         <div class="career-header-right">
           <a class="outline-link" routerLink="/sign-in">Masuk</a>
-          <img class="sarinah-logo" src="/images/sarinah.png" alt="Sarinah">
+          <img class="sarinah-logo" src="images/sarinah.png" alt="Sarinah">
         </div>
       </header>
 
@@ -29,7 +29,7 @@ import { RouterLink } from '@angular/router';
             <p>Temukan ruang untuk bertumbuh, berkolaborasi, dan menciptakan pengalaman ritel Indonesia yang relevan untuk generasi berikutnya.</p>
             <div class="hero-actions">
               <a routerLink="/open-positions" class="primary-cta">Explore Opportunities →</a>
-              <a href="#life" class="secondary-cta">Discover Life at Sarinah</a>
+              <a routerLink="/" fragment="life" class="secondary-cta">Discover Life at Sarinah</a>
             </div>
           </div>
           <div class="hero-photo">
