@@ -70,6 +70,45 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
           </table>
         </div>
       </section>
+
+      <section class="bo-mobile-list bo-interview-mobile-list">
+        <article class="bo-mobile-card" *ngFor="let item of rows">
+          <div class="bo-mobile-card-head">
+            <div>
+              <strong>{{ item.candidateName }}</strong>
+              <small>{{ item.jobTitle || 'General Talent Pool' }}</small>
+            </div>
+            <span class="bo-badge">{{ item.mode }}</span>
+          </div>
+
+          <div class="bo-mobile-meta-grid">
+            <div><span>Schedule</span><strong>{{ item.scheduledAt | date:'dd MMM yyyy, HH:mm' }}</strong></div>
+            <div><span>Interviewer</span><strong>{{ item.interviewer }}</strong></div>
+            <div><span>Location</span><strong>{{ item.locationOrLink || '-' }}</strong></div>
+          </div>
+
+          <div class="bo-mobile-controls">
+            <label>Status
+              <select class="bo-stage-select" [ngModel]="item.status" (ngModelChange)="changeStatus(item, $event)">
+                <option value="SCHEDULED">Scheduled</option>
+                <option value="RESCHEDULED">Rescheduled</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
+            </label>
+            <label>Result
+              <select class="bo-stage-select" [(ngModel)]="item.result" [disabled]="item.status !== 'COMPLETED'">
+                <option value="PENDING">Pending</option>
+                <option value="PASSED">Passed</option>
+                <option value="FAILED">Failed</option>
+                <option value="HOLD">Hold</option>
+              </select>
+            </label>
+          </div>
+        </article>
+
+        <div class="bo-empty-card" *ngIf="!rows.length && !loading">Belum ada jadwal interview.</div>
+      </section>
     </app-backoffice-layout>
   `,
 })
