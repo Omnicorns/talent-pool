@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TalentAuthService } from '../core/service/api/talent-auth.service';
 
 @Component({
@@ -14,10 +14,10 @@ import { TalentAuthService } from '../core/service/api/talent-auth.service';
       </a>
 
       <nav class="career-main-nav" aria-label="Navigasi utama">
-        <a routerLink="/" [class.active]="active === 'home'">Home</a>
-        <a routerLink="/" fragment="life">Life at Sarinah</a>
+        <a routerLink="/" [class.active]="active === 'home' && sectionActive === ''" (click)="sectionActive = ''">Home</a>
+        <button type="button" class="career-nav-button" [class.active]="sectionActive === 'life'" (click)="goToSection('life')">Life at Sarinah</button>
         <a routerLink="/open-positions" [class.active]="active === 'open'">Open Positions</a>
-        <a routerLink="/" fragment="faq">FAQ</a>
+        <button type="button" class="career-nav-button" [class.active]="sectionActive === 'faq'" (click)="goToSection('faq')">FAQ</button>
         <a
           *ngIf="auth.authenticated"
           routerLink="/portal"
@@ -54,8 +54,35 @@ import { TalentAuthService } from '../core/service/api/talent-auth.service';
 })
 export class CareerHeaderComponent {
   @Input() active: 'home' | 'open' | 'portal' | '' = '';
+  sectionActive: 'life' | 'faq' | '' = '';
 
-  constructor(public auth: TalentAuthService) {}
+  constructor(public auth: TalentAuthService, private router: Router) {}
+
+  goToSection(section: 'life' | 'faq'): void {
+    this.sectionActive = section;
+
+    const scroll = () => {
+      setTimeout(() => {
+        document.getElementById(section)?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }, 40);
+    };
+
+    if (this.router.url.startsWith('/') &&
+        !this.router.url.startsWith('/open-positions') &&
+        !this.router.url.startsWith('/portal') &&
+        !this.router.url.startsWith('/backoffice') &&
+        !this.router.url.startsWith('/sign-in') &&
+        !this.router.url.startsWith('/register') &&
+        !this.router.url.startsWith('/onboarding')) {
+      this.router.navigate([], { fragment: section, replaceUrl: false }).then(scroll);
+      return;
+    }
+
+    this.router.navigate(['/'], { fragment: section }).then(scroll);
+  }
 
   get userInitials(): string {
     const name = this.auth.session?.fullName || 'Talent';
