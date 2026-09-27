@@ -40,6 +40,35 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
           </table>
         </div>
       </section>
+
+      <section class="bo-mobile-list bo-application-mobile-list">
+        <article class="bo-mobile-card" *ngFor="let item of rows">
+          <div class="bo-mobile-card-head">
+            <div>
+              <strong>{{ item.candidateName }}</strong>
+              <small>{{ item.jobTitle }}</small>
+            </div>
+            <span class="bo-badge"
+                  [class.green]="item.status === 'ACTIVE' || item.status === 'HIRED'"
+                  [class.red]="item.status === 'REJECTED'">
+              {{ item.status }}
+            </span>
+          </div>
+
+          <div class="bo-mobile-meta-grid">
+            <div><span>Applied</span><strong>{{ item.appliedAt | date:'dd MMM yyyy' }}</strong></div>
+            <div><span>Stage</span><strong>{{ label(item.stage) }}</strong></div>
+          </div>
+
+          <label class="bo-mobile-field">Update Stage
+            <select class="bo-stage-select" [ngModel]="item.stage" (ngModelChange)="changeStage(item, $event)">
+              <option *ngFor="let stage of stages" [value]="stage">{{ label(stage) }}</option>
+            </select>
+          </label>
+        </article>
+
+        <div class="bo-empty-card" *ngIf="!rows.length && !loading">Belum ada application.</div>
+      </section>
     </app-backoffice-layout>
   `,
 })
