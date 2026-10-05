@@ -277,10 +277,27 @@ img{max-width:100%}
 /* Shared career header */
 .career-brand-link{display:flex;align-items:center;min-width:0}
 .career-main-nav{min-width:0}
+.career-auth-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.career-sign-in{
+  min-height:40px;
+  padding:0 12px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.career-sign-in:hover{color:var(--red);background:#fff3f1}
+.career-auth-actions a:focus-visible,.header-user-chip:focus-visible{
+  outline:2px solid var(--red);
+  outline-offset:3px;
+}
 .join-talent-button{
   min-height:40px;
   padding:0 15px;
-  border-radius:10px;
+  border-radius:8px;
   background:var(--red);
   color:#fff!important;
   display:inline-flex;
@@ -333,7 +350,7 @@ img{max-width:100%}
   margin-top:2px;
 }
 .header-logout{padding:0 8px}
-.career-main-nav .talent-pool-nav{color:#b6261d}
+.header-user-chip.active{border-color:#e1a6a0;background:#fff6f5}
 @media(max-width:1180px){
   .career-header{
     grid-template-columns:175px 1fr 260px;
@@ -342,7 +359,6 @@ img{max-width:100%}
     padding-right:22px;
   }
   .career-header nav{gap:18px}
-  .join-talent-button{display:none}
   .header-user-copy{display:none}
   .header-user-chip{width:44px;padding:4px}
 }
@@ -1939,9 +1955,6 @@ img{max-width:100%}
   .career-main-nav .career-nav-button.active:after{
     display:none;
   }
-  .join-talent-button{
-    display:none!important;
-  }
   .outline-link{
     min-height:40px;
     padding:0 12px;
@@ -1953,8 +1966,7 @@ img{max-width:100%}
     padding:3px;
     border-radius:50%;
   }
-  .header-user-copy,
-  .header-logout{
+  .header-user-copy{
     display:none!important;
   }
 
@@ -3600,12 +3612,15 @@ img{max-width:100%}
 
 
 /* =========================================================
-   SARINAH HEADER WORDMARK — precise clipped layout
+   SARINAH HEADER WORDMARK
    ========================================================= */
 @media(min-width:901px){
   .career-header{
-    grid-template-columns:220px minmax(0,1fr) 390px;
+    grid-template-columns:170px minmax(0,1fr) max-content;
+    gap:20px;
   }
+
+  .career-header nav{gap:clamp(16px,2.4vw,38px);white-space:nowrap}
 
   .career-header-right{
     gap:14px;
@@ -3613,22 +3628,17 @@ img{max-width:100%}
   }
 
   .sarinah-brand-link{
-    position:relative;
-    width:120px;
+    width:132px;
     height:50px;
-    flex:0 0 120px;
-    overflow:hidden;
-    display:block;
+    flex:0 0 132px;
+    display:flex;
+    align-items:center;
   }
 
   .sarinah-brand-link .sarinah-logo{
-    position:absolute;
-    top:50%;
-    right:-16px;
-    width:205px;
+    width:100%;
     height:auto;
-    max-width:none;
-    transform:translateY(-50%);
+    max-width:100%;
     object-fit:contain;
     object-position:center;
   }
@@ -3636,7 +3646,7 @@ img{max-width:100%}
 
 @media(min-width:901px) and (max-width:1180px){
   .career-header{
-    grid-template-columns:185px minmax(0,1fr) 320px;
+    grid-template-columns:150px minmax(0,1fr) max-content;
     gap:12px;
     padding-left:3vw;
     padding-right:3vw;
@@ -3652,12 +3662,17 @@ img{max-width:100%}
   }
 
   .sarinah-brand-link{
-    width:92px;
-    flex-basis:92px;
+    width:112px;
+    flex-basis:112px;
   }
+}
 
-  .sarinah-brand-link .sarinah-logo{
-    width:170px;
-    right:-18px;
-  }
+@media(max-width:600px){
+  .career-header{grid-template-columns:minmax(0,1fr) auto}
+  .career-header-right{grid-column:1/-1;grid-row:2;justify-content:flex-end}
+  .career-auth-actions{width:100%}
+  .career-auth-actions a{flex:1;min-height:42px}
+  .career-main-nav{grid-row:3}
+  .career-header.is-authenticated{grid-template-columns:minmax(0,1fr) auto auto}
+  .career-header.is-authenticated .career-header-right{grid-column:3;grid-row:1}
 }

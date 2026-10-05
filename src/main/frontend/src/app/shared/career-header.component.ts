@@ -8,7 +8,7 @@ import { TalentAuthService } from '../core/service/api/talent-auth.service';
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <header class="career-header">
+    <header class="career-header" [class.is-authenticated]="auth.authenticated">
       <a routerLink="/" class="career-brand-link" aria-label="Sarinah Career Home">
         <img class="danantara-logo" src="images/Danantara_Indonesia.png" alt="Danantara Indonesia">
       </a>
@@ -18,38 +18,32 @@ import { TalentAuthService } from '../core/service/api/talent-auth.service';
         class="mobile-menu-toggle"
         (click)="mobileMenuOpen = !mobileMenuOpen"
         [attr.aria-expanded]="mobileMenuOpen"
+        aria-controls="career-navigation"
         aria-label="Buka menu navigasi">
         <span></span><span></span><span></span>
       </button>
 
-      <nav class="career-main-nav" [class.mobile-open]="mobileMenuOpen" aria-label="Navigasi utama">
+      <nav id="career-navigation" class="career-main-nav" [class.mobile-open]="mobileMenuOpen" aria-label="Navigasi utama">
         <a routerLink="/" [class.active]="active === 'home' && sectionActive === ''" (click)="sectionActive = ''; mobileMenuOpen = false">Home</a>
         <button type="button" class="career-nav-button" [class.active]="sectionActive === 'life'" (click)="goToSection('life'); mobileMenuOpen = false">Life at Sarinah</button>
         <a routerLink="/open-positions" [class.active]="active === 'open'" (click)="mobileMenuOpen = false">Open Positions</a>
         <button type="button" class="career-nav-button" [class.active]="sectionActive === 'faq'" (click)="goToSection('faq'); mobileMenuOpen = false">FAQ</button>
-        <a
-          *ngIf="auth.authenticated"
-          routerLink="/portal"
-          class="talent-pool-nav"
-          [class.active]="active === 'portal'"
-          (click)="mobileMenuOpen = false"
-        >
-          Talent Pool
-        </a>
       </nav>
 
       <div class="career-header-right">
         <ng-container *ngIf="!auth.authenticated; else loggedIn">
-          <a class="join-talent-button" routerLink="/register">Gabung Talent Pool</a>
-          <a class="outline-link" routerLink="/sign-in">Masuk</a>
+          <div class="career-auth-actions">
+            <a class="join-talent-button" routerLink="/register" (click)="mobileMenuOpen = false">Gabung Talent Pool</a>
+            <a class="career-sign-in" routerLink="/sign-in" (click)="mobileMenuOpen = false">Masuk</a>
+          </div>
         </ng-container>
 
         <ng-template #loggedIn>
-          <a routerLink="/portal" class="header-user-chip">
+          <a routerLink="/portal" class="header-user-chip" [class.active]="active === 'portal'" aria-label="Buka profil saya" title="Profil Saya" (click)="mobileMenuOpen = false">
             <span class="header-user-avatar">{{ userInitials }}</span>
             <span class="header-user-copy">
               <strong>{{ auth.session?.fullName || 'Talent' }}</strong>
-              <small>Talent Pool</small>
+              <small>Profil Saya</small>
             </span>
           </a>
           <button type="button" class="text-button header-logout" (click)="auth.logout()">Keluar</button>
