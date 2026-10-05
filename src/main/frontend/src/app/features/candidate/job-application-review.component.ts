@@ -84,7 +84,7 @@ import { TalentPortalService } from '../../core/service/api/talent-portal.servic
             <div><span>Location</span><strong>{{ job.location || '-' }}</strong></div>
             <div><span>Type</span><strong>{{ job.employmentType || '-' }}</strong></div>
             <div><span>Deadline</span><strong>{{ job.applicationDeadline || '-' }}</strong></div>
-            <small>Setelah dikirim, status lamaran dapat dipantau dari Talent Pool → Lamaran Saya.</small>
+            <small>Setelah dikirim, status lamaran dapat dipantau dari Profil Saya → Lamaran Saya.</small>
           </aside>
         </section>
       </main>

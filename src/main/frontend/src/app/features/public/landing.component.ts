@@ -1,11 +1,13 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CareerHeaderComponent } from '../../shared/career-header.component';
+import { CareerFooterComponent } from '../../shared/career-footer.component';
+import { OpenPositionsComponent } from './open-positions.component';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [RouterLink, CareerHeaderComponent],
+  imports: [RouterLink, CareerHeaderComponent, CareerFooterComponent, OpenPositionsComponent],
   template: `
     <div class="career-shell">
       <app-career-header active="home"></app-career-header>
@@ -17,7 +19,7 @@ import { CareerHeaderComponent } from '../../shared/career-header.component';
             <h1>Build a legacy through <span>creative retail.</span></h1>
             <p>Temukan ruang untuk bertumbuh, berkolaborasi, dan menciptakan pengalaman ritel Indonesia yang relevan untuk generasi berikutnya.</p>
             <div class="hero-actions">
-              <a routerLink="/open-positions" class="primary-cta">Explore Opportunities →</a>
+              <a routerLink="/" fragment="open-positions" class="primary-cta">Explore Opportunities →</a>
               <a routerLink="/" fragment="life" class="secondary-cta">Discover Life at Sarinah</a>
             </div>
           </div>
@@ -72,6 +74,10 @@ import { CareerHeaderComponent } from '../../shared/career-header.component';
           </div>
         </section>
 
+        <section id="open-positions" class="section positions-section" aria-label="Open Positions">
+          <app-open-positions></app-open-positions>
+        </section>
+
         <section id="faq" class="section soft">
           <div class="section-head">
             <span>FAQ</span>
@@ -84,6 +90,7 @@ import { CareerHeaderComponent } from '../../shared/career-header.component';
           </div>
         </section>
       </main>
+      <app-career-footer></app-career-footer>
     </div>
   `,
 })

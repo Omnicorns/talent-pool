@@ -24,16 +24,15 @@ import { TalentAuthService } from '../core/service/api/talent-auth.service';
       </button>
 
       <nav id="career-navigation" class="career-main-nav" [class.mobile-open]="mobileMenuOpen" aria-label="Navigasi utama">
-        <a routerLink="/" [class.active]="active === 'home' && sectionActive === ''" (click)="sectionActive = ''; mobileMenuOpen = false">Home</a>
+        <a routerLink="/" [class.active]="active === 'home' && sectionActive === ''" (click)="mobileMenuOpen = false">Home</a>
         <button type="button" class="career-nav-button" [class.active]="sectionActive === 'life'" (click)="goToSection('life'); mobileMenuOpen = false">Life at Sarinah</button>
-        <a routerLink="/open-positions" [class.active]="active === 'open'" (click)="mobileMenuOpen = false">Open Positions</a>
+        <button type="button" class="career-nav-button" [class.active]="active === 'open' || sectionActive === 'open-positions'" (click)="goToSection('open-positions'); mobileMenuOpen = false">Open Positions</button>
         <button type="button" class="career-nav-button" [class.active]="sectionActive === 'faq'" (click)="goToSection('faq'); mobileMenuOpen = false">FAQ</button>
       </nav>
 
       <div class="career-header-right">
         <ng-container *ngIf="!auth.authenticated; else loggedIn">
           <div class="career-auth-actions">
-            <a class="join-talent-button" routerLink="/register" (click)="mobileMenuOpen = false">Gabung Talent Pool</a>
             <a class="career-sign-in" routerLink="/sign-in" (click)="mobileMenuOpen = false">Masuk</a>
           </div>
         </ng-container>
@@ -58,35 +57,21 @@ import { TalentAuthService } from '../core/service/api/talent-auth.service';
 })
 export class CareerHeaderComponent {
   @Input() active: 'home' | 'open' | 'portal' | '' = '';
-  sectionActive: 'life' | 'faq' | '' = '';
   mobileMenuOpen = false;
 
   constructor(public auth: TalentAuthService, private router: Router) {}
 
-  goToSection(section: 'life' | 'faq'): void {
-    this.sectionActive = section;
+  get sectionActive(): string {
+    return this.router.parseUrl(this.router.url).fragment || '';
+  }
 
-    const scroll = () => {
+  goToSection(section: 'life' | 'open-positions' | 'faq'): void {
+    this.router.navigate(['/'], { fragment: section }).then(() => {
+      // Also scroll when the user selects the current fragment again.
       setTimeout(() => {
-        document.getElementById(section)?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-        });
+        document.getElementById(section)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 40);
-    };
-
-    if (this.router.url.startsWith('/') &&
-        !this.router.url.startsWith('/open-positions') &&
-        !this.router.url.startsWith('/portal') &&
-        !this.router.url.startsWith('/backoffice') &&
-        !this.router.url.startsWith('/sign-in') &&
-        !this.router.url.startsWith('/register') &&
-        !this.router.url.startsWith('/onboarding')) {
-      this.router.navigate([], { fragment: section, replaceUrl: false }).then(scroll);
-      return;
-    }
-
-    this.router.navigate(['/'], { fragment: section }).then(scroll);
+    });
   }
 
   get userInitials(): string {

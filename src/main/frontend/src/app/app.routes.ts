@@ -1,4 +1,5 @@
-import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { Router, Routes } from '@angular/router';
 import { candidateAuthGuard, completedOnboardingGuard } from './core/guard/candidate-auth.guard';
 import { backofficeAuthGuard } from './core/guard/backoffice-auth.guard';
 import { LandingComponent } from './features/public/landing.component';
@@ -7,7 +8,6 @@ import { ForgotPasswordComponent } from './features/auth/forgot-password.compone
 import { ResetPasswordComponent } from './features/auth/reset-password.component';
 import { CandidatePortalComponent } from './features/candidate/candidate-portal.component';
 import { TalentOnboardingComponent } from './features/candidate/talent-onboarding.component';
-import { OpenPositionsComponent } from './features/public/open-positions.component';
 import { JobDetailComponent } from './features/public/job-detail.component';
 import { JobApplicationReviewComponent } from './features/candidate/job-application-review.component';
 import { BackofficeLoginComponent } from './features/backoffice/backoffice-login.component';
@@ -19,7 +19,7 @@ import { BackofficeInterviewsComponent } from './features/backoffice/backoffice-
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
-  { path: 'open-positions', component: OpenPositionsComponent },
+  { path: 'open-positions', redirectTo: () => inject(Router).createUrlTree(['/'], { fragment: 'open-positions' }) },
   { path: 'jobs/:id', component: JobDetailComponent },
   { path: 'jobs/:id/apply', component: JobApplicationReviewComponent, canActivate: [completedOnboardingGuard] },
   { path: 'sign-in', component: CandidateAuthComponent },
