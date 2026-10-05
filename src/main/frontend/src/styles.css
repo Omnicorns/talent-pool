@@ -3662,6 +3662,13 @@ img{max-width:100%}
 
 /* Home positions and shared career footer */
 .positions-section{background:#f5f7f8}
+.positions-talent-invite{display:flex;align-items:center;justify-content:space-between;gap:28px;margin-top:28px;padding:28px 30px;border:1px solid #efd4d1;border-radius:16px;background:linear-gradient(120deg,#fff,#fff3f1)}
+.positions-talent-invite>div{min-width:0;max-width:720px}
+.positions-talent-invite>div>span{color:var(--red);font-size:11px;font-weight:900;letter-spacing:.12em}
+.positions-talent-invite h3{margin:10px 0;font-size:22px;letter-spacing:-.025em}
+.positions-talent-invite p{margin:0;color:var(--muted);font-size:14px;line-height:1.7}
+.positions-talent-invite .primary-button{flex-shrink:0;white-space:nowrap;font-size:14px}
+.positions-talent-invite a:focus-visible{outline:2px solid var(--red);outline-offset:4px}
 .career-footer{background:#b71f17;color:#fff;padding:52px 5vw 24px}
 .career-footer-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr) minmax(0,1fr);gap:48px;max-width:1320px;margin:0 auto}
 .career-footer-brand img{width:160px;height:auto;filter:brightness(0) invert(1)}
@@ -3683,5 +3690,8 @@ img{max-width:100%}
   .career-footer-grid{grid-template-columns:minmax(0,1fr)}
   .career-footer-bottom{flex-direction:column;gap:8px}
   .positions-section .job-card{align-items:flex-start;flex-direction:column;gap:16px}
+  .positions-talent-invite{align-items:stretch;flex-direction:column;gap:20px;padding:22px}
+  .positions-talent-invite h3{font-size:20px}
+  .positions-talent-invite .primary-button{width:100%}
   #life,#open-positions,#faq{scroll-margin-top:84px}
 }

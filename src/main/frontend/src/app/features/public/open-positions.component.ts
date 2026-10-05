@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { PublicJobService } from '../../core/service/api/public-job.service';
+import { TalentAuthService } from '../../core/service/api/talent-auth.service';
 import { JobListing } from '../../core/models/talent.models';
 
 @Component({
@@ -35,6 +36,15 @@ import { JobListing } from '../../core/models/talent.models';
           </article>
           <div class="empty-state" *ngIf="!jobs.length && !error">Belum ada posisi yang tersedia.</div>
         </div>
+
+        <aside class="positions-talent-invite" aria-label="Gabung Talent Pool">
+          <div>
+            <span>TALENT POOL</span>
+            <h3>Belum menemukan posisi yang sesuai?</h3>
+            <p>Simpan profil Anda di Talent Pool agar tim rekrutmen dapat mempertimbangkan Anda untuk peluang berikutnya.</p>
+          </div>
+          <a class="primary-button" [routerLink]="talentPoolLink">{{ talentPoolLabel }} →</a>
+        </aside>
     </div>
   `,
 })
@@ -43,7 +53,17 @@ export class OpenPositionsComponent implements OnInit {
   loading = true;
   error = '';
 
-  constructor(private jobsApi: PublicJobService) {}
+  constructor(private jobsApi: PublicJobService, public auth: TalentAuthService) {}
+
+  get talentPoolLink(): string {
+    if (!this.auth.authenticated) return '/register';
+    return this.auth.session?.onboardingCompleted === false ? '/onboarding' : '/portal';
+  }
+
+  get talentPoolLabel(): string {
+    if (!this.auth.authenticated) return 'Gabung Talent Pool';
+    return this.auth.session?.onboardingCompleted === false ? 'Lengkapi Profil Talent Pool' : 'Lihat Profil Saya';
+  }
 
   ngOnInit(): void {
     this.loadJobs();
