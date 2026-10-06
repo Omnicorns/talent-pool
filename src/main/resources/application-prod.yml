@@ -19,6 +19,8 @@ spring:
             required: false
 
 app:
+  storage:
+    root: ${STORAGE_ROOT:/opt/peoplecounter/uploads}
   mail:
     enabled: true
     from: ${APP_MAIL_FROM:talentpool@sarinah.co.id}

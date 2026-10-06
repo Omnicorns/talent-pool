@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CandidateProfile, EducationItem, WorkExperienceItem, WorkDetails, TalentProfileDetails, SupportingUpload, PortfolioItem } from '../../core/models/talent.models';
@@ -9,11 +9,11 @@ import { ChoiceFieldComponent } from '../../shared/choice-field.component';
 import { TagSelectComponent } from '../../shared/tag-select.component';
 import { TALENT_OPTIONS } from '../../shared/talent-options';
 @Component({selector:'app-talent-onboarding',standalone:true,imports:[CommonModule,FormsModule,RouterLink,ChoiceFieldComponent,TagSelectComponent],templateUrl:'./talent-onboarding.component.html'})
-export class TalentOnboardingComponent implements OnInit {
+export class TalentOnboardingComponent implements OnInit, OnDestroy {
   profile!:CandidateProfile; details!:TalentProfileDetails; options=TALENT_OPTIONS;
   step=1; saving=false; editing=false; error=''; returnUrl='/portal';
   today=new Date().toLocaleDateString('en-CA'); currentYear=new Date().getFullYear();
-  cvFile:File|null=null; profilePicture:File|null=null; portfolioFiles:File[]=[]; supportingUploads:SupportingUpload[]=[];
+  cvFile:File|null=null; profilePicture:File|null=null; profilePicturePreviewUrl:string|null=null; portfolioFiles:File[]=[]; supportingUploads:SupportingUpload[]=[];
   portfolioLinks=[{title:'Portfolio',url:''}]; postalRegions:string[]=[]; postalLoading=false; postalError='';
   steps=['Informasi Pribadi','Pendidikan','Pengalaman Kerja','Sertifikat Pelatihan','Additional Info','Upload CV & Portofolio'];
   constructor(private portal:TalentPortalService,private auth:TalentAuthService,private router:Router,private route:ActivatedRoute) {
@@ -26,6 +26,7 @@ export class TalentOnboardingComponent implements OnInit {
     if(this.auth.session?.onboardingCompleted!==false && !this.editing){this.router.navigateByUrl(this.returnUrl);return;}
     this.portal.profile().subscribe({next:profile=>{
       this.profile={...profile,educations:profile.educations||[],workExperiences:profile.workExperiences||[],portfolios:profile.portfolios||[],relatedIndustries:profile.relatedIndustries||[],relatedJobPositions:profile.relatedJobPositions||[],tools:profile.tools||[],jobInterests:profile.jobInterests||[],preferredLocations:profile.preferredLocations||[]};
+      if(this.profile.profilePictureOriginalName)this.loadExistingProfilePicture();
       this.details={gender:'',postalCode:'',region:'',linkedinUrl:'',socialPlatform:'',socialUsername:'',expectedSalaryMax:null,noExperience:false,languageSkills:[],trainingCertifications:[],...profile.profileDetails};this.details.languageSkills ||= [];this.details.trainingCertifications ||= [];this.profile.profileDetails=this.details;
       if(['Talent Portal','Website'].includes(this.profile.source||'')) this.profile.source='';
       this.formalEducations.forEach(edu=>edu.clientKey ||= crypto.randomUUID());this.profile.workExperiences.forEach(exp=>this.workDetails(exp));
@@ -34,6 +35,8 @@ export class TalentOnboardingComponent implements OnInit {
       const links=this.profile.portfolios.filter(p=>p.type==='LINK' && p.url).map(p=>({title:p.title||'Portfolio',url:p.url||''}));if(links.length)this.portfolioLinks=links;
     },error:()=>this.error='Profil kandidat gagal dimuat. Silakan coba lagi.'});
   }
+  ngOnDestroy():void{if(this.profilePicturePreviewUrl)URL.revokeObjectURL(this.profilePicturePreviewUrl);}
+  private loadExistingProfilePicture():void{this.portal.profilePicture().subscribe({next:blob=>{if(!blob.size)return;if(this.profilePicturePreviewUrl)URL.revokeObjectURL(this.profilePicturePreviewUrl);this.profilePicturePreviewUrl=URL.createObjectURL(blob);},error:()=>{this.profilePicturePreviewUrl=null;}});}
   get progress():number{return this.step/6*100;}
   get stepLabel():string{return String(this.step).padStart(2,'0');}
   get formalEducations():EducationItem[]{return this.profile?.educations.filter(e=>e.type==='FORMAL')||[];}
@@ -66,7 +69,7 @@ export class TalentOnboardingComponent implements OnInit {
   private selected(event:Event,extensions:string[],maxMb:number):File|null{const input=event.target as HTMLInputElement,file=input.files?.[0];if(!file)return null;this.error='';if(!this.validFile(file,extensions,maxMb)){input.value='';return null;}return file;}
   private validFile(file:File,extensions:string[],maxMb:number):boolean{if(!extensions.includes(file.name.split('.').pop()?.toLowerCase()||'') || !file.size || file.size>maxMb*1024*1024){this.error='File '+file.name+' harus berformat '+extensions.join(', ').toUpperCase()+' dan maksimal '+maxMb+' MB.';return false;}return true;}
   selectCv(event:Event):void{const file=this.selected(event,['pdf','doc','docx'],10);if(file)this.cvFile=file;}
-  selectProfilePicture(event:Event):void{const file=this.selected(event,['jpg','jpeg','png'],10);if(file)this.profilePicture=file;}
+  selectProfilePicture(event:Event):void{const file=this.selected(event,['jpg','jpeg','png'],10);if(file){this.profilePicture=file;if(this.profilePicturePreviewUrl)URL.revokeObjectURL(this.profilePicturePreviewUrl);this.profilePicturePreviewUrl=URL.createObjectURL(file);}}
   selectPortfolioFiles(event:Event):void{const input=event.target as HTMLInputElement,files=Array.from(input.files||[]);this.error='';if(files.length>10){this.error='Maksimal 10 file portofolio.';input.value='';return;}if(files.every(f=>this.validFile(f,['pdf','jpg','jpeg','png','doc','docx','zip'],10)))this.portfolioFiles=files;else input.value='';}
   selectDocument(event:Event,key:string):void{const file=this.selected(event,['pdf'],2);if(file){this.supportingUploads=this.supportingUploads.filter(u=>u.key!==key);this.supportingUploads.push({key,file});}}
   goToCompletedStep(target:number):void{if(target<this.step){this.step=target;this.error='';}}

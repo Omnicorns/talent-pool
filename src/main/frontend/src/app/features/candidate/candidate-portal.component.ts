@@ -525,12 +525,12 @@ export class CandidatePortalComponent implements OnInit {
   }
 
   openDrawer(section: DrawerSection, index: number | null = null): void {
-    this.router.navigate(['/onboarding'], { queryParams: { edit: 'true' } });
+    this.router.navigate(['/onboarding'], { queryParams: { edit: 'true', returnUrl: '/portal' } });
   }
 
   openEducationDrawer(section: 'education' | 'training', item: EducationItem): void {
     if (section === 'education') {
-      this.router.navigate(['/onboarding'], {queryParams:{edit:'true'}});
+      this.router.navigate(['/onboarding'], {queryParams:{edit:'true',returnUrl:'/portal'}});
       return;
     }
     this.snapshot = structuredClone(this.profile);
