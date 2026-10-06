@@ -525,19 +525,29 @@ export class CandidatePortalComponent implements OnInit {
   }
 
   openDrawer(section: DrawerSection, index: number | null = null): void {
-    this.router.navigate(['/onboarding'], { queryParams: { edit: 'true', returnUrl: '/portal' } });
+    this.snapshot = structuredClone(this.profile);
+    this.drawerSection = section;
+    this.drawerIndex = index;
+    this.editExperience = null;
+    this.editEducation = null;
+
+    if (section === 'experience') {
+      this.editExperience = index == null
+        ? { companyName: '', position: '', startDate: '', endDate: null, currentJob: false, description: '', details: { employmentType: '', industry: '', skills: [], tools: [], resignReason: '' } }
+        : structuredClone(this.profile.workExperiences[index]);
+    }
+    if (section === 'education' || section === 'training') {
+      const type = section === 'education' ? 'FORMAL' : 'INFORMAL';
+      this.editEducation = index == null
+        ? { type, clientKey: type === 'FORMAL' ? crypto.randomUUID() : null, institution: '', level: '', major: '', startYear: null, endYear: null, description: '', ipk: null }
+        : structuredClone(this.profile.educations[index]);
+    }
+    this.drawerOpen = true;
   }
 
   openEducationDrawer(section: 'education' | 'training', item: EducationItem): void {
-    if (section === 'education') {
-      this.router.navigate(['/onboarding'], {queryParams:{edit:'true',returnUrl:'/portal'}});
-      return;
-    }
-    this.snapshot = structuredClone(this.profile);
-    this.drawerSection = section;
-    this.drawerIndex = this.profile.educations.findIndex((education) => education.id === item.id);
-    this.editEducation = structuredClone(item);
-    this.drawerOpen = true;
+    const index = this.profile.educations.indexOf(item);
+    this.openDrawer(section, index >= 0 ? index : null);
   }
 
   cancelDrawer(): void {

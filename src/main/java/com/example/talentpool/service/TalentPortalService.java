@@ -11,6 +11,7 @@ import com.example.talentpool.repository.JobApplicationRepository;
 import com.example.talentpool.repository.JobApplicationHistoryRepository;
 import com.example.talentpool.repository.JobListingRepository;
 import com.example.talentpool.repository.InterviewRepository;
+import com.example.talentpool.repository.TalentAccountRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +36,7 @@ public class TalentPortalService {
     private final JobApplicationService applicationService;
     private final CandidateViewService candidateViewService;
     private final InterviewRepository interviewRepository;
+    private final TalentAccountRepository talentAccounts;
 
     public TalentPortalService(
             CandidateService candidateService,
@@ -47,12 +49,14 @@ public class TalentPortalService {
             InterviewRepository interviewRepository,
             SupportingDocumentService documents,
             TalentProfileValidator profileValidator,
-            com.example.talentpool.repository.CandidateRepository candidates
+            com.example.talentpool.repository.CandidateRepository candidates,
+            TalentAccountRepository talentAccounts
     ) {
         this.candidateService = candidateService;
         this.documents = documents;
         this.profileValidator=profileValidator;
         this.candidates=candidates;
+        this.talentAccounts=talentAccounts;
         this.jobListingService = jobListingService;
         this.jobListingRepository = jobListingRepository;
         this.applicationRepository = applicationRepository;
@@ -90,7 +94,11 @@ public class TalentPortalService {
             throw new BadRequestException("Maksimal 10 portofolio, masing-masing maksimal 10 MB");
         candidateService.update(candidateId, request, cv, profilePicture, portfolioFiles);
         documents.attach(candidateId,supportingKeys,supportingFiles);
-        if(request.profileDetails()!=null) profileValidator.validate(candidates.findById(candidateId).orElseThrow());
+        boolean onboardingComplete=talentAccounts.findByCandidateId(candidateId)
+                .map(com.example.talentpool.domain.TalentAccount::isOnboardingCompleted)
+                .orElse(false);
+        if(!onboardingComplete && request.profileDetails()!=null)
+            profileValidator.validate(candidates.findById(candidateId).orElseThrow());
         return candidateService.detail(candidateId);
     }
 
