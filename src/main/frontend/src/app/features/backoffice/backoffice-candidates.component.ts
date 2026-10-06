@@ -2,13 +2,14 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TalentProfileDetailsComponent } from '../../shared/talent-profile-details.component';
+import { BackofficeOverlayDirective } from '../../shared/backoffice-overlay.directive';
 import { BackofficeLayoutComponent } from '../../shared/backoffice-layout.component';
 import { BackofficeApiService } from '../../core/service/api/backoffice-api.service';
 
 @Component({
   selector: 'app-backoffice-candidates',
   standalone: true,
-  imports: [CommonModule, FormsModule, BackofficeLayoutComponent, TalentProfileDetailsComponent],
+  imports: [CommonModule, FormsModule, BackofficeLayoutComponent, TalentProfileDetailsComponent, BackofficeOverlayDirective],
   template: `
     <app-backoffice-layout active="candidates">
       <div class="bo-page-head">
@@ -99,14 +100,14 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
       </section>
 
       <div class="drawer-backdrop bo-candidate-backdrop" *ngIf="drawerOpen" (click)="closeOnBackdrop($event)">
-        <aside class="side-drawer bo-candidate-drawer">
+        <aside class="side-drawer bo-candidate-drawer" [boOverlay]="true" (overlayClose)="closeDrawer()" aria-label="Profil kandidat">
           <header>
             <div>
               <span class="bo-kicker">CANDIDATE PROFILE</span>
               <h2>{{ selected?.fullName || 'Candidate' }}</h2>
               <p>{{ selected?.email || '-' }} • {{ selected?.phone || '-' }}</p>
             </div>
-            <button (click)="closeDrawer()">×</button>
+            <button type="button" (click)="closeDrawer()" aria-label="Tutup panel">×</button>
           </header>
 
           <div class="drawer-body" *ngIf="selected; else detailLoading">

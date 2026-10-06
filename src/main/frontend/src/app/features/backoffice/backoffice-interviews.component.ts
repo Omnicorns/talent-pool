@@ -2,13 +2,14 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { BackofficeOverlayDirective } from '../../shared/backoffice-overlay.directive';
 import { BackofficeLayoutComponent } from '../../shared/backoffice-layout.component';
 import { BackofficeApiService } from '../../core/service/api/backoffice-api.service';
 
 @Component({
   selector: 'app-backoffice-interviews',
   standalone: true,
-  imports: [CommonModule, FormsModule, BackofficeLayoutComponent],
+  imports: [CommonModule, FormsModule, BackofficeLayoutComponent, BackofficeOverlayDirective],
   template: `
     <app-backoffice-layout active="interviews">
       <div class="bo-page-head">
@@ -127,14 +128,14 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
       </section>
 
       <div class="drawer-backdrop" *ngIf="drawerOpen" (click)="closeOnBackdrop($event)">
-        <aside class="side-drawer">
+        <aside class="side-drawer" [boOverlay]="true" (overlayClose)="closeDrawer()" aria-label="Form interview">
           <header>
             <div>
               <span class="bo-kicker">INTERVIEW</span>
               <h2>{{ editingId ? 'Edit Interview' : 'Jadwalkan Interview' }}</h2>
               <p>{{ selectedCandidateName || 'Pilih kandidat dan detail jadwal interview.' }}</p>
             </div>
-            <button (click)="closeDrawer()">×</button>
+            <button type="button" (click)="closeDrawer()" aria-label="Tutup panel">×</button>
           </header>
 
           <div class="drawer-body">

@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, HostListener, Input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { BackofficeAuthService } from '../core/service/api/backoffice-auth.service';
+import { BackofficeOverlayDirective } from './backoffice-overlay.directive';
 
 @Component({
   selector: 'app-backoffice-layout',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, BackofficeOverlayDirective],
   template: `
     <div class="bo-shell">
       <header class="bo-mobile-header">
@@ -21,6 +22,8 @@ import { BackofficeAuthService } from '../core/service/api/backoffice-auth.servi
           type="button"
           class="bo-mobile-menu-button"
           (click)="mobileMenuOpen = true"
+          [attr.aria-expanded]="mobileMenuOpen"
+          aria-controls="backoffice-navigation"
           aria-label="Buka menu Back Office">
           <span></span><span></span><span></span>
         </button>
@@ -32,7 +35,9 @@ import { BackofficeAuthService } from '../core/service/api/backoffice-auth.servi
         (click)="mobileMenuOpen = false">
       </div>
 
-      <aside class="bo-sidebar" [class.mobile-open]="mobileMenuOpen">
+      <aside id="backoffice-navigation" class="bo-sidebar" [class.mobile-open]="mobileMenuOpen"
+        [boOverlay]="mobileMenuOpen" (overlayClose)="mobileMenuOpen = false"
+        [attr.inert]="isMobile && !mobileMenuOpen ? '' : null" aria-label="Menu Back Office">
         <div class="bo-brand">
           <img src="images/sarinah.png" alt="Sarinah">
           <div>
@@ -46,7 +51,7 @@ import { BackofficeAuthService } from '../core/service/api/backoffice-auth.servi
             aria-label="Tutup menu">×</button>
         </div>
 
-        <nav class="bo-nav">
+        <nav class="bo-nav" aria-label="Navigasi Back Office">
           <a routerLink="/backoffice/dashboard" [class.active]="active === 'dashboard'" (click)="mobileMenuOpen = false">
             <span>▦</span><b>Dashboard</b>
           </a>
@@ -70,7 +75,7 @@ import { BackofficeAuthService } from '../core/service/api/backoffice-auth.servi
         </div>
       </aside>
 
-      <main class="bo-content">
+      <main class="bo-content" [attr.inert]="mobileMenuOpen ? '' : null">
         <ng-content />
       </main>
     </div>
@@ -79,6 +84,13 @@ import { BackofficeAuthService } from '../core/service/api/backoffice-auth.servi
 export class BackofficeLayoutComponent {
   @Input() active: 'dashboard' | 'candidates' | 'jobs' | 'applications' | 'interviews' = 'dashboard';
   mobileMenuOpen = false;
+  isMobile = window.innerWidth <= 1024;
+
+  @HostListener('window:resize')
+  onResize(): void {
+    this.isMobile = window.innerWidth <= 1024;
+    if (!this.isMobile) this.mobileMenuOpen = false;
+  }
 
   constructor(public auth: BackofficeAuthService) {}
 
