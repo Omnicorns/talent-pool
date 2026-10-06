@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { CandidateProfile, EducationItem, WorkExperienceItem, WorkDetails, TalentProfileDetails, SupportingUpload } from '../../core/models/talent.models';
+import { CandidateProfile, EducationItem, WorkExperienceItem, WorkDetails, TalentProfileDetails, SupportingUpload, PortfolioItem } from '../../core/models/talent.models';
 import { TalentAuthService } from '../../core/service/api/talent-auth.service';
 import { TalentPortalService } from '../../core/service/api/talent-portal.service';
 import { ChoiceFieldComponent } from '../../shared/choice-field.component';
@@ -15,7 +15,7 @@ export class TalentOnboardingComponent implements OnInit {
   today=new Date().toLocaleDateString('en-CA'); currentYear=new Date().getFullYear();
   cvFile:File|null=null; profilePicture:File|null=null; portfolioFiles:File[]=[]; supportingUploads:SupportingUpload[]=[];
   portfolioLinks=[{title:'Portfolio',url:''}]; postalRegions:string[]=[]; postalLoading=false; postalError='';
-  steps=['Upload CV','Informasi Pribadi','Pendidikan','Pengalaman Kerja','Kompensasi','Portofolio','Additional Info'];
+  steps=['Informasi Pribadi','Pendidikan','Pengalaman Kerja','Sertifikat Pelatihan','Additional Info','Upload CV & Portofolio'];
   constructor(private portal:TalentPortalService,private auth:TalentAuthService,private router:Router,private route:ActivatedRoute) {
     const requested=route.snapshot.queryParamMap.get('returnUrl');
     if(requested?.startsWith('/') && !requested.startsWith('//')) this.returnUrl=requested;
@@ -26,7 +26,7 @@ export class TalentOnboardingComponent implements OnInit {
     if(this.auth.session?.onboardingCompleted!==false && !this.editing){this.router.navigateByUrl(this.returnUrl);return;}
     this.portal.profile().subscribe({next:profile=>{
       this.profile={...profile,educations:profile.educations||[],workExperiences:profile.workExperiences||[],portfolios:profile.portfolios||[],relatedIndustries:profile.relatedIndustries||[],relatedJobPositions:profile.relatedJobPositions||[],tools:profile.tools||[],jobInterests:profile.jobInterests||[],preferredLocations:profile.preferredLocations||[]};
-      this.details={gender:'',postalCode:'',region:'',linkedinUrl:'',socialPlatform:'',socialUsername:'',expectedSalaryMax:null,noExperience:false,languageSkills:[],...profile.profileDetails};this.details.languageSkills ||= [];this.profile.profileDetails=this.details;
+      this.details={gender:'',postalCode:'',region:'',linkedinUrl:'',socialPlatform:'',socialUsername:'',expectedSalaryMax:null,noExperience:false,languageSkills:[],trainingCertifications:[],...profile.profileDetails};this.details.languageSkills ||= [];this.details.trainingCertifications ||= [];this.profile.profileDetails=this.details;
       if(['Talent Portal','Website'].includes(this.profile.source||'')) this.profile.source='';
       this.formalEducations.forEach(edu=>edu.clientKey ||= crypto.randomUUID());this.profile.workExperiences.forEach(exp=>this.workDetails(exp));
       if(!this.formalEducations.length)this.addEducation();if(!this.details.noExperience && !this.profile.workExperiences.length)this.addExperience();if(!this.details.languageSkills.length)this.addLanguage();
@@ -34,11 +34,12 @@ export class TalentOnboardingComponent implements OnInit {
       const links=this.profile.portfolios.filter(p=>p.type==='LINK' && p.url).map(p=>({title:p.title||'Portfolio',url:p.url||''}));if(links.length)this.portfolioLinks=links;
     },error:()=>this.error='Profil kandidat gagal dimuat. Silakan coba lagi.'});
   }
-  get progress():number{return this.step/7*100;}
+  get progress():number{return this.step/6*100;}
   get stepLabel():string{return String(this.step).padStart(2,'0');}
   get formalEducations():EducationItem[]{return this.profile?.educations.filter(e=>e.type==='FORMAL')||[];}
-  get stepTitle():string{return ['Upload CV','Informasi Pribadi','Pendidikan','Pengalaman Kerja','Kompensasi','Profil & Portofolio','Additional Information'][this.step-1];}
-  get stepDescription():string{return ['Upload CV terbaru untuk membantu proses screening.','Lengkapi identitas, alamat, dan kontak yang dapat dihubungi.','Isi pendidikan terakhir beserta ijazah dan transkrip.','Ceritakan pengalaman, keahlian, dan pencapaian Anda.','Isi gaji terakhir dan rentang ekspektasi gaji per bulan.','Tambahkan foto dan portofolio jika tersedia.','Pilih fungsi, lokasi, sumber informasi, serta kemampuan bahasa.'][this.step-1];}
+  get existingPortfolioFiles():PortfolioItem[]{return this.profile?.portfolios.filter(item=>item.type==='FILE')||[];}
+  get stepTitle():string{return ['Informasi Pribadi','Pendidikan','Pengalaman Kerja','Sertifikat Pelatihan','Additional Information','Upload CV & Portofolio'][this.step-1];}
+  get stepDescription():string{return ['Lengkapi identitas, alamat, dan kontak yang dapat dihubungi.','Isi pendidikan terakhir beserta ijazah dan transkrip.','Ceritakan pengalaman, keahlian, dan pencapaian Anda.','Tambahkan sertifikat pelatihan dan kredensial yang Anda miliki.','Isi kompensasi, minat kerja, lokasi, sumber informasi, dan kemampuan bahasa.','Unggah CV terbaru dan dokumen atau tautan portofolio Anda.'][this.step-1];}
   get age():number|null {
     if(!this.profile?.birthDate)return null;const date=new Date(this.profile.birthDate+'T00:00:00'),now=new Date();if(isNaN(date.getTime()) || date>now)return null;
     let age=now.getFullYear()-date.getFullYear();if(now.getMonth()<date.getMonth() || now.getMonth()===date.getMonth() && now.getDate()<date.getDate())age--;return age;
@@ -49,6 +50,8 @@ export class TalentOnboardingComponent implements OnInit {
   addExperience():void{this.profile.workExperiences.push({companyName:'',position:'',startDate:'',endDate:null,currentJob:false,description:'',details:{employmentType:'',industry:'',skills:[],tools:[],resignReason:''}});}
   toggleNoExperience():void{if(this.details.noExperience)this.profile.workExperiences=[];else if(!this.profile.workExperiences.length)this.addExperience();}
   addLanguage():void{this.details.languageSkills.push({key:crypto.randomUUID(),name:'',proficiency:''});}
+  addTrainingCertification():void{this.details.trainingCertifications.push({name:'',issuingOrganization:'',issueDate:'',expiryDate:'',credentialId:'',credentialUrl:''});}
+  removeTrainingCertification(index:number):void{this.details.trainingCertifications.splice(index,1);}
   removeLanguage(i:number):void{const [language]=this.details.languageSkills.splice(i,1);this.removeUploads('language:'+language.key+':');}
   private removeUploads(prefix:string):void{this.supportingUploads=this.supportingUploads.filter(u=>!u.key.startsWith(prefix));}
   educationKey(edu:EducationItem,kind:string):string{return 'education:'+edu.clientKey+':'+kind;}
@@ -68,14 +71,13 @@ export class TalentOnboardingComponent implements OnInit {
   selectDocument(event:Event,key:string):void{const file=this.selected(event,['pdf'],2);if(file){this.supportingUploads=this.supportingUploads.filter(u=>u.key!==key);this.supportingUploads.push({key,file});}}
   goToCompletedStep(target:number):void{if(target<this.step){this.step=target;this.error='';}}
   previous():void{this.error='';this.step=Math.max(1,this.step-1);}
-  next():void{this.error=this.validateStep(this.step);if(!this.error)this.step=Math.min(7,this.step+1);}
+  next():void{this.error=this.validateStep(this.step);if(!this.error)this.step=Math.min(6,this.step+1);}
   private text(value:unknown):boolean{return typeof value==='string' && !!value.trim();}
   private number(value:unknown):boolean{return value!==null && value!==undefined && value!=='' && Number.isFinite(Number(value)) && Number(value)>=0;}
   private url(value:string):boolean{try{return ['http:','https:'].includes(new URL(value).protocol);}catch{return false;}}
   validateStep(step:number):string {
     const p=this.profile,d=this.details;
-    if(step===1 && !this.cvFile && !p.cvOriginalName)return 'Upload CV terlebih dahulu.';
-    if(step===2){
+    if(step===1){
       if(!this.text(p.fullName) || !this.text(p.email) || !/^\d{8,15}$/.test(p.phone||''))return 'Nama lengkap, email, dan WhatsApp wajib diisi. WhatsApp harus 8–15 digit angka.';
       if(p.identityNumber && !/^\d+$/.test(p.identityNumber))return 'Nomor KTP hanya boleh berisi angka.';
       if(!d.gender || !p.religion || this.age===null || this.age>=120)return 'Jenis kelamin, agama, dan tanggal lahir yang valid wajib diisi.';
@@ -84,22 +86,22 @@ export class TalentOnboardingComponent implements OnInit {
       if(!this.text(d.socialPlatform) || !this.text(d.socialUsername))return 'Media sosial dan username wajib diisi.';
       if(d.linkedinUrl && !this.url(d.linkedinUrl))return 'URL LinkedIn harus diawali https:// atau http://.';
     }
-    if(step===3){if(!this.formalEducations.length)return 'Tambahkan pendidikan terakhir.';for(const e of this.formalEducations){
+    if(step===2){if(!this.formalEducations.length)return 'Tambahkan pendidikan terakhir.';for(const e of this.formalEducations){
       if(!e.level || !this.text(e.institution) || !this.text(e.major) || !this.number(e.ipk))return 'Jenjang, institusi, jurusan, dan IPK / nilai wajib diisi.';
       if(!Number.isInteger(e.startYear) || !Number.isInteger(e.endYear) || Number(e.startYear)<1900 || Number(e.endYear)<Number(e.startYear) || Number(e.endYear)>this.currentYear)return 'Tahun pendidikan harus valid dan tahun selesai tidak boleh sebelum tahun mulai.';
       if(!this.documentName(this.educationKey(e,'diploma')) || !this.documentName(this.educationKey(e,'transcript')))return 'Ijazah dan transkrip wajib diunggah untuk setiap pendidikan (PDF, maks. 2 MB).';
     }}
-    if(step===4 && !d.noExperience){if(!p.workExperiences.length)return 'Tambahkan pengalaman kerja atau pilih belum memiliki pengalaman.';for(const e of p.workExperiences){const w=this.workDetails(e);
+    if(step===3 && !d.noExperience){if(!p.workExperiences.length)return 'Tambahkan pengalaman kerja atau pilih belum memiliki pengalaman.';for(const e of p.workExperiences){const w=this.workDetails(e);
       if(!this.text(e.companyName) || !this.text(e.position) || !w.employmentType || !this.text(w.industry) || !this.text(e.description) || !w.skills.length || !w.tools.length)return 'Lengkapi perusahaan, posisi, status, industri, deskripsi, skill, dan tools.';
       if(!e.startDate || e.startDate>this.today || !e.currentJob && (!e.endDate || e.endDate<e.startDate || e.endDate>this.today || !this.text(w.resignReason)))return 'Periksa bulan dan tahun kerja serta alasan resign. Tahun selesai tidak boleh sebelum mulai.';
     }}
-    if(step===5 && (!this.number(p.expectedSalary) || !this.number(d.expectedSalaryMax) || Number(d.expectedSalaryMax)<Number(p.expectedSalary) || p.currentSalary!=null && !this.number(p.currentSalary)))return 'Isi rentang ekspektasi gaji yang valid. Maksimum harus sama atau lebih besar dari minimum.';
-    if(step===6 && this.portfolioLinks.some(l=>l.url && (!this.text(l.title) || !this.url(l.url))))return 'Tautan portofolio harus memiliki judul dan URL http:// atau https:// yang valid.';
-    if(step===7){if(!p.jobInterests.length || !p.preferredLocations.length || !this.text(p.source))return 'Fungsi, lokasi yang diminati, dan sumber informasi wajib diisi.';if(!d.languageSkills.length || d.languageSkills.some(l=>!this.text(l.name) || !l.proficiency))return 'Bahasa dan tingkat penguasaan wajib diisi.';if(!p.termsAccepted)return 'Syarat dan ketentuan harus disetujui.';}
+    if(step===4 && d.trainingCertifications.some(c=>!this.text(c.name) || !this.text(c.issuingOrganization) || !c.issueDate || !c.expiryDate || !this.text(c.credentialId) || c.expiryDate<c.issueDate || c.credentialUrl && !this.url(c.credentialUrl)))return 'Lengkapi nama sertifikat, penyelenggara, tanggal terbit, tanggal kedaluwarsa, ID, dan URL sertifikat yang valid.';
+    if(step===5){if(!this.number(p.expectedSalary) || !this.number(d.expectedSalaryMax) || Number(d.expectedSalaryMax)<Number(p.expectedSalary) || p.currentSalary!=null && !this.number(p.currentSalary))return 'Isi rentang ekspektasi gaji yang valid. Maksimum harus sama atau lebih besar dari minimum.';if(!p.jobInterests.length || !p.preferredLocations.length || !this.text(p.source))return 'Fungsi, lokasi yang diminati, dan sumber informasi wajib diisi.';if(!d.languageSkills.length || d.languageSkills.some(l=>!this.text(l.name) || !l.proficiency))return 'Bahasa dan tingkat penguasaan wajib diisi.';if(!p.termsAccepted)return 'Syarat dan ketentuan harus disetujui.';}
+    if(step===6){if(!this.cvFile && !p.cvOriginalName)return 'Upload CV terlebih dahulu.';if(this.portfolioLinks.some(l=>l.url && (!this.text(l.title) || !this.url(l.url))))return 'Tautan portofolio harus memiliki judul dan URL http:// atau https:// yang valid.';}
     return '';
   }
   finish():void {
-    if(this.saving)return;for(let step=1;step<=7;step++){const error=this.validateStep(step);if(error){this.step=step;this.error=error;return;}}
+    if(this.saving)return;for(let step=1;step<=6;step++){const error=this.validateStep(step);if(error){this.step=step;this.error=error;return;}}
     this.error='';this.saving=true;this.profile.portfolios=[...this.profile.portfolios.filter(p=>p.type!=='LINK'),...this.portfolioLinks.filter(p=>p.url.trim()).map(p=>({type:'LINK',title:p.title.trim(),url:p.url.trim()}))];
     this.profile.tools=Array.from(new Set(this.profile.workExperiences.flatMap(exp=>this.workDetails(exp).tools))).slice(0,20);
     this.profile.relatedIndustries=Array.from(new Set(this.profile.workExperiences.map(exp=>this.workDetails(exp).industry))).slice(0,3);

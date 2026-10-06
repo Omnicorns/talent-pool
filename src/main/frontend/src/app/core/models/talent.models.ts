@@ -12,6 +12,15 @@ export interface TalentProfileDetails {
   gender: string; postalCode: string; region: string; linkedinUrl: string;
   socialPlatform: string; socialUsername: string; expectedSalaryMax: number|null;
   noExperience: boolean; languageSkills: Array<{key:string;name:string;proficiency:string}>;
+  trainingCertifications: TrainingCertification[];
+}
+export interface TrainingCertification {
+  name: string;
+  issuingOrganization: string;
+  issueDate: string;
+  expiryDate: string;
+  credentialId: string;
+  credentialUrl: string;
 }
 export interface WorkDetails { employmentType:string;industry:string;skills:string[];tools:string[];resignReason:string; }
 export interface SupportingUpload {key:string;file:File;}

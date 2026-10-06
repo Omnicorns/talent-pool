@@ -47,6 +47,12 @@ public class TalentProfileValidator {
         require(d.languageSkills()!=null && !d.languageSkills().isEmpty(),"Tambahkan bahasa dan tingkat penguasaan.");
         keys.clear();
         for(var l:d.languageSkills()) require(!blank(l.name()) && !blank(l.proficiency()) && !blank(l.key()) && keys.add(l.key()),"Bahasa dan tingkat penguasaan wajib diisi.");
+        if(d.trainingCertifications()!=null) for(var cert:d.trainingCertifications()) {
+            require(!blank(cert.name()) && !blank(cert.issuingOrganization()) && cert.issueDate()!=null && cert.expiryDate()!=null
+                && !cert.expiryDate().isBefore(cert.issueDate()) && !blank(cert.credentialId())
+                && (blank(cert.credentialUrl()) || cert.credentialUrl().matches("https?://.+")),
+                "Data sertifikat pelatihan tidak valid.");
+        }
         require(c.isTermsAccepted(),"Syarat dan ketentuan harus disetujui.");
     }
     private boolean empty(List<String> items) { return items==null || items.isEmpty() || items.stream().anyMatch(this::blank); }

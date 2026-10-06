@@ -99,6 +99,18 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
 
             <section id="training" class="profile-section">
               <div class="section-title"><h2>Training & Certification</h2><button (click)="openDrawer('training')">＋ Add</button></div>
+              <ng-container *ngFor="let item of profile.profileDetails?.trainingCertifications || []">
+                <article class="timeline-item">
+                  <span class="timeline-dot"></span>
+                  <div class="timeline-icon">✓</div>
+                  <div>
+                    <h3>{{ item.name }}</h3>
+                    <p>{{ item.issuingOrganization }} • ID {{ item.credentialId }}</p>
+                    <small>Terbit {{ item.issueDate | date:'dd MMM yyyy' }} · Kedaluwarsa {{ item.expiryDate | date:'dd MMM yyyy' }}</small>
+                    <a *ngIf="item.credentialUrl" class="training-cert-link" [href]="item.credentialUrl" target="_blank" rel="noopener noreferrer">Lihat sertifikat ↗</a>
+                  </div>
+                </article>
+              </ng-container>
               <ng-container *ngFor="let item of informalEducations">
                 <article class="timeline-item">
                   <span class="timeline-dot"></span>
@@ -111,7 +123,7 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
                   <time>{{ item.startYear || '-' }} — {{ item.endYear || '-' }}</time>
                 </article>
               </ng-container>
-              <div class="empty-state" *ngIf="!informalEducations.length">Belum ada training atau sertifikasi.</div>
+              <div class="empty-state" *ngIf="!informalEducations.length && !profile.profileDetails?.trainingCertifications?.length">Belum ada training atau sertifikasi.</div>
             </section>
 
             <section id="additional" class="profile-section">
@@ -513,26 +525,17 @@ export class CandidatePortalComponent implements OnInit {
   }
 
   openDrawer(section: DrawerSection, index: number | null = null): void {
-    if (section !== 'about' && section !== 'training') {
+    if (section === 'training') {
+      this.router.navigate(['/onboarding'], { queryParams: { edit: 'true' } });
+      return;
+    }
+    if (section !== 'about') {
       this.router.navigate(['/onboarding'], {queryParams:{edit:'true'}});
       return;
     }
     this.snapshot = structuredClone(this.profile);
     this.drawerSection = section;
     this.drawerIndex = index;
-
-    if (section === 'training') {
-      this.editEducation = {
-        type: 'INFORMAL',
-        institution: '',
-        level: '',
-        major: '',
-        startYear: null,
-        endYear: null,
-        description: '',
-        ipk: null,
-      };
-    }
 
     this.drawerOpen = true;
   }
