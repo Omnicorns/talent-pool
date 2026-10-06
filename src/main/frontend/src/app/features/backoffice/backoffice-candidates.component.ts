@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TalentProfileDetailsComponent } from '../../shared/talent-profile-details.component';
 import { BackofficeOverlayDirective } from '../../shared/backoffice-overlay.directive';
@@ -47,7 +47,10 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
               <tr *ngFor="let item of rows">
                 <td>
                   <div class="bo-person">
-                    <span class="bo-person-avatar">{{ initials(item.fullName) }}</span>
+                    <span class="bo-person-avatar">
+                      <img *ngIf="pictureUrls[item.id]; else tableInitials" [src]="pictureUrls[item.id]" [alt]="'Foto ' + item.fullName">
+                      <ng-template #tableInitials>{{ initials(item.fullName) }}</ng-template>
+                    </span>
                     <div><strong>{{ item.fullName }}</strong><small>{{ item.email }}</small></div>
                   </div>
                 </td>
@@ -72,7 +75,10 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
         <article class="bo-mobile-card" *ngFor="let item of rows">
           <div class="bo-mobile-card-head">
             <div class="bo-person">
-              <span class="bo-person-avatar">{{ initials(item.fullName) }}</span>
+              <span class="bo-person-avatar">
+                <img *ngIf="pictureUrls[item.id]; else mobileInitials" [src]="pictureUrls[item.id]" [alt]="'Foto ' + item.fullName">
+                <ng-template #mobileInitials>{{ initials(item.fullName) }}</ng-template>
+              </span>
               <div><strong>{{ item.fullName }}</strong><small>{{ item.email }}</small></div>
             </div>
             <span class="bo-badge green">{{ item.status }}</span>
@@ -112,7 +118,10 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
 
           <div class="drawer-body" *ngIf="selected; else detailLoading">
             <div class="bo-candidate-summary">
-              <span class="bo-candidate-avatar-lg">{{ initials(selected.fullName) }}</span>
+              <span class="bo-candidate-avatar-lg">
+                <img *ngIf="pictureUrls[selected.id]; else drawerInitials" [src]="pictureUrls[selected.id]" [alt]="'Foto ' + selected.fullName">
+                <ng-template #drawerInitials>{{ initials(selected.fullName) }}</ng-template>
+              </span>
               <div>
                 <h3>{{ selected.fullName }}</h3>
                 <p>{{ selected.relatedJobPositions?.join(', ') || selected.jobPosition || 'Talent Pool Candidate' }}</p>
@@ -124,6 +133,33 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
               <button class="bo-primary" (click)="downloadCv()" [disabled]="!selected.cvOriginalName">Lihat / Download CV</button>
               <button class="bo-secondary" (click)="showInterviewForm = !showInterviewForm">Jadwalkan Interview</button>
             </div>
+
+            <section class="bo-detail-section bo-move-candidate">
+              <div class="section-title"><h2>Masukkan ke Job Listing</h2></div>
+              <p *ngIf="selected.movedToJobListing" class="bo-move-success">Kandidat ini sudah pernah ditempatkan ke lowongan.</p>
+              <div class="drawer-form">
+                <label>Lowongan aktif
+                  <select [(ngModel)]="moveForm.jobListingId">
+                    <option value="">Pilih job listing</option>
+                    <option *ngFor="let job of jobs" [value]="job.id">{{ job.title }}</option>
+                  </select>
+                </label>
+                <label>Tahap rekrutmen
+                  <select [(ngModel)]="moveForm.hiringStage">
+                    <option value="NEW_CANDIDATE">Kandidat Baru</option>
+                    <option value="SCREENING">Screening</option>
+                    <option value="INTERVIEW">Interview</option>
+                    <option value="OFFER">Offer</option>
+                  </select>
+                </label>
+                <button type="button" class="bo-primary" (click)="moveToJobListing()" [disabled]="moving || !jobs.length">
+                  {{ moving ? 'Menyimpan...' : 'Masukkan Kandidat' }}
+                </button>
+                <p class="form-error" *ngIf="moveError">{{ moveError }}</p>
+                <p class="bo-move-success" *ngIf="moveSuccess">{{ moveSuccess }}</p>
+                <p class="empty-state" *ngIf="!jobs.length">Belum ada job listing aktif yang bisa dipilih.</p>
+              </div>
+            </section>
 
             <app-talent-profile-details [profile]="selected" [backoffice]="true"></app-talent-profile-details>
             <section class="bo-detail-section" *ngIf="showInterviewForm">
@@ -215,9 +251,10 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
     </app-backoffice-layout>
   `,
 })
-export class BackofficeCandidatesComponent implements OnInit {
+export class BackofficeCandidatesComponent implements OnInit, OnDestroy {
   rows: any[] = [];
   jobs: any[] = [];
+  pictureUrls: Record<string, string> = {};
   q = '';
   loading = false;
   drawerOpen = false;
@@ -225,6 +262,10 @@ export class BackofficeCandidatesComponent implements OnInit {
   showInterviewForm = false;
   scheduling = false;
   interviewError = '';
+  moving = false;
+  moveError = '';
+  moveSuccess = '';
+  moveForm = { jobListingId: '', hiringStage: 'NEW_CANDIDATE' };
   statuses = ['AVAILABLE','SCREENED','POTENTIAL','ARCHIVED','REJECTED','SPAM','BLOCKED','WITHDRAWN','HIRED'];
 
   interviewForm: any = {
@@ -241,14 +282,35 @@ export class BackofficeCandidatesComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
-    this.api.jobListings('').subscribe({ next: (result) => this.jobs = result?.content || [] });
+    this.api.jobListings('').subscribe({ next: (result) => this.jobs = (result?.content || []).filter((job: any) => job.status === 'PUBLISHED') });
+  }
+
+  ngOnDestroy(): void {
+    Object.values(this.pictureUrls).forEach((url) => URL.revokeObjectURL(url));
   }
 
   load(): void {
     this.loading = true;
     this.api.candidates(this.q).subscribe({
-      next: (result) => { this.rows = result?.content || []; this.loading = false; },
+      next: (result) => {
+        Object.values(this.pictureUrls).forEach((url) => URL.revokeObjectURL(url));
+        this.pictureUrls = {};
+        this.rows = result?.content || [];
+        this.rows.forEach((item) => this.loadPicture(item.id));
+        this.loading = false;
+      },
       error: () => this.loading = false,
+    });
+  }
+
+  private loadPicture(id: string): void {
+    this.api.candidatePicture(id).subscribe({
+      next: (blob) => {
+        if (!blob.size) return;
+        const previous = this.pictureUrls[id];
+        if (previous) URL.revokeObjectURL(previous);
+        this.pictureUrls[id] = URL.createObjectURL(blob);
+      },
     });
   }
 
@@ -257,6 +319,9 @@ export class BackofficeCandidatesComponent implements OnInit {
     this.selected = null;
     this.showInterviewForm = false;
     this.interviewError = '';
+    this.moveError = '';
+    this.moveSuccess = '';
+    this.moveForm = { jobListingId: '', hiringStage: 'NEW_CANDIDATE' };
     this.api.candidateDetail(item.id).subscribe({
       next: (detail) => this.selected = detail,
       error: () => this.closeDrawer(),
@@ -315,6 +380,29 @@ export class BackofficeCandidatesComponent implements OnInit {
       error: (error) => {
         this.scheduling = false;
         this.interviewError = error?.error?.message || 'Jadwal interview gagal disimpan.';
+      },
+    });
+  }
+
+  moveToJobListing(): void {
+    if (!this.selected?.id || !this.moveForm.jobListingId) {
+      this.moveError = 'Pilih job listing terlebih dahulu.';
+      return;
+    }
+    this.moving = true;
+    this.moveError = '';
+    this.moveSuccess = '';
+    this.api.moveCandidateToJobListing(this.selected.id, this.moveForm.jobListingId, this.moveForm.hiringStage).subscribe({
+      next: (updated) => {
+        this.selected = updated;
+        const row = this.rows.find((item) => item.id === updated.id);
+        if (row) row.movedToJobListing = updated.movedToJobListing;
+        this.moving = false;
+        this.moveSuccess = 'Kandidat berhasil dimasukkan ke job listing.';
+      },
+      error: (error) => {
+        this.moving = false;
+        this.moveError = error?.error?.message || 'Kandidat gagal dimasukkan ke job listing.';
       },
     });
   }

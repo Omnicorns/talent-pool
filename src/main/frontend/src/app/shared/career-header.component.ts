@@ -39,7 +39,10 @@ import { TalentAuthService } from '../core/service/api/talent-auth.service';
 
         <ng-template #loggedIn>
           <a routerLink="/portal" class="header-user-chip" [class.active]="active === 'portal'" aria-label="Buka profil saya" title="Profil Saya" (click)="mobileMenuOpen = false">
-            <span class="header-user-avatar">{{ userInitials }}</span>
+            <span class="header-user-avatar">
+              <img *ngIf="profilePictureUrl; else headerInitials" [src]="profilePictureUrl" [alt]="'Foto ' + (auth.session?.fullName || 'Talent')">
+              <ng-template #headerInitials>{{ userInitials }}</ng-template>
+            </span>
             <span class="header-user-copy">
               <strong>{{ auth.session?.fullName || 'Talent' }}</strong>
               <small>Profil Saya</small>
@@ -57,6 +60,7 @@ import { TalentAuthService } from '../core/service/api/talent-auth.service';
 })
 export class CareerHeaderComponent {
   @Input() active: 'home' | 'open' | 'portal' | '' = '';
+  @Input() profilePictureUrl: string | null = null;
   mobileMenuOpen = false;
 
   constructor(public auth: TalentAuthService, private router: Router) {}

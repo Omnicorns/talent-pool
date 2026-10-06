@@ -117,6 +117,19 @@ public class BackofficeTalentController {
                 .body(file.resource());
     }
 
+    @GetMapping("/{id}/picture")
+    public ResponseEntity<?> profilePicture(@PathVariable UUID id) {
+        var file = service.loadProfilePicture(id);
+        ContentDisposition disposition = ContentDisposition.inline()
+                .filename(file.filename(), StandardCharsets.UTF_8)
+                .build();
+        return ResponseEntity.ok()
+                .contentType(file.mediaType())
+                .cacheControl(CacheControl.noStore())
+                .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
+                .body(file.resource());
+    }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable UUID id) {

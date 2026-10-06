@@ -34,6 +34,20 @@ export class BackofficeApiService {
     });
   }
 
+  candidatePicture(id: string) {
+    return this.http.get(`${API_BASE}/backoffice/candidates/${id}/picture`, {
+      headers: this.headers,
+      responseType: 'blob',
+    });
+  }
+
+  moveCandidateToJobListing(id: string, jobListingId: string, hiringStage: string) {
+    return this.http.post<any>(`${API_BASE}/backoffice/candidates/${id}/move-to-job-listing`, {
+      jobListingId,
+      hiringStage,
+    }, { headers: this.headers });
+  }
+
   interviews() {
     const params = new HttpParams().set('page', '0').set('size', '50').set('sort', 'scheduledAt,asc');
     return this.http.get<any>(`${API_BASE}/backoffice/interviews`, { headers: this.headers, params });

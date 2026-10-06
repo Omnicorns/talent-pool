@@ -16,7 +16,7 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
   imports: [CommonModule, FormsModule, RouterLink, CareerHeaderComponent, TalentProfileDetailsComponent],
   template: `
     <div class="portal-page" *ngIf="profile; else loadingTpl">
-      <app-career-header active="portal"></app-career-header>
+      <app-career-header active="portal" [profilePictureUrl]="profilePictureUrl"></app-career-header>
 
       <main class="profile-container">
         <div class="application-success-banner" *ngIf="applicationSubmitted">
@@ -525,19 +525,7 @@ export class CandidatePortalComponent implements OnInit {
   }
 
   openDrawer(section: DrawerSection, index: number | null = null): void {
-    if (section === 'training') {
-      this.router.navigate(['/onboarding'], { queryParams: { edit: 'true' } });
-      return;
-    }
-    if (section !== 'about') {
-      this.router.navigate(['/onboarding'], {queryParams:{edit:'true'}});
-      return;
-    }
-    this.snapshot = structuredClone(this.profile);
-    this.drawerSection = section;
-    this.drawerIndex = index;
-
-    this.drawerOpen = true;
+    this.router.navigate(['/onboarding'], { queryParams: { edit: 'true' } });
   }
 
   openEducationDrawer(section: 'education' | 'training', item: EducationItem): void {
