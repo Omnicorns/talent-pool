@@ -1,12 +1,18 @@
 package com.example.talentpool.service;
 
+import com.example.talentpool.exception.MailDeliveryException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 @Service
 public class TalentPasswordResetMailService {
+
+    private static final Logger log = LoggerFactory.getLogger(TalentPasswordResetMailService.class);
 
     private final JavaMailSender mailSender;
     private final boolean enabled;
@@ -24,7 +30,7 @@ public class TalentPasswordResetMailService {
 
     public boolean sendResetLink(String email, String fullName, String resetUrl, long expirationMinutes) {
         if (!enabled) {
-            return false;
+            throw new MailDeliveryException("Pengiriman email reset password sedang dinonaktifkan.");
         }
 
         SimpleMailMessage message = new SimpleMailMessage();
@@ -40,7 +46,14 @@ public class TalentPasswordResetMailService {
                 "Jika Anda tidak meminta reset password, abaikan email ini.\n\n" +
                 "Sarinah Talent Management"
         );
-        mailSender.send(message);
+        try {
+            mailSender.send(message);
+        } catch (MailException ex) {
+            log.error("Gagal mengirim email reset password melalui SMTP", ex);
+            throw new MailDeliveryException(
+                    "Email reset password gagal dikirim. Periksa konfigurasi SMTP lalu coba lagi.", ex
+            );
+        }
         return true;
     }
 }

@@ -47,6 +47,11 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.CONFLICT, "Data kandidat bertabrakan dengan data yang sudah ada", request, null);
     }
 
+    @ExceptionHandler(MailDeliveryException.class)
+    ResponseEntity<ApiError> mailDelivery(MailDeliveryException ex, HttpServletRequest request) {
+        return build(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage(), request, null);
+    }
+
     @ExceptionHandler(Exception.class)
     ResponseEntity<ApiError> generic(Exception ex, HttpServletRequest request) {
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Terjadi kesalahan pada server", request, null);

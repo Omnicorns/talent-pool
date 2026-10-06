@@ -20,10 +20,7 @@ import { TalentAuthService } from '../../core/service/api/talent-auth.service';
 
         <div class="recovery-icon">✉</div>
         <h1>Lupa Password?</h1>
-        <p>
-          Masukkan email yang terdaftar. Jika akun ditemukan, kami akan mengirimkan
-          link untuk membuat password baru.
-        </p>
+        <p>Masukkan email akun Anda. Jika email terdaftar, link reset akan dikirimkan.</p>
 
         <form *ngIf="!submitted" (ngSubmit)="submit()">
           <label>Email
@@ -86,10 +83,9 @@ export class ForgotPasswordComponent {
         this.message = response.message;
         this.debugResetUrl = response.resetUrl || null;
       },
-      error: () => {
+      error: (err) => {
         this.loading = false;
-        this.submitted = true;
-        this.message = 'Jika email terdaftar, instruksi reset password akan dikirimkan.';
+        this.error = err?.error?.message || 'Email reset gagal dikirim. Coba lagi nanti atau hubungi administrator.';
       },
     });
   }
