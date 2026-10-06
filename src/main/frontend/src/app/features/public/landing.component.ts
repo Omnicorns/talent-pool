@@ -14,22 +14,57 @@ import { OpenPositionsComponent } from './open-positions.component';
       <app-career-header active="home"></app-career-header>
 
       <main>
-        <section class="hero">
-          <div class="hero-copy">
-            <span class="eyebrow">SARINAH CAREER</span>
-            <h1>Build a legacy through <span>creative retail.</span></h1>
-            <p>Temukan ruang untuk bertumbuh, berkolaborasi, dan menciptakan pengalaman ritel Indonesia yang relevan untuk generasi berikutnya.</p>
+        <section class="hero home-hero" aria-labelledby="home-hero-title">
+          <div class="home-hero-visual">
+            <div class="home-hero-crop">
+              <img src="assets/images/home-hero-reference.png" width="1456" height="810"
+                alt="Dua rekan kerja Sarinah berkolaborasi menggunakan laptop" fetchpriority="high">
+            </div>
+          </div>
+          <svg class="home-hero-flower" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+            <g fill="currentColor"><path *ngFor="let angle of flowerPetals" d="M50 50C35 35 35 12 50 3C65 12 65 35 50 50Z" [attr.transform]="'rotate(' + angle + ' 50 50)'"></path></g>
+          </svg>
+          <div class="hero-copy home-hero-copy">
+            <h1 id="home-hero-title"><span>Be Part of Indonesia’s</span><span>Creative Retail Legacy</span></h1>
+            <p>Discover opportunities to grow, create impact, and champion local excellence</p>
             <div class="hero-actions">
-              <a routerLink="/" fragment="open-positions" class="primary-cta">Explore Opportunities →</a>
-              <a routerLink="/" fragment="life" class="secondary-cta">Discover Life at Sarinah</a>
+              <a routerLink="/" fragment="open-positions" class="primary-cta home-hero-cta">Explore opportunities <span aria-hidden="true">→</span></a>
             </div>
           </div>
-          <div class="hero-photo">
-            <div class="hero-card">
-              <strong>Grow with Sarinah</strong>
-              <span>Talent Pool • Retail • Technology • Operations</span>
+        </section>
+
+        <section class="home-benefits" aria-label="Mengapa bergabung dengan Sarinah">
+          <article class="home-benefit">
+            <div class="home-benefit-heading">
+              <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="13" r="7"/><path d="M12 43v-9c0-6 5-11 12-11s12 5 12 11v9M18 43v-9m12 9v-9M12 12a5 5 0 0 0 0 10M7 39v-8c0-4 2-7 6-8M36 12a5 5 0 0 1 0 10m5 17v-8c0-4-2-7-6-8"/></g></svg>
+              <h2>Bergabung dalam <br>Talent Pool</h2>
             </div>
-          </div>
+            <p>Kesempatan untuk menjadi bagian dari jaringan talenta Sarinah.</p>
+          </article>
+          <article class="home-benefit">
+            <div class="home-benefit-heading">
+              <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 42V28h7v14m7 0V22h7v20m7 0V14h7v28M5 23 17 11l9 7L43 3m-8 0h8v8M3 43h40"/></g></svg>
+              <h2>Peluang <br>Berkembang</h2>
+            </div>
+            <p>Dapatkan kesempatan karier yang sesuai dengan kompetensi dan minat Anda.</p>
+          </article>
+          <article class="home-benefit">
+            <div class="home-benefit-heading">
+              <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 21-12 21 12H3Zm2 25h38v4H5Zm5-4V20m6 17V20m5 17V20m6 17V20m5 17V20m6 17V20M7 20h34M7 37h34"/></g></svg>
+              <h2>Berkontribusi untuk <br>Indonesia</h2>
+            </div>
+            <p>Bersama Sarinah, hadirkan nilai dan inspirasi bagi masyarakat Indonesia.</p>
+          </article>
+          <article class="home-benefit">
+            <div class="home-benefit-heading">
+              <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M24 3c6 4 11 6 17 7v13c0 11-8 18-17 22C15 41 7 34 7 23V10c6-1 11-3 17-7Z"/><path d="m17 24 5 5 10-11"/></g></svg>
+              <h2>Keamanan Data</h2>
+            </div>
+            <p>Data Anda dikelola sesuai UU Perlindungan Data Pribadi dan hanya digunakan untuk proses rekrutmen.</p>
+          </article>
+          <svg class="home-benefits-flower" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+            <g fill="none" stroke="currentColor" stroke-width="1.2"><path *ngFor="let angle of flowerPetals" d="M50 50C35 35 35 12 50 3C65 12 65 35 50 50Z" [attr.transform]="'rotate(' + angle + ' 50 50)'"></path></g>
+          </svg>
         </section>
 
         <section id="life" class="section life-section">
@@ -70,6 +105,7 @@ import { OpenPositionsComponent } from './open-positions.component';
   `,
 })
 export class LandingComponent {
+  flowerPetals = [0,45,90,135,180,225,270,315];
   lifePrograms = [
     {x:80,y:64,title:'Kebersamaan Sarinah',description:'Bergerak bersama dalam kegiatan yang mempererat kebersamaan keluarga Sarinah.'},
     {x:532,y:64,title:'Semangat Kolaborasi',description:'Berbagi ide dan energi positif untuk mendukung keberhasilan bersama.'},
