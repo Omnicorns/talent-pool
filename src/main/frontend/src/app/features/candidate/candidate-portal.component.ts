@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { TalentProfileDetailsComponent } from '../../shared/talent-profile-details.component';
 import { CareerHeaderComponent } from '../../shared/career-header.component';
 import { CandidateProfile, EducationItem, JobApplication, WorkExperienceItem } from '../../core/models/talent.models';
 import { TalentAuthService } from '../../core/service/api/talent-auth.service';
@@ -12,7 +13,7 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
 @Component({
   selector: 'app-candidate-portal',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, CareerHeaderComponent],
+  imports: [CommonModule, FormsModule, RouterLink, CareerHeaderComponent, TalentProfileDetailsComponent],
   template: `
     <div class="portal-page" *ngIf="profile; else loadingTpl">
       <app-career-header active="portal"></app-career-header>
@@ -127,6 +128,7 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
           </div>
         </section>
 
+        <app-talent-profile-details [profile]="profile"></app-talent-profile-details>
         <section class="candidate-insight-grid">
           <article class="candidate-insight-card">
             <div class="section-title"><h2>Recruiter Activity</h2></div>
@@ -348,6 +350,7 @@ export class CandidatePortalComponent implements OnInit {
   constructor(
     public auth: TalentAuthService,
     private portal: TalentPortalService,
+    private router: Router,
     private route: ActivatedRoute
   ) {
     this.applicationSubmitted = !!this.route.snapshot.queryParamMap.get('applied');
@@ -510,19 +513,17 @@ export class CandidatePortalComponent implements OnInit {
   }
 
   openDrawer(section: DrawerSection, index: number | null = null): void {
+    if (section !== 'about' && section !== 'training') {
+      this.router.navigate(['/onboarding'], {queryParams:{edit:'true'}});
+      return;
+    }
     this.snapshot = structuredClone(this.profile);
     this.drawerSection = section;
     this.drawerIndex = index;
 
-    if (section === 'experience') {
-      this.editExperience = index == null
-        ? { companyName: '', position: '', startDate: '', endDate: '', currentJob: false, description: '' }
-        : structuredClone(this.profile.workExperiences[index]);
-    }
-
-    if (section === 'education' || section === 'training') {
+    if (section === 'training') {
       this.editEducation = {
-        type: section === 'training' ? 'INFORMAL' : 'FORMAL',
+        type: 'INFORMAL',
         institution: '',
         level: '',
         major: '',
@@ -537,6 +538,10 @@ export class CandidatePortalComponent implements OnInit {
   }
 
   openEducationDrawer(section: 'education' | 'training', item: EducationItem): void {
+    if (section === 'education') {
+      this.router.navigate(['/onboarding'], {queryParams:{edit:'true'}});
+      return;
+    }
     this.snapshot = structuredClone(this.profile);
     this.drawerSection = section;
     this.drawerIndex = this.profile.educations.findIndex((education) => education.id === item.id);

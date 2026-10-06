@@ -196,6 +196,14 @@ public class Candidate {
         portfolios.add(portfolio);
     }
 
+    @Column(name="profile_details", columnDefinition="text")
+    private String profileDetails;
+    @Column(name="supporting_documents", columnDefinition="text")
+    private String supportingDocuments;
+    public String getProfileDetails() { return profileDetails; }
+    public void setProfileDetails(String value) { profileDetails = value; }
+    public String getSupportingDocuments() { return supportingDocuments; }
+    public void setSupportingDocuments(String value) { supportingDocuments = value; }
     public UUID getId() { return id; }
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }

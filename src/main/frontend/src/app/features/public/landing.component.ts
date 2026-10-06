@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CareerHeaderComponent } from '../../shared/career-header.component';
@@ -7,7 +8,7 @@ import { OpenPositionsComponent } from './open-positions.component';
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [RouterLink, CareerHeaderComponent, CareerFooterComponent, OpenPositionsComponent],
+  imports: [CommonModule, RouterLink, CareerHeaderComponent, CareerFooterComponent, OpenPositionsComponent],
   template: `
     <div class="career-shell">
       <app-career-header active="home"></app-career-header>
@@ -32,45 +33,19 @@ import { OpenPositionsComponent } from './open-positions.component';
         </section>
 
         <section id="life" class="section life-section">
-          <div class="life-intro">
-            <div class="section-head">
-              <span>LIFE AT SARINAH</span>
-              <h2>Grow together, create meaningful retail experiences.</h2>
-              <p class="life-lead">
-                Di Sarinah, pekerjaan bukan hanya tentang menyelesaikan tugas. Anda bekerja bersama tim lintas fungsi,
-                bertemu ide baru, belajar dari pengalaman nyata, dan ikut membawa identitas Indonesia ke pengalaman retail modern.
-              </p>
-            </div>
-
-            <div class="life-feature-photo">
-              <div class="life-photo-copy">
-                <span>COLLABORATE • LEARN • GROW</span>
-                <strong>Tempat untuk berkarya bersama.</strong>
-                <p>Berinteraksi dengan berbagai fungsi bisnis dan membangun solusi yang berdampak langsung pada pelanggan.</p>
-              </div>
-            </div>
+          <div class="section-head life-program-heading">
+            <span>LIFE AT SARINAH</span>
+            <h2>Berkarya, bertumbuh, dan merayakan kebersamaan.</h2>
+            <p>Kenali kehidupan di Sarinah melalui kegiatan dan cerita kebersamaan tim kami.</p>
           </div>
-
-          <div class="life-gallery">
-            <article class="life-gallery-card life-gallery-one">
-              <div>
-                <span>OUR PEOPLE</span>
-                <h3>Collaboration that moves ideas forward.</h3>
+          <div class="life-program-grid">
+            <article class="life-program-card" *ngFor="let program of lifePrograms; let i = index">
+              <div class="life-program-photo">
+                <img src="assets/images/life-at-sarinah-reference.png" [alt]="program.title"
+                  loading="lazy" [style.left.%]="-program.x / 436 * 100" [style.top.%]="-program.y / 230 * 100">
               </div>
+              <div class="life-program-caption"><h3>{{ program.title }}</h3><p>{{ program.description }}</p></div>
             </article>
-
-            <article class="life-gallery-card life-gallery-two">
-              <div>
-                <span>OUR GROWTH</span>
-                <h3>Learn through real projects and shared experience.</h3>
-              </div>
-            </article>
-          </div>
-
-          <div class="feature-grid life-values">
-            <article><b>01</b><h3>Collaborative Spirit</h3><p>Kolaborasi lintas fungsi untuk menciptakan pengalaman retail yang relevan.</p></article>
-            <article><b>02</b><h3>Meaningful Growth</h3><p>Kesempatan berkembang melalui project, mentoring, dan pengalaman nyata.</p></article>
-            <article><b>03</b><h3>Indonesian Legacy</h3><p>Berkarier sambil membawa cerita dan kreativitas Indonesia lebih jauh.</p></article>
           </div>
         </section>
 
@@ -94,4 +69,13 @@ import { OpenPositionsComponent } from './open-positions.component';
     </div>
   `,
 })
-export class LandingComponent {}
+export class LandingComponent {
+  lifePrograms = [
+    {x:80,y:64,title:'Kebersamaan Sarinah',description:'Bergerak bersama dalam kegiatan yang mempererat kebersamaan keluarga Sarinah.'},
+    {x:532,y:64,title:'Semangat Kolaborasi',description:'Berbagi ide dan energi positif untuk mendukung keberhasilan bersama.'},
+    {x:986,y:64,title:'Kegiatan Tim Sarinah',description:'Membangun hubungan antarrekan melalui pengalaman dan kegiatan bersama.'},
+    {x:80,y:307,title:'Perayaan Bersama',description:'Merayakan pencapaian dan momen istimewa bersama tim Sarinah.'},
+    {x:532,y:307,title:'Belajar Bersama',description:'Berbagi pengalaman dan saling mendukung untuk terus bertumbuh.'},
+    {x:986,y:307,title:'Keluarga Besar Sarinah',description:'Menghargai keberagaman dan menghadirkan suasana kerja yang inklusif.'},
+  ];
+}

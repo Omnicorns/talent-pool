@@ -8,7 +8,15 @@ export interface TalentSession {
   onboardingCompleted: boolean;
 }
 
+export interface TalentProfileDetails {
+  gender: string; postalCode: string; region: string; linkedinUrl: string;
+  socialPlatform: string; socialUsername: string; expectedSalaryMax: number|null;
+  noExperience: boolean; languageSkills: Array<{key:string;name:string;proficiency:string}>;
+}
+export interface WorkDetails { employmentType:string;industry:string;skills:string[];tools:string[];resignReason:string; }
+export interface SupportingUpload {key:string;file:File;}
 export interface EducationItem {
+  clientKey?: string|null;
   id?: string;
   type: 'FORMAL' | 'INFORMAL';
   level?: string | null;
@@ -21,6 +29,7 @@ export interface EducationItem {
 }
 
 export interface WorkExperienceItem {
+  details?: WorkDetails;
   id?: string;
   companyName: string;
   position: string;
@@ -39,6 +48,8 @@ export interface PortfolioItem {
 }
 
 export interface CandidateProfile {
+  profileDetails?: TalentProfileDetails;
+  supportingDocuments?: Array<{key:string;originalName:string}>;
   id: string;
   fullName: string;
   email: string;

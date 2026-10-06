@@ -23,8 +23,10 @@ public class TalentPortalController {
 
     private final TalentPortalService service;
     private final CandidateService candidateService;
+    private final com.example.talentpool.service.SupportingDocumentService documents;
 
-    public TalentPortalController(TalentPortalService service, CandidateService candidateService) {
+    public TalentPortalController(TalentPortalService service, CandidateService candidateService, com.example.talentpool.service.SupportingDocumentService documents) {
+        this.documents=documents;
         this.service = service;
         this.candidateService = candidateService;
     }
@@ -40,9 +42,11 @@ public class TalentPortalController {
             @Valid @RequestPart("data") CandidateUpsertRequest request,
             @RequestPart(value = "cv", required = false) MultipartFile cv,
             @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture,
-            @RequestPart(value = "portfolioFiles", required = false) List<MultipartFile> portfolioFiles
+            @RequestPart(value = "portfolioFiles", required = false) List<MultipartFile> portfolioFiles,
+            @RequestPart(value = "supportingKeys", required = false) List<String> supportingKeys,
+            @RequestPart(value = "supportingFiles", required = false) List<MultipartFile> supportingFiles
     ) {
-        return service.updateProfile(candidateId(jwt), request, cv, profilePicture, portfolioFiles);
+        return service.updateProfile(candidateId(jwt), request, cv, profilePicture, portfolioFiles, supportingKeys, supportingFiles);
     }
 
     @GetMapping("/profile/picture")
@@ -73,6 +77,13 @@ public class TalentPortalController {
                 .body(file.resource());
     }
 
+    @GetMapping("/profile/documents/{key}")
+    public ResponseEntity<?> downloadDocument(@AuthenticationPrincipal Jwt jwt, @PathVariable String key) {
+        var file=documents.load(candidateId(jwt),key);
+        return ResponseEntity.ok().contentType(file.mediaType()).cacheControl(CacheControl.noStore())
+            .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment().filename(file.filename(),StandardCharsets.UTF_8).build().toString())
+            .body(file.resource());
+    }
     @GetMapping("/activities")
     public List<TalentActivityResponse> activities(@AuthenticationPrincipal Jwt jwt) {
         return service.activities(candidateId(jwt));

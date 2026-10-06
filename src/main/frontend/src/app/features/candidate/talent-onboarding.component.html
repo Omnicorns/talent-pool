@@ -1,0 +1,82 @@
+<main class="onboarding-page" *ngIf="profile; else loadingTpl">
+  <div class="onboarding-top"><div><h1>{{ editing ? 'Ubah Profil Talent Pool' : 'Gabung Talent Pool Sarinah' }}</h1><p>Lengkapi profil Anda melalui 7 langkah berikut. Tanda * menunjukkan isian wajib.</p></div><a routerLink="/" fragment="open-positions" class="onboarding-back">← Kembali ke Open Positions</a></div>
+  <div class="onboarding-progress"><span [style.width.%]="progress"></span></div>
+  <section class="onboarding-card">
+    <nav class="onboarding-steps" aria-label="Tahapan profil"><button type="button" *ngFor="let item of steps; let i=index" [class.active]="step === i+1" [class.done]="step>i+1" [attr.aria-current]="step === i+1 ? 'step' : null" [disabled]="saving" (click)="goToCompletedStep(i+1)"><span>{{ step>i+1 ? '✓' : i+1 }}</span><b>{{ item }}</b></button></nav>
+    <div class="onboarding-body">
+      <header class="onboarding-section-head"><span>{{ stepLabel }}</span><div><h2>{{ stepTitle }}</h2><p>{{ stepDescription }}</p></div></header>
+      <section *ngIf="step===1" class="onboarding-form">
+        <label class="upload-zone"><input type="file" accept=".pdf,.doc,.docx" aria-label="Upload CV" (change)="selectCv($event)"><span class="upload-icon">⇧</span><strong>{{ cvFile?.name || profile.cvOriginalName || 'Upload CV *' }}</strong><small>PDF, DOC, atau DOCX • Maks. 10 MB</small></label><p class="step-hint">Gunakan CV terbaru agar recruiter dapat meninjau profil Anda dengan lengkap.</p>
+      </section>
+      <section *ngIf="step===2" class="onboarding-form">
+        <div class="form-grid two">
+          <label>Nama Lengkap *<input [(ngModel)]="profile.fullName" maxlength="200" autocomplete="name" required></label>
+          <label>Email *<input type="email" [ngModel]="profile.email" disabled></label>
+          <label>Nomor KTP (opsional)<input [(ngModel)]="profile.identityNumber" inputmode="numeric" pattern="[0-9]+" maxlength="100"></label>
+          <label>WhatsApp *<input type="tel" [(ngModel)]="profile.phone" inputmode="numeric" maxlength="15" placeholder="08xxxxxxxxxx" required></label>
+          <label>Jenis Kelamin *<app-choice-field [options]="options.genders" [allowOther]="false" label="Jenis Kelamin" [(value)]="details.gender"></app-choice-field></label>
+          <label>Agama *<app-choice-field [options]="options.religions" [allowOther]="false" label="Agama" [(value)]="profile.religion"></app-choice-field></label>
+          <label>Tanggal Lahir *<input type="date" [(ngModel)]="profile.birthDate" [max]="today" required><small *ngIf="age!==null">Usia: {{ age }} tahun</small></label>
+          <label>LinkedIn (opsional)<input type="url" [(ngModel)]="details.linkedinUrl" maxlength="500" placeholder="https://www.linkedin.com/in/..."></label>
+        </div>
+        <label>Alamat KTP *<textarea [(ngModel)]="profile.citizenIdAddress" rows="3" placeholder="Nama jalan, nomor rumah, RT/RW" required></textarea></label>
+        <div class="form-grid two"><label>Kode Pos KTP *<input [ngModel]="details.postalCode" (ngModelChange)="postalCodeChanged($event)" inputmode="numeric" maxlength="5" placeholder="5 digit"><small>{{ postalLoading ? 'Mencari wilayah...' : postalError }}</small></label><label>Wilayah KTP *<select [(ngModel)]="details.region" aria-label="Wilayah KTP" [disabled]="postalLoading || !postalRegions.length"><option value="">Pilih kelurahan, kecamatan, kota, provinsi</option><option *ngFor="let region of postalRegions" [value]="region">{{ region }}</option></select></label></div>
+        <label class="check-row"><input type="checkbox" [(ngModel)]="profile.sameAsCitizenIdAddress"> Alamat domisili sama dengan alamat KTP</label>
+        <label *ngIf="!profile.sameAsCitizenIdAddress">Alamat Domisili *<textarea [(ngModel)]="profile.residentialAddress" required></textarea></label>
+        <div class="form-grid two"><label>Media Sosial *<app-choice-field [options]="options.socialPlatforms" label="Media Sosial" [(value)]="details.socialPlatform"></app-choice-field></label><label>Username Media Sosial *<input [(ngModel)]="details.socialUsername" maxlength="100" placeholder="@username" required></label></div>
+      </section>
+      <section *ngIf="step===3" class="onboarding-form">
+        <article class="repeat-card" *ngFor="let edu of formalEducations; let i=index">
+          <div class="repeat-card-head"><strong>{{ i===0 ? 'Pendidikan Terakhir' : 'Pendidikan ' + (i+1) }}</strong><button type="button" *ngIf="formalEducations.length>1" (click)="removeEducation(i)">Hapus</button></div>
+          <div class="form-grid two">
+            <label>Jenjang Pendidikan *<app-choice-field [options]="options.educationLevels" [allowOther]="false" label="Jenjang Pendidikan" [(value)]="edu.level"></app-choice-field></label>
+            <label>Institusi Pendidikan *<app-choice-field [options]="options.institutions" label="Institusi Pendidikan" [(value)]="edu.institution"></app-choice-field></label>
+            <label>Jurusan *<app-choice-field [options]="options.majors" label="Jurusan" [(value)]="edu.major"></app-choice-field></label>
+            <label>IPK / Nilai *<input type="number" min="0" step="0.01" [ngModel]="edu.ipk" (ngModelChange)="edu.ipk = $event === null ? null : '' + $event" required></label>
+            <label>Tahun Mulai *<input type="number" min="1900" [max]="currentYear" [(ngModel)]="edu.startYear" required></label>
+            <label>Tahun Selesai *<input type="number" [min]="edu.startYear || 1900" [max]="currentYear" [(ngModel)]="edu.endYear" required></label>
+          </div>
+          <div class="form-grid two"><label class="supporting-upload">Ijazah *<input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Ijazah ' + (i+1)" (change)="selectDocument($event, educationKey(edu,'diploma'))"><small>{{ documentName(educationKey(edu,'diploma')) || 'PDF • Maks. 2 MB' }}</small></label><label class="supporting-upload">Transkrip Nilai *<input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Transkrip ' + (i+1)" (change)="selectDocument($event, educationKey(edu,'transcript'))"><small>{{ documentName(educationKey(edu,'transcript')) || 'PDF • Maks. 2 MB' }}</small></label></div>
+          <label>Proyek / Penghargaan (opsional)<textarea [(ngModel)]="edu.description" rows="3" placeholder="Proyek akademik, prestasi, atau penghargaan"></textarea></label>
+        </article><button type="button" class="secondary-action" (click)="addEducation()">＋ Tambah Pendidikan</button>
+      </section>
+      <section *ngIf="step===4" class="onboarding-form">
+        <label class="check-row onboarding-check"><input type="checkbox" [(ngModel)]="details.noExperience" (ngModelChange)="toggleNoExperience()"> Saya belum memiliki pengalaman kerja</label>
+        <ng-container *ngIf="!details.noExperience"><article class="repeat-card" *ngFor="let exp of profile.workExperiences; let i=index">
+          <div class="repeat-card-head"><strong>Pengalaman {{ i+1 }}</strong><button type="button" *ngIf="profile.workExperiences.length>1" (click)="profile.workExperiences.splice(i,1)">Hapus</button></div>
+          <div class="form-grid two">
+            <label>Nama Perusahaan *<input [(ngModel)]="exp.companyName" maxlength="200" required></label>
+            <label>Posisi *<input [(ngModel)]="exp.position" maxlength="200" required></label>
+            <label>Status Kepegawaian *<app-choice-field [options]="options.employmentTypes" [allowOther]="false" label="Status Kepegawaian" [(value)]="workDetails(exp).employmentType"></app-choice-field></label>
+            <label>Industri *<app-choice-field [options]="options.industries" label="Industri" [(value)]="workDetails(exp).industry"></app-choice-field></label>
+            <label>Bulan & Tahun Mulai *<input type="month" [ngModel]="exp.startDate.slice(0,7)" (ngModelChange)="exp.startDate = $event ? $event + '-01' : ''" [max]="today.slice(0,7)" required></label>
+            <label>Bulan & Tahun Selesai {{ exp.currentJob ? '(masih bekerja)' : '*' }}<input type="month" [ngModel]="exp.endDate?.slice(0,7)" (ngModelChange)="exp.endDate = $event ? $event + '-01' : null" [max]="today.slice(0,7)" [disabled]="exp.currentJob"></label>
+          </div>
+          <label class="check-row"><input type="checkbox" [(ngModel)]="exp.currentJob" (ngModelChange)="exp.currentJob && (exp.endDate = null)"> Saya masih bekerja di sini</label>
+          <label>Deskripsi Pekerjaan / Pencapaian *<textarea [(ngModel)]="exp.description" rows="4" required></textarea></label>
+          <div class="form-grid two"><label>Skill *<app-tag-select [options]="options.skills" label="Skill" [(value)]="workDetails(exp).skills"></app-tag-select></label><label>Tools *<app-tag-select [options]="options.tools" label="Tools" [(value)]="workDetails(exp).tools"></app-tag-select></label></div>
+          <label *ngIf="!exp.currentJob">Alasan Resign *<textarea [(ngModel)]="workDetails(exp).resignReason" rows="2" maxlength="4000" required></textarea></label>
+        </article><button type="button" class="secondary-action" (click)="addExperience()">＋ Tambah Pengalaman</button></ng-container>
+      </section>
+      <section *ngIf="step===5" class="onboarding-form">
+        <label>Gaji Terakhir (opsional)<input type="number" min="0" step="1" [(ngModel)]="profile.currentSalary" placeholder="Rupiah per bulan"></label>
+        <fieldset class="talent-salary"><legend>Rentang Ekspektasi Gaji * (Rp per bulan)</legend><div class="form-grid two"><label>Minimum *<input type="number" min="0" step="1" [(ngModel)]="profile.expectedSalary" placeholder="Contoh: 5000000" required></label><label>Maksimum *<input type="number" [min]="profile.expectedSalary || 0" step="1" [(ngModel)]="details.expectedSalaryMax" placeholder="Contoh: 7000000" required></label></div></fieldset>
+      </section>
+      <section *ngIf="step===6" class="onboarding-form">
+        <div class="portfolio-upload-grid"><label class="upload-zone"><input type="file" accept=".jpg,.jpeg,.png" aria-label="Foto profil" (change)="selectProfilePicture($event)"><span class="upload-icon">⇧</span><strong>{{ profilePicture?.name || profile.profilePictureOriginalName || 'Upload foto profil (opsional)' }}</strong><small>JPG / PNG • Maks. 10 MB</small></label><label class="upload-zone"><input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.zip" aria-label="Portofolio" (change)="selectPortfolioFiles($event)"><span class="upload-icon">⇧</span><strong>{{ portfolioFiles.length ? portfolioFiles.length + ' file dipilih' : 'Upload portofolio (opsional)' }}</strong><small>Maks. 10 MB per file</small></label></div>
+        <article class="portfolio-link-row" *ngFor="let item of portfolioLinks; let i=index"><label>Judul Link {{ i+1 }}<input [(ngModel)]="item.title" maxlength="200"></label><label>URL<input type="url" [(ngModel)]="item.url" placeholder="https://..."></label><button type="button" *ngIf="portfolioLinks.length>1" (click)="portfolioLinks.splice(i,1)" aria-label="Hapus link">×</button></article><button type="button" class="secondary-action" (click)="portfolioLinks.push({title:'Portfolio',url:''})">＋ Tambah Link</button>
+      </section>
+      <section *ngIf="step===7" class="onboarding-form">
+        <div class="form-grid two"><label>Fungsi yang Diminati *<app-tag-select [options]="options.functions" [limit]="3" label="Fungsi yang Diminati" [(value)]="profile.jobInterests"></app-tag-select></label><label>Lokasi yang Diminati *<app-tag-select [options]="options.locations" [limit]="3" [allowOther]="false" label="Lokasi yang Diminati" [(value)]="profile.preferredLocations"></app-tag-select></label><label>Sumber Informasi *<app-choice-field [options]="options.sources" label="Sumber Informasi" [(value)]="profile.source"></app-choice-field></label></div>
+        <article class="repeat-card" *ngFor="let language of details.languageSkills; let i=index"><div class="repeat-card-head"><strong>Bahasa {{ i+1 }}</strong><button type="button" *ngIf="details.languageSkills.length>1" (click)="removeLanguage(i)">Hapus</button></div><div class="form-grid two"><label>Bahasa *<app-choice-field [options]="options.languages" label="Bahasa" [(value)]="language.name"></app-choice-field></label><label>Tingkat Penguasaan *<app-choice-field [options]="options.proficiency" [allowOther]="false" label="Tingkat Penguasaan" [(value)]="language.proficiency"></app-choice-field></label></div><label class="supporting-upload">Sertifikat Bahasa (opsional)<input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Sertifikat Bahasa ' + (i+1)" (change)="selectDocument($event, 'language:' + language.key + ':certificate')"><small>{{ documentName('language:' + language.key + ':certificate') || 'PDF • Maks. 2 MB' }}</small></label></article>
+        <button type="button" class="secondary-action" (click)="addLanguage()">＋ Tambah Bahasa</button>
+        <label>Tentang Saya (opsional)<textarea rows="4" [(ngModel)]="profile.about" maxlength="4000" placeholder="Ceritakan pengalaman dan tujuan karier Anda"></textarea></label>
+        <label class="check-row"><input type="checkbox" [(ngModel)]="profile.termsAccepted"> Saya menyetujui syarat dan ketentuan Talent Pool Sarinah. *</label>
+        <div class="onboarding-ready"><strong>Profil Anda siap disimpan.</strong><p>Pastikan informasi dan dokumen yang Anda berikan sudah benar.</p></div>
+      </section>
+      <p class="onboarding-error" *ngIf="error" role="alert">{{ error }}</p>
+    </div>
+    <footer class="onboarding-footer"><span>ⓘ Lengkapi semua isian bertanda *.</span><div><button type="button" class="onboarding-prev" *ngIf="step>1" [disabled]="saving" (click)="previous()">‹ Sebelumnya</button><button type="button" class="onboarding-next" *ngIf="step<7" (click)="next()">Selanjutnya ›</button><button type="button" class="onboarding-next" *ngIf="step===7" [disabled]="saving" (click)="finish()">{{ saving ? 'Menyimpan...' : editing ? 'Simpan Profil' : 'Selesai & Masuk Talent Pool' }} ›</button></div></footer>
+  </section>
+</main>
+<ng-template #loadingTpl><div class="full-loading"><p *ngIf="!error">Menyiapkan profil Talent Pool...</p><p *ngIf="error" role="alert">{{ error }}</p><button *ngIf="error" type="button" (click)="ngOnInit()">Coba lagi</button></div></ng-template>

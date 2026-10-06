@@ -1,13 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TalentProfileDetailsComponent } from '../../shared/talent-profile-details.component';
 import { BackofficeLayoutComponent } from '../../shared/backoffice-layout.component';
 import { BackofficeApiService } from '../../core/service/api/backoffice-api.service';
 
 @Component({
   selector: 'app-backoffice-candidates',
   standalone: true,
-  imports: [CommonModule, FormsModule, BackofficeLayoutComponent],
+  imports: [CommonModule, FormsModule, BackofficeLayoutComponent, TalentProfileDetailsComponent],
   template: `
     <app-backoffice-layout active="candidates">
       <div class="bo-page-head">
@@ -123,6 +124,7 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
               <button class="bo-secondary" (click)="showInterviewForm = !showInterviewForm">Jadwalkan Interview</button>
             </div>
 
+            <app-talent-profile-details [profile]="selected" [backoffice]="true"></app-talent-profile-details>
             <section class="bo-detail-section" *ngIf="showInterviewForm">
               <div class="section-title"><h2>Jadwalkan Interview</h2></div>
               <div class="drawer-form">

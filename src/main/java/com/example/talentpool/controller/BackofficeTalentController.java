@@ -21,9 +21,11 @@ import java.util.UUID;
 @RequestMapping({"/api/backoffice/talents", "/api/backoffice/candidates"})
 public class BackofficeTalentController {
     private final CandidateService service;
+    private final com.example.talentpool.service.SupportingDocumentService documents;
     private final CandidateViewService candidateViewService;
 
-    public BackofficeTalentController(CandidateService service, CandidateViewService candidateViewService) {
+    public BackofficeTalentController(CandidateService service, CandidateViewService candidateViewService, com.example.talentpool.service.SupportingDocumentService documents) {
+        this.documents=documents;
         this.service = service;
         this.candidateViewService = candidateViewService;
     }
@@ -40,6 +42,13 @@ public class BackofficeTalentController {
         return PageResponse.from(service.search(q, industry, position, source, status, pageable));
     }
 
+    @GetMapping("/{id}/documents/{key}")
+    public ResponseEntity<?> downloadDocument(@PathVariable UUID id, @PathVariable String key) {
+        var file=documents.load(id,key);
+        return ResponseEntity.ok().contentType(file.mediaType()).cacheControl(CacheControl.noStore())
+            .header(HttpHeaders.CONTENT_DISPOSITION,ContentDisposition.attachment().filename(file.filename(),StandardCharsets.UTF_8).build().toString())
+            .body(file.resource());
+    }
     @GetMapping("/summary")
     public CandidateSummaryResponse summary() {
         return service.summary();

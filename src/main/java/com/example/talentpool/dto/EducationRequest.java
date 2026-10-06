@@ -12,6 +12,7 @@ public record EducationRequest(
         Integer startYear,
         Integer endYear,
         String description,
-        String ipk
+        String ipk,
+        @jakarta.validation.constraints.Size(max=80) @jakarta.validation.constraints.Pattern(regexp="[a-zA-Z0-9-]{1,80}") String clientKey
 ) {
 }

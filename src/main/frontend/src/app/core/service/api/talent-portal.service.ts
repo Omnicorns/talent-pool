@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { CandidateProfile, JobApplication, JobListing } from '../../models/talent.models';
+import { CandidateProfile, JobApplication, JobListing, SupportingUpload } from '../../models/talent.models';
 import { API_BASE } from './api-base';
 
 @Injectable({ providedIn: 'root' })
@@ -21,9 +21,11 @@ export class TalentPortalService {
     profile: CandidateProfile,
     profilePicture?: File | null,
     cv?: File | null,
-    portfolioFiles?: File[]
+    portfolioFiles?: File[],
+    supportingUploads?: SupportingUpload[]
   ) {
     const payload = {
+      profileDetails: profile.profileDetails || null,
       fullName: profile.fullName,
       email: profile.email,
       phone: profile.phone,
@@ -66,8 +68,15 @@ export class TalentPortalService {
       data.append('portfolioFiles', file);
     }
 
+    if (supportingUploads?.length) {
+      data.append('supportingKeys', new Blob([JSON.stringify(supportingUploads.map(item => item.key))], {type:'application/json'}));
+      supportingUploads.forEach(item => data.append('supportingFiles',item.file));
+    }
     return this.http.put<CandidateProfile>(`${API_BASE}/talent/profile`, data);
   }
+
+  postalCodes(code:string) {return this.http.get<string[]>(`${API_BASE}/public/postal-codes`,{params:{code}});}
+  supportingDocument(key:string) {return this.http.get(`${API_BASE}/talent/profile/documents/${encodeURIComponent(key)}`,{responseType:'blob'});}
 
   activities() {
     return this.http.get<any[]>(`${API_BASE}/talent/activities`);

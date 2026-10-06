@@ -42,8 +42,12 @@ public record CandidateResponse(
         List<WorkExperienceItem> workExperiences,
         List<PortfolioItem> portfolios,
         Instant createdAt,
-        Instant updatedAt
+        Instant updatedAt,
+        TalentProfileDetails profileDetails,
+        List<SupportingDocument> supportingDocuments
 ) {
+    public record SupportingDocument(String key, String originalName) {}
+
     public record EducationItem(
             UUID id,
             EducationType type,
@@ -53,7 +57,8 @@ public record CandidateResponse(
             Integer startYear,
             Integer endYear,
             String description,
-            String ipk
+            String ipk,
+            String clientKey
     ) {}
 
     public record WorkExperienceItem(
@@ -63,7 +68,8 @@ public record CandidateResponse(
             LocalDate startDate,
             LocalDate endDate,
             boolean currentJob,
-            String description
+            String description,
+            WorkDetails details
     ) {}
 
     public record PortfolioItem(

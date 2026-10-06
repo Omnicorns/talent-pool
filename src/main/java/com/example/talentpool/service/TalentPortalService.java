@@ -25,6 +25,9 @@ import java.util.UUID;
 public class TalentPortalService {
 
     private final CandidateService candidateService;
+    private final SupportingDocumentService documents;
+    private final TalentProfileValidator profileValidator;
+    private final com.example.talentpool.repository.CandidateRepository candidates;
     private final JobListingService jobListingService;
     private final JobListingRepository jobListingRepository;
     private final JobApplicationRepository applicationRepository;
@@ -41,9 +44,15 @@ public class TalentPortalService {
             JobApplicationHistoryRepository applicationHistoryRepository,
             JobApplicationService applicationService,
             CandidateViewService candidateViewService,
-            InterviewRepository interviewRepository
+            InterviewRepository interviewRepository,
+            SupportingDocumentService documents,
+            TalentProfileValidator profileValidator,
+            com.example.talentpool.repository.CandidateRepository candidates
     ) {
         this.candidateService = candidateService;
+        this.documents = documents;
+        this.profileValidator=profileValidator;
+        this.candidates=candidates;
         this.jobListingService = jobListingService;
         this.jobListingRepository = jobListingRepository;
         this.applicationRepository = applicationRepository;
@@ -64,13 +73,25 @@ public class TalentPortalService {
             CandidateUpsertRequest request,
             MultipartFile cv,
             MultipartFile profilePicture,
-            List<MultipartFile> portfolioFiles
+            List<MultipartFile> portfolioFiles,
+            List<String> supportingKeys, List<MultipartFile> supportingFiles
     ) {
         CandidateResponse current = candidateService.detail(candidateId);
         if (current.email() == null || !current.email().equalsIgnoreCase(request.email())) {
             throw new BadRequestException("Email login tidak dapat diubah dari profil");
         }
-        return candidateService.update(candidateId, request, cv, profilePicture, portfolioFiles);
+        documents.validateUploads(supportingKeys,supportingFiles);
+        documents.validateOwners(request,supportingKeys);
+        if (cv != null && ((cv.getOriginalFilename()==null || !cv.getOriginalFilename().toLowerCase(java.util.Locale.ROOT).matches(".*\\.(pdf|doc|docx)$")) || cv.getSize()>10L*1024*1024 || cv.isEmpty()))
+            throw new BadRequestException("CV wajib berupa PDF, DOC, atau DOCX maksimal 10 MB");
+        if (profilePicture != null && profilePicture.getSize()>10L*1024*1024)
+            throw new BadRequestException("Foto profil maksimal 10 MB");
+        if (portfolioFiles != null && (portfolioFiles.size()>10 || portfolioFiles.stream().anyMatch(file -> file.getSize()>10L*1024*1024)))
+            throw new BadRequestException("Maksimal 10 portofolio, masing-masing maksimal 10 MB");
+        candidateService.update(candidateId, request, cv, profilePicture, portfolioFiles);
+        documents.attach(candidateId,supportingKeys,supportingFiles);
+        if(request.profileDetails()!=null) profileValidator.validate(candidates.findById(candidateId).orElseThrow());
+        return candidateService.detail(candidateId);
     }
 
     @Transactional

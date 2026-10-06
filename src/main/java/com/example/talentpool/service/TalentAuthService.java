@@ -34,19 +34,22 @@ public class TalentAuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtEncoder jwtEncoder;
     private final long expirationMinutes;
+    private final TalentProfileValidator profileValidator;
 
     public TalentAuthService(
             TalentAccountRepository accountRepository,
             CandidateRepository candidateRepository,
             PasswordEncoder passwordEncoder,
             JwtEncoder jwtEncoder,
-            @Value("${app.jwt.expiration-minutes:480}") long expirationMinutes
+            @Value("${app.jwt.expiration-minutes:480}") long expirationMinutes,
+            TalentProfileValidator profileValidator
     ) {
         this.accountRepository = accountRepository;
         this.candidateRepository = candidateRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtEncoder = jwtEncoder;
         this.expirationMinutes = expirationMinutes;
+        this.profileValidator=profileValidator;
     }
 
     @Transactional
@@ -111,6 +114,7 @@ public class TalentAuthService {
     public TalentMeResponse completeOnboarding(UUID candidateId) {
         TalentAccount account = accountRepository.findByCandidateId(candidateId)
                 .orElseThrow(() -> new BadRequestException("Akun kandidat tidak ditemukan"));
+        if (!account.isOnboardingCompleted()) profileValidator.validate(account.getCandidate());
         account.setOnboardingCompleted(true);
         accountRepository.save(account);
 

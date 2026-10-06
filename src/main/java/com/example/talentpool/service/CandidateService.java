@@ -30,6 +30,7 @@ import java.util.UUID;
 public class CandidateService {
     private final CandidateRepository repository;
     private final CandidateMapper mapper;
+    private final ProfileJson json;
     private final FileStorageService storage;
     private final JobListingRepository jobListingRepository;
     private final JobApplicationRepository jobApplicationRepository;
@@ -43,10 +44,12 @@ public class CandidateService {
             JobListingRepository jobListingRepository,
             JobApplicationRepository jobApplicationRepository,
             InterviewRepository interviewRepository,
-            JobApplicationService jobApplicationService
+            JobApplicationService jobApplicationService,
+            ProfileJson json
     ) {
         this.repository = repository;
         this.mapper = mapper;
+        this.json=json;
         this.storage = storage;
         this.jobListingRepository = jobListingRepository;
         this.jobApplicationRepository = jobApplicationRepository;
@@ -149,6 +152,8 @@ public class CandidateService {
         storage.deleteQuietly(candidate.getCvStoredPath());
         storage.deleteQuietly(candidate.getProfilePictureStoredPath());
         candidate.getPortfolios().forEach(p -> storage.deleteQuietly(p.getStoredPath()));
+        SupportingDocumentService.documents(candidate, json)
+            .forEach(d -> storage.deleteQuietly(d.storedPath()));
         interviewRepository.deleteByCandidateId(id);
         jobApplicationRepository.deleteByCandidateId(id);
         repository.delete(candidate);
@@ -224,20 +229,21 @@ public class CandidateService {
             List<MultipartFile> portfolioFiles
     ) {
         if (cv != null && !cv.isEmpty()) {
-            storage.deleteQuietly(candidate.getCvStoredPath());
             FileStorageService.StoredFile stored = storage.storeCv(cv, candidate.getId());
+            cleanupAfterTransaction(stored.storedPath(),candidate.getCvStoredPath());
             candidate.setCvOriginalName(stored.originalName());
             candidate.setCvStoredPath(stored.storedPath());
         }
         if (profilePicture != null && !profilePicture.isEmpty()) {
-            storage.deleteQuietly(candidate.getProfilePictureStoredPath());
             FileStorageService.StoredFile stored = storage.storeProfilePicture(profilePicture, candidate.getId());
+            cleanupAfterTransaction(stored.storedPath(),candidate.getProfilePictureStoredPath());
             candidate.setProfilePictureOriginalName(stored.originalName());
             candidate.setProfilePictureStoredPath(stored.storedPath());
         }
         if (portfolioFiles != null) {
             portfolioFiles.stream().filter(file -> file != null && !file.isEmpty()).forEach(file -> {
                 FileStorageService.StoredFile stored = storage.storePortfolio(file, candidate.getId());
+                cleanupAfterTransaction(stored.storedPath(),null);
                 Portfolio portfolio = new Portfolio();
                 portfolio.setType(PortfolioType.FILE);
                 portfolio.setTitle(stored.originalName());
@@ -246,6 +252,13 @@ public class CandidateService {
                 candidate.addPortfolio(portfolio);
             });
         }
+    }
+
+    private void cleanupAfterTransaction(String created,String replaced) {
+        if (org.springframework.transaction.support.TransactionSynchronizationManager.isSynchronizationActive())
+            org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(new org.springframework.transaction.support.TransactionSynchronization() {
+                @Override public void afterCompletion(int status) { storage.deleteQuietly(status==STATUS_COMMITTED ? replaced : created); }
+            });
     }
 
     private String filenameWithoutExtension(String filename) {

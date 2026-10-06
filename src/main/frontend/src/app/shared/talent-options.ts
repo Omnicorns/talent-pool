@@ -1,0 +1,17 @@
+export const TALENT_OPTIONS = {
+  genders: ['Laki-laki','Perempuan'],
+  religions: ['Islam','Kristen','Katolik','Hindu','Buddha','Konghucu','Kepercayaan terhadap Tuhan Yang Maha Esa'],
+  socialPlatforms: ['Instagram','TikTok','Facebook','X','YouTube','Threads'],
+  educationLevels: ['SMA/SMK','D1','D2','D3','D4','S1','S2','S3'],
+  institutions: ['Universitas Indonesia','Universitas Gadjah Mada','Institut Teknologi Bandung','Universitas Padjadjaran','Universitas Diponegoro','Universitas Airlangga','Universitas Brawijaya','Universitas Negeri Jakarta','Universitas Bina Nusantara','Universitas Telkom','Universitas Trisakti','Universitas Atma Jaya'],
+  majors: ['Manajemen','Akuntansi','Ekonomi','Administrasi Bisnis','Ilmu Komunikasi','Psikologi','Hukum','Teknik Informatika','Sistem Informasi','Teknik Industri','Desain Komunikasi Visual','Pariwisata','Perhotelan','Pemasaran'],
+  employmentTypes: ['Fulltime','Part-time','Contract','Freelance','Internship'],
+  industries: ['Perbankan & Keuangan','Asuransi','Teknologi & IT','E-Commerce','Retail & Consumer Goods','Hospitality & Pariwisata','Properti & Real Estate','Konstruksi & Infrastruktur','Manufaktur','FMCG','Energi & Pertambangan','Telekomunikasi','Transportasi & Logistik','Kesehatan','Pendidikan','Pemerintahan / BUMN','Konsultan & Professional Services','Media & Entertainment','Food & Beverage'],
+  skills: ['Leadership','Communication','Project Management','Data Analysis','Business Development','Marketing','Sales','Finance & Accounting','Human Resources','Administration','Operations','IT & Programming','Design & Creative','Customer Service'],
+  tools: ['Microsoft Office','Microsoft Excel','Power BI','Tableau','SQL','Python','ERP system','Adobe','Canva','Figma','Google Workspace'],
+  functions: ['Asset Management','Business Development','Corporate Planning & Subsidiary','Corporate Secretary','Customer Experience','Finance & Accounting','Governance & Risk','Human Capital','Internal Audit','Marketing, Promotion, & Events','Retail','Technology','Ekspor/Import'],
+  locations: ['Jakarta','Bandung','Malang','Bali','Tangerang'],
+  sources: ['Website Sarinah','LinkedIn','Instagram','Job Portal','Job Fair','Karyawan Sarinah','Kampus'],
+  languages: ['Bahasa Indonesia','Bahasa Inggris','Mandarin','Jepang','Korea','Arab','Prancis','Jerman'],
+  proficiency: ['Dasar','Menengah','Mahir','Fasih / Native'],
+};
