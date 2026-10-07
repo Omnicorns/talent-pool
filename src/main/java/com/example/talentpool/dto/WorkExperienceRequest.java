@@ -11,6 +11,7 @@ public record WorkExperienceRequest(
         @NotNull LocalDate startDate,
         LocalDate endDate,
         boolean currentJob,
-        String description
+        String description,
+        @jakarta.validation.Valid WorkDetails details
 ) {
 }

@@ -17,6 +17,9 @@ public record CandidateResponse(
         String phone,
         LocalDate birthDate,
         String identityNumber,
+        String about,
+        String languanges,
+        String religion,
         String citizenIdAddress,
         String residentialAddress,
         boolean sameAsCitizenIdAddress,
@@ -35,25 +38,45 @@ public record CandidateResponse(
         List<String> tools,
         List<String> jobInterests,
         List<String> preferredLocations,
-
-
         List<EducationItem> educations,
         List<WorkExperienceItem> workExperiences,
         List<PortfolioItem> portfolios,
         Instant createdAt,
-        Instant updatedAt
+        Instant updatedAt,
+        TalentProfileDetails profileDetails,
+        List<SupportingDocument> supportingDocuments
 ) {
+    public record SupportingDocument(String key, String originalName) {}
+
     public record EducationItem(
-            UUID id, EducationType type, String level, String institution, String major,
-            Integer startYear, Integer endYear, String description
+            UUID id,
+            EducationType type,
+            String level,
+            String institution,
+            String major,
+            Integer startYear,
+            Integer endYear,
+            String description,
+            String ipk,
+            String clientKey
     ) {}
 
     public record WorkExperienceItem(
-            UUID id, String companyName, String position, LocalDate startDate,
-            LocalDate endDate, boolean currentJob, String description
+            UUID id,
+            String companyName,
+            String position,
+            LocalDate startDate,
+            LocalDate endDate,
+            boolean currentJob,
+            String description,
+            WorkDetails details
     ) {}
 
     public record PortfolioItem(
-            UUID id, PortfolioType type, String title, String url, String originalName
+            UUID id,
+            PortfolioType type,
+            String title,
+            String url,
+            String originalName
     ) {}
 }

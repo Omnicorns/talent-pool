@@ -13,6 +13,7 @@ public record CandidateUpsertRequest(
         @NotBlank @Size(max = 50) String phone,
         LocalDate birthDate,
         @Size(max = 100) String identityNumber,
+        @Size(max = 4000) String about,
         String citizenIdAddress,
         String residentialAddress,
 
@@ -33,8 +34,8 @@ public record CandidateUpsertRequest(
         @Size(max = 3)
         List<@NotBlank String> relatedJobPositions,
 
-        @Size(max = 3)
-        List<@NotBlank String> tools,
+        @Size(max = 20)
+        List<@NotBlank @Size(max=150) String> tools,
 
         // BARU
         @Size(max = 3)
@@ -46,6 +47,7 @@ public record CandidateUpsertRequest(
 
         List<@Valid EducationRequest> educations,
         List<@Valid WorkExperienceRequest> workExperiences,
-        List<@Valid PortfolioLinkRequest> portfolioLinks
+        List<@Valid PortfolioLinkRequest> portfolioLinks,
+        @Valid TalentProfileDetails profileDetails
 ) {
 }

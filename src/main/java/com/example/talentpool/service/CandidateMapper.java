@@ -11,12 +11,16 @@ import java.util.List;
 
 @Component
 public class CandidateMapper {
+    private final ProfileJson json;
+    public CandidateMapper(ProfileJson json) { this.json = json; }
     public void apply(Candidate candidate, CandidateUpsertRequest request) {
+            if (request.profileDetails() != null) candidate.setProfileDetails(json.write(request.profileDetails()));
             candidate.setFullName(request.fullName().trim());
             candidate.setEmail(request.email().trim().toLowerCase());
             candidate.setPhone(request.phone().trim());
             candidate.setBirthDate(request.birthDate());
             candidate.setIdentityNumber(trimToNull(request.identityNumber()));
+            candidate.setAbout(trimToNull(request.about()));
 
             // =========================
             // TAMBAHAN
@@ -75,6 +79,13 @@ public class CandidateMapper {
 
                         Education education = new Education();
 
+                        education.setClientKey(item.clientKey());
+                        // Preserve document ownership when older editors omit clientKey.
+                        if (item.clientKey() == null) candidate.getEducations().stream()
+                            .filter(old -> java.util.Objects.equals(old.getInstitution(), item.institution())
+                                && java.util.Objects.equals(old.getLevel(), item.level())
+                                && java.util.Objects.equals(old.getStartYear(), item.startYear()))
+                            .findFirst().ifPresent(old -> education.setClientKey(old.getClientKey()));
                         education.setType(item.type());
                         education.setLevel(trimToNull(item.level()));
                         education.setInstitution(item.institution().trim());
@@ -105,6 +116,11 @@ public class CandidateMapper {
                                 WorkExperience experience =
                                         new WorkExperience();
 
+                                if (item.details() != null) experience.setDetails(json.write(item.details()));
+                                else candidate.getWorkExperiences().stream()
+                                    .filter(old -> java.util.Objects.equals(old.getCompanyName(), item.companyName())
+                                        && java.util.Objects.equals(old.getStartDate(), item.startDate()))
+                                    .findFirst().ifPresent(old -> experience.setDetails(old.getDetails()));
                                 experience.setCompanyName(
                                         item.companyName().trim()
                                 );
@@ -185,6 +201,10 @@ public class CandidateMapper {
                 c.getBirthDate(),
 
                 c.getIdentityNumber(),
+                c.getAbout(),
+
+                c.getLanguange(),
+                c.getReligion(),
 
                 c.getCitizenIdAddress(),
                 c.getResidentialAddress(),
@@ -261,7 +281,9 @@ public class CandidateMapper {
                                         e.getMajor(),
                                         e.getStartYear(),
                                         e.getEndYear(),
-                                        e.getDescription()
+                                        e.getDescription(),
+                                        e.getIpk(),
+                                        e.getClientKey()
                                 )
                         )
                         .toList(),
@@ -279,7 +301,8 @@ public class CandidateMapper {
                                         w.getStartDate(),
                                         w.getEndDate(),
                                         w.isCurrentJob(),
-                                        w.getDescription()
+                                        w.getDescription(),
+                                        json.read(w.getDetails(), WorkDetails.class)
                                 )
                         )
                         .toList(),
@@ -301,7 +324,10 @@ public class CandidateMapper {
                         .toList(),
 
                 c.getCreatedAt(),
-                c.getUpdatedAt()
+                c.getUpdatedAt(),
+                json.read(c.getProfileDetails(), TalentProfileDetails.class),
+                SupportingDocumentService.documents(c, json).stream()
+                    .map(d -> new CandidateResponse.SupportingDocument(d.key(), d.originalName())).toList()
         );
     }
 

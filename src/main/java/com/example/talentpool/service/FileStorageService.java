@@ -46,6 +46,22 @@ public class FileStorageService {
         return store(file, Path.of("candidates", candidateId.toString(), "portfolio"), PORTFOLIO_EXTENSIONS);
     }
 
+    public void validateSupportingDocument(MultipartFile file) {
+        if (file == null || file.isEmpty() || file.getSize() > 2L * 1024 * 1024)
+            throw new BadRequestException("Dokumen wajib berupa PDF, maksimal 2 MB");
+        String name = file.getOriginalFilename();
+        if (name == null || !name.toLowerCase(Locale.ROOT).endsWith(".pdf") || name.contains(".."))
+            throw new BadRequestException("Dokumen wajib berupa PDF");
+        try (var stream = file.getInputStream()) {
+            if (!java.util.Arrays.equals(stream.readNBytes(5), "%PDF-".getBytes(java.nio.charset.StandardCharsets.US_ASCII)))
+                throw new BadRequestException("Isi dokumen bukan PDF yang valid");
+        } catch (IOException ex) { throw new BadRequestException("Dokumen tidak dapat dibaca"); }
+    }
+    public StoredFile storeSupportingDocument(MultipartFile file, UUID candidateId) {
+        validateSupportingDocument(file);
+        return store(file, Path.of("candidates",candidateId.toString(),"documents"),Set.of("pdf"));
+    }
+
     public Resource load(String storedPath) {
         try {
             Path path = root.resolve(storedPath).normalize();
@@ -90,7 +106,9 @@ public class FileStorageService {
             Files.createDirectories(targetFolder);
             String storedName = UUID.randomUUID() + "." + extension;
             Path target = targetFolder.resolve(storedName);
-            Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+            try (var stream = file.getInputStream()) {
+                Files.copy(stream, target, StandardCopyOption.REPLACE_EXISTING);
+            }
             String relativePath = root.relativize(target).toString().replace('\\', '/');
             return new StoredFile(originalName, relativePath);
         } catch (IOException ex) {
