@@ -6,7 +6,6 @@ import { CandidateProfile } from '../core/models/talent.models';
 import { API_BASE } from '../core/service/api/api-base';
 @Component({selector:'app-talent-profile-details',standalone:true,imports:[CommonModule],template:`
   <section class="talent-details" *ngIf="profile.profileDetails as details">
-    <h2>Detail Talent Pool</h2>
     <div class="info-grid">
       <article><span>Nomor KTP</span><strong>{{ profile.identityNumber || '-' }}</strong></article>
       <article><span>Jenis Kelamin</span><strong>{{ details.gender || '-' }}</strong></article>
@@ -14,12 +13,15 @@ import { API_BASE } from '../core/service/api/api-base';
       <article><span>Wilayah & Kode Pos</span><strong>{{ details.region || '-' }} • {{ details.postalCode || '-' }}</strong></article>
       <article><span>Alamat Domisili</span><strong>{{ profile.sameAsCitizenIdAddress ? profile.citizenIdAddress : profile.residentialAddress || '-' }}</strong></article>
       <article><span>LinkedIn</span><strong>{{ details.linkedinUrl || '-' }}</strong></article>
-      <article><span>Media Sosial</span><strong>{{ details.socialPlatform }} • {{ details.socialUsername }}</strong></article>
       <article><span>Gaji Terakhir</span><strong>{{ profile.currentSalary === null || profile.currentSalary === undefined ? '-' : (profile.currentSalary | currency:'IDR':'symbol':'1.0-0') }}</strong></article>
+      <article><span>Sumber Informasi</span><strong>{{ profile.source || '-' }}</strong></article>
+    </div>
+    <h3 class="talent-details-subheading">Additional Information</h3>
+    <div class="info-grid">
+      <article><span>Media Sosial</span><strong>{{ details.socialPlatform || '-' }} • {{ details.socialUsername || '-' }}</strong></article>
       <article><span>Ekspektasi Gaji per Bulan</span><strong>{{ profile.expectedSalary | currency:'IDR':'symbol':'1.0-0' }} – {{ details.expectedSalaryMax | currency:'IDR':'symbol':'1.0-0' }}</strong></article>
       <article><span>Fungsi yang Diminati</span><strong>{{ profile.jobInterests.join(', ') || '-' }}</strong></article>
       <article><span>Lokasi yang Diminati</span><strong>{{ profile.preferredLocations.join(', ') || '-' }}</strong></article>
-      <article><span>Sumber Informasi</span><strong>{{ profile.source || '-' }}</strong></article>
     </div>
     <h3>Kemampuan Bahasa</h3><p *ngFor="let language of details.languageSkills">{{ language.name }} • {{ language.proficiency }}</p>
     <h3>Keahlian & Pengalaman</h3><p *ngIf="details.noExperience">Belum memiliki pengalaman kerja.</p>
