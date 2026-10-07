@@ -6,7 +6,7 @@ import { CandidateProfile } from '../core/models/talent.models';
 import { API_BASE } from '../core/service/api/api-base';
 @Component({selector:'app-talent-profile-details',standalone:true,imports:[CommonModule],template:`
   <section class="talent-details" *ngIf="profile.profileDetails as details">
-    <h3 class="talent-details-subheading" *ngIf="showPersonalHeading">Data Personal</h3>
+    <h3 class="talent-details-subheading">Data Personal</h3>
     <div class="info-grid">
       <article><span>Agama</span><strong>{{ profile.religion || '-' }}</strong></article>
       <article><span>Jenis Kelamin</span><strong>{{ details.gender || '-' }}</strong></article>
@@ -44,7 +44,6 @@ import { API_BASE } from '../core/service/api/api-base';
 export class TalentProfileDetailsComponent {
   @Input({required:true}) profile!:CandidateProfile;
   @Input() backoffice=false;
-  @Input() showPersonalHeading=true;
   @Input() showAdditionalInformation=true;
   @Input() showEducationInformation=true;
   error='';downloading=false;
