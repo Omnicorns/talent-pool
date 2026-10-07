@@ -11,7 +11,7 @@ import { API_BASE } from '../core/service/api/api-base';
       <article><span>Agama</span><strong>{{ profile.religion || '-' }}</strong></article>
       <article><span>Jenis Kelamin</span><strong>{{ details.gender || '-' }}</strong></article>
       <article><span>Alamat KTP</span><strong>{{ profile.citizenIdAddress || '-' }}</strong></article>
-      <article><span>Wilayah & Kode Pos</span><strong>{{ details.region || '-' }} • {{ details.postalCode || '-' }}</strong></article>
+      <article><span>Wilayah & Kode Pos</span><strong>{{ joinParts(details.region, details.postalCode) }}</strong></article>
       <article><span>Alamat Domisili</span><strong>{{ profile.sameAsCitizenIdAddress ? profile.citizenIdAddress : profile.residentialAddress || '-' }}</strong></article>
       <article><span>Sumber Informasi</span><strong>{{ profile.source || '-' }}</strong></article>
     </div>
@@ -19,8 +19,8 @@ import { API_BASE } from '../core/service/api/api-base';
     <h3 class="talent-details-subheading">Additional Information</h3>
     <div class="info-grid">
       <article><span>LinkedIn</span><strong>{{ details.linkedinUrl || '-' }}</strong></article>
-      <article><span>Media Sosial</span><strong>{{ details.socialPlatform || '-' }} • {{ details.socialUsername || '-' }}</strong></article>
-      <article><span>Ekspektasi Gaji per Bulan</span><strong>{{ profile.expectedSalary | currency:'IDR':'symbol':'1.0-0' }} – {{ details.expectedSalaryMax | currency:'IDR':'symbol':'1.0-0' }}</strong></article>
+      <article><span>Media Sosial</span><strong>{{ joinParts(details.socialPlatform, details.socialUsername) }}</strong></article>
+      <article><span>Ekspektasi Gaji per Bulan</span><strong>{{ salaryRange(profile.expectedSalary, details.expectedSalaryMax) }}</strong></article>
       <article><span>Fungsi yang Diminati</span><strong>{{ profile.jobInterests.join(', ') || '-' }}</strong></article>
       <article><span>Lokasi yang Diminati</span><strong>{{ profile.preferredLocations.join(', ') || '-' }}</strong></article>
     </div>
@@ -48,6 +48,15 @@ export class TalentProfileDetailsComponent {
   @Input() showEducationInformation=true;
   error='';downloading=false;
   constructor(private http:HttpClient,private backofficeAuth:BackofficeAuthService) {}
+  joinParts(...parts:Array<string|null|undefined>):string {
+    return parts.map(part=>(part||'').trim()).filter(Boolean).join(' • ')||'-';
+  }
+  salaryRange(min:number|null|undefined,max:number|null|undefined):string {
+    const rupiah=(value:number)=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(value);
+    if(min==null&&max==null)return '-';
+    if(min!=null&&max!=null&&min!==max)return `${rupiah(min)} – ${rupiah(max)}`;
+    return rupiah((min??max) as number);
+  }
   label(key:string):string {
     if(key.startsWith('language:')){const lang=this.profile.profileDetails?.languageSkills.find(l=>key.includes(l.key));return 'Sertifikat '+(lang?.name||'Bahasa');}
     const edu=this.profile.educations.find(e=>e.clientKey && key.includes(e.clientKey));return (key.endsWith(':diploma') ? 'Ijazah' : 'Transkrip')+' '+(edu?.institution||'');

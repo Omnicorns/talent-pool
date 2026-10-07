@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TalentProfileDetailsComponent } from '../../shared/talent-profile-details.component';
@@ -51,12 +51,12 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
         <app-talent-profile-details [profile]="profile" [showAdditionalInformation]="false" [showEducationInformation]="false"></app-talent-profile-details>
 
         <section class="profile-content-card">
-          <nav class="profile-tabs">
-            <button type="button" (click)="scrollToSection('about')">About</button>
-            <button type="button" (click)="scrollToSection('experiences')">Experiences</button>
-            <button type="button" (click)="scrollToSection('education')">Education</button>
-            <button type="button" (click)="scrollToSection('training')">Training & Certification</button>
-            <button type="button" (click)="scrollToSection('additional')">Additional Information</button>
+          <nav class="profile-tabs" aria-label="Bagian profil">
+            <button type="button" [class.active]="activeSection === 'about'" [attr.aria-current]="activeSection === 'about' ? 'true' : null" (click)="scrollToSection('about')">About</button>
+            <button type="button" [class.active]="activeSection === 'experiences'" [attr.aria-current]="activeSection === 'experiences' ? 'true' : null" (click)="scrollToSection('experiences')">Experiences</button>
+            <button type="button" [class.active]="activeSection === 'education'" [attr.aria-current]="activeSection === 'education' ? 'true' : null" (click)="scrollToSection('education')">Education</button>
+            <button type="button" [class.active]="activeSection === 'training'" [attr.aria-current]="activeSection === 'training' ? 'true' : null" (click)="scrollToSection('training')">Training & Certification</button>
+            <button type="button" [class.active]="activeSection === 'additional'" [attr.aria-current]="activeSection === 'additional' ? 'true' : null" (click)="scrollToSection('additional')">Additional Information</button>
           </nav>
 
           <div class="profile-sections">
@@ -76,7 +76,7 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
                     <p>{{ item.companyName }}</p>
                     <small>{{ item.description || '-' }}</small>
                   </div>
-                  <time>{{ item.startDate }} — {{ item.currentJob ? 'Sekarang' : (item.endDate || '-') }}</time>
+                  <time>{{ monthYear(item.startDate) }} — {{ item.currentJob ? 'Sekarang' : monthYear(item.endDate) }}</time>
                 </article>
               </ng-container>
               <ng-template #emptyExperience><div class="empty-state">Belum ada pengalaman kerja.</div></ng-template>
@@ -111,8 +111,8 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
                   <div class="timeline-icon">✓</div>
                   <div>
                     <h3>{{ item.name }}</h3>
-                    <p>{{ item.issuingOrganization }} • ID {{ item.credentialId }}</p>
-                    <small>Terbit {{ item.issueDate | date:'dd MMM yyyy' }} · Kedaluwarsa {{ item.expiryDate | date:'dd MMM yyyy' }}</small>
+                    <p>{{ joinParts(item.issuingOrganization, item.credentialId ? 'ID ' + item.credentialId : '') }}</p>
+                    <small>{{ certificationDates(item.issueDate, item.expiryDate) }}</small>
                     <a *ngIf="item.credentialUrl" class="training-cert-link" [href]="item.credentialUrl" target="_blank" rel="noopener noreferrer">Lihat sertifikat ↗</a>
                   </div>
                 </article>
@@ -136,8 +136,8 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
               <div class="section-title"><h2>Additional Information</h2><button (click)="openDrawer('additional')">✎ Edit</button></div>
               <div class="info-grid">
                 <article><span>LinkedIn</span><strong>{{ profile.profileDetails?.linkedinUrl || '-' }}</strong></article>
-                <article><span>Media Sosial</span><strong>{{ profile.profileDetails?.socialPlatform || '-' }} • {{ profile.profileDetails?.socialUsername || '-' }}</strong></article>
-                <article><span>Ekspektasi Gaji per Bulan</span><strong>{{ profile.expectedSalary | currency:'IDR':'symbol':'1.0-0' }} – {{ profile.profileDetails?.expectedSalaryMax | currency:'IDR':'symbol':'1.0-0' }}</strong></article>
+                <article><span>Media Sosial</span><strong>{{ joinParts(profile.profileDetails?.socialPlatform, profile.profileDetails?.socialUsername) }}</strong></article>
+                <article><span>Ekspektasi Gaji per Bulan</span><strong>{{ salaryRange(profile.expectedSalary, profile.profileDetails?.expectedSalaryMax) }}</strong></article>
                 <article><span>Fungsi yang Diminati</span><strong>{{ profile.jobInterests.join(', ') || '-' }}</strong></article>
                 <article><span>Lokasi Kerja yang Diminati</span><strong>{{ profile.preferredLocations.join(', ') || '-' }}</strong></article>
                 <article><span>Tools / Skills</span><strong>{{ profile.tools?.join(', ') || '-' }}</strong></article>
@@ -362,6 +362,9 @@ export class CandidatePortalComponent implements OnInit {
   profilePictureUrl: string | null = null;
   profilePicturePreview: string | null = null;
   saving = false;
+  activeSection = 'about';
+  private tabClickedAt = 0;
+  private readonly profileSectionIds = ['about', 'experiences', 'education', 'training', 'additional'];
   applicationSubmitted = false;
   applicationHistoryOpen = false;
   applicationHistoryLoading = false;
@@ -399,10 +402,68 @@ export class CandidatePortalComponent implements OnInit {
   }
 
   scrollToSection(id: string): void {
+    this.activeSection = id;
+    this.tabClickedAt = Date.now();
+    this.revealActiveTab();
     document.getElementById(id)?.scrollIntoView({
       behavior: 'smooth',
       block: 'start',
     });
+  }
+
+  @HostListener('window:scroll')
+  syncActiveSection(): void {
+    // Ignore scroll events caused by a tab click until its smooth scroll settles.
+    if (Date.now() - this.tabClickedAt < 900) return;
+    const offset = 140;
+    let current = this.profileSectionIds[0];
+    for (const id of this.profileSectionIds) {
+      const top = document.getElementById(id)?.getBoundingClientRect().top;
+      if (top != null && top - offset <= 0) current = id;
+    }
+    if (current !== this.activeSection) {
+      this.activeSection = current;
+      this.revealActiveTab();
+    }
+  }
+
+  private revealActiveTab(): void {
+    setTimeout(() => {
+      const tab = document.querySelector('.profile-tabs button.active') as HTMLElement | null;
+      const bar = tab?.parentElement;
+      if (!tab || !bar || bar.scrollWidth <= bar.clientWidth) return;
+      bar.scrollTo({ left: tab.offsetLeft - (bar.clientWidth - tab.offsetWidth) / 2, behavior: 'smooth' });
+    });
+  }
+
+  monthYear(value: string | null | undefined): string {
+    if (!value) return '-';
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? value : date.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
+  }
+
+  private fullDate(value: string | null | undefined): string {
+    if (!value) return '';
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? value : date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  certificationDates(issueDate: string | null | undefined, expiryDate: string | null | undefined): string {
+    const issued = this.fullDate(issueDate);
+    const expires = this.fullDate(expiryDate);
+    return [issued && `Terbit ${issued}`, expires ? `Kedaluwarsa ${expires}` : (issued ? 'Tanpa masa berlaku' : '')]
+      .filter(Boolean).join(' · ') || '-';
+  }
+
+  joinParts(...parts: Array<string | null | undefined>): string {
+    return parts.map((part) => (part || '').trim()).filter(Boolean).join(' • ') || '-';
+  }
+
+  salaryRange(min: number | null | undefined, max: number | null | undefined): string {
+    const rupiah = (value: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value);
+    if (min == null && max == null) return '-';
+    if (min != null && max != null && min !== max) return `${rupiah(min)} – ${rupiah(max)}`;
+    return rupiah((min ?? max) as number);
   }
 
   openApplicationHistory(app: JobApplication): void {
