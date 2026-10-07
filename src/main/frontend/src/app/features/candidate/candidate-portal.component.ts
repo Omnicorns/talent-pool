@@ -131,16 +131,17 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
               <div class="info-grid">
                 <article><span>Languages</span><strong>{{ profile.languanges || '-' }}</strong></article>
                 <article><span>Religion</span><strong>{{ profile.religion || '-' }}</strong></article>
-                <article><span>Expected Salary</span><strong>{{ profile.expectedSalary || '-' }}</strong></article>
-                <article><span>Job Interests</span><strong>{{ profile.jobInterests?.join(', ') || '-' }}</strong></article>
-                <article><span>Preferred Locations</span><strong>{{ profile.preferredLocations?.join(', ') || '-' }}</strong></article>
+                <article><span>Media Sosial</span><strong>{{ profile.profileDetails?.socialPlatform || '-' }} • {{ profile.profileDetails?.socialUsername || '-' }}</strong></article>
+                <article><span>Ekspektasi Gaji per Bulan</span><strong>{{ profile.expectedSalary | currency:'IDR':'symbol':'1.0-0' }} – {{ profile.profileDetails?.expectedSalaryMax | currency:'IDR':'symbol':'1.0-0' }}</strong></article>
+                <article><span>Fungsi yang Diminati</span><strong>{{ profile.jobInterests.join(', ') || '-' }}</strong></article>
+                <article><span>Lokasi Kerja yang Diminati</span><strong>{{ profile.preferredLocations.join(', ') || '-' }}</strong></article>
                 <article><span>Tools / Skills</span><strong>{{ profile.tools?.join(', ') || '-' }}</strong></article>
               </div>
             </section>
           </div>
         </section>
 
-        <app-talent-profile-details [profile]="profile"></app-talent-profile-details>
+        <app-talent-profile-details [profile]="profile" [showAdditionalInformation]="false"></app-talent-profile-details>
         <section class="candidate-insight-grid">
           <article class="candidate-insight-card">
             <div class="section-title"><h2>Recruiter Activity</h2></div>

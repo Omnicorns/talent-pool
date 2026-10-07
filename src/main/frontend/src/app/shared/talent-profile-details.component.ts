@@ -16,6 +16,7 @@ import { API_BASE } from '../core/service/api/api-base';
       <article><span>Gaji Terakhir</span><strong>{{ profile.currentSalary === null || profile.currentSalary === undefined ? '-' : (profile.currentSalary | currency:'IDR':'symbol':'1.0-0') }}</strong></article>
       <article><span>Sumber Informasi</span><strong>{{ profile.source || '-' }}</strong></article>
     </div>
+    <ng-container *ngIf="showAdditionalInformation">
     <h3 class="talent-details-subheading">Additional Information</h3>
     <div class="info-grid">
       <article><span>Media Sosial</span><strong>{{ details.socialPlatform || '-' }} • {{ details.socialUsername || '-' }}</strong></article>
@@ -23,6 +24,7 @@ import { API_BASE } from '../core/service/api/api-base';
       <article><span>Fungsi yang Diminati</span><strong>{{ profile.jobInterests.join(', ') || '-' }}</strong></article>
       <article><span>Lokasi yang Diminati</span><strong>{{ profile.preferredLocations.join(', ') || '-' }}</strong></article>
     </div>
+    </ng-container>
     <h3>Kemampuan Bahasa</h3><p *ngFor="let language of details.languageSkills">{{ language.name }} • {{ language.proficiency }}</p>
     <h3>Keahlian & Pengalaman</h3><p *ngIf="details.noExperience">Belum memiliki pengalaman kerja.</p>
     <article class="talent-detail-work" *ngFor="let work of profile.workExperiences"><ng-container *ngIf="work.details as data"><strong>{{ work.position }} • {{ work.companyName }}</strong><p>{{ data.employmentType }} • {{ data.industry }}</p><p>Skill: {{ data.skills.join(', ') || '-' }}</p><p>Tools: {{ data.tools.join(', ') || '-' }}</p><p *ngIf="!work.currentJob">Alasan resign: {{ data.resignReason || '-' }}</p></ng-container></article>
@@ -33,6 +35,7 @@ import { API_BASE } from '../core/service/api/api-base';
 export class TalentProfileDetailsComponent {
   @Input({required:true}) profile!:CandidateProfile;
   @Input() backoffice=false;
+  @Input() showAdditionalInformation=true;
   error='';downloading=false;
   constructor(private http:HttpClient,private backofficeAuth:BackofficeAuthService) {}
   label(key:string):string {
