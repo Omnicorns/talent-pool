@@ -8,7 +8,16 @@ import { TalentAuthService } from '../core/service/api/talent-auth.service';
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <header class="career-header" [class.is-authenticated]="auth.authenticated">
+    <header class="career-header" [class.is-authenticated]="auth.authenticated" [class.portal-reference-header]="active === 'portal'">
+      <ng-container *ngIf="active === 'portal'; else standardCareerHeader">
+        <a routerLink="/portal" class="talent-portal-brand" aria-label="Talent Pool"><span>T</span>Talent Pool</a>
+        <nav class="talent-portal-nav" aria-label="Navigasi profil talent">
+          <a routerLink="/open-positions">Lowongan</a>
+          <a routerLink="/portal" fragment="my-applications">Lamaran Saya</a>
+          <a routerLink="/portal" fragment="about" class="active">Profil</a>
+        </nav>
+      </ng-container>
+      <ng-template #standardCareerHeader>
       <a routerLink="/" class="career-brand-link" aria-label="Sarinah Career Home">
         <img class="danantara-logo" src="images/Danantara_Indonesia.png" alt="Danantara Indonesia">
       </a>
@@ -39,37 +48,37 @@ import { TalentAuthService } from '../core/service/api/talent-auth.service';
 
         <ng-template #loggedIn>
           <div class="header-account-menu" [class.is-open]="accountMenuOpen">
-            <button type="button" class="header-user-chip" [class.active]="active === 'portal' || accountMenuOpen"
-              [attr.aria-expanded]="accountMenuOpen" aria-haspopup="menu" aria-label="Buka menu akun"
-              (click)="toggleAccountMenu(); mobileMenuOpen = false">
-              <span class="header-user-avatar">
-                <img *ngIf="profilePictureUrl; else headerInitials" [src]="profilePictureUrl" [alt]="'Foto ' + (auth.session?.fullName || 'Talent')">
-                <ng-template #headerInitials>{{ userInitials }}</ng-template>
+          <button type="button" class="header-user-chip" [class.active]="active === 'portal' || accountMenuOpen"
+            [attr.aria-expanded]="accountMenuOpen" aria-haspopup="menu" aria-label="Buka menu akun"
+            (click)="toggleAccountMenu(); mobileMenuOpen = false">
+            <span class="header-user-avatar">
+              <img *ngIf="profilePictureUrl; else headerInitials" [src]="profilePictureUrl" [alt]="'Foto ' + (auth.session?.fullName || 'Talent')">
+              <ng-template #headerInitials>{{ userInitials }}</ng-template>
+            </span>
+            <span class="header-user-copy">
+              <strong>{{ auth.session?.fullName || 'Talent' }}</strong>
+              <small>Profil Saya</small>
+            </span>
+            <span class="header-account-chevron" aria-hidden="true"></span>
+          </button>
+          <div class="header-account-dropdown" *ngIf="accountMenuOpen" role="menu" aria-label="Menu akun">
+            <div class="header-account-summary">
+              <span class="header-account-avatar">
+                <img *ngIf="profilePictureUrl; else dropdownInitials" [src]="profilePictureUrl" [alt]="'Foto ' + (auth.session?.fullName || 'Talent')">
+                <ng-template #dropdownInitials>{{ userInitials }}</ng-template>
               </span>
-              <span class="header-user-copy">
+              <span class="header-account-identity">
                 <strong>{{ auth.session?.fullName || 'Talent' }}</strong>
-                <small>Profil Saya</small>
+                <small>{{ auth.session?.email }}</small>
               </span>
-              <span class="header-account-chevron" aria-hidden="true"></span>
-            </button>
-            <div class="header-account-dropdown" *ngIf="accountMenuOpen" role="menu" aria-label="Menu akun">
-              <div class="header-account-summary">
-                <span class="header-account-avatar">
-                  <img *ngIf="profilePictureUrl; else dropdownInitials" [src]="profilePictureUrl" [alt]="'Foto ' + (auth.session?.fullName || 'Talent')">
-                  <ng-template #dropdownInitials>{{ userInitials }}</ng-template>
-                </span>
-                <span class="header-account-identity">
-                  <strong>{{ auth.session?.fullName || 'Talent' }}</strong>
-                  <small>{{ auth.session?.email }}</small>
-                </span>
-              </div>
-              <a routerLink="/portal" role="menuitem" class="header-account-item" (click)="accountMenuOpen = false">
-                <span class="header-account-profile-icon" aria-hidden="true">◉</span> Profil Saya
-              </a>
-              <button type="button" role="menuitem" class="header-account-item is-logout" (click)="logout()">
-                <span class="header-account-logout-icon" aria-hidden="true">↪</span> Keluar
-              </button>
             </div>
+            <a routerLink="/portal" role="menuitem" class="header-account-item" (click)="accountMenuOpen = false">
+              <span class="header-account-profile-icon" aria-hidden="true">◉</span> Profil Saya
+            </a>
+            <button type="button" role="menuitem" class="header-account-item is-logout" (click)="logout()">
+              <span class="header-account-logout-icon" aria-hidden="true">↪</span> Keluar
+            </button>
+          </div>
           </div>
         </ng-template>
 
@@ -77,6 +86,7 @@ import { TalentAuthService } from '../core/service/api/talent-auth.service';
           <img class="sarinah-logo" src="images/sarinah.png" alt="Sarinah">
         </a>
       </div>
+      </ng-template>
     </header>
   `,
 })
@@ -92,10 +102,16 @@ export class CareerHeaderComponent {
   closeAccountMenuOnOutsideClick(event: MouseEvent): void {
     if (!this.elementRef.nativeElement.contains(event.target as Node)) this.accountMenuOpen = false;
   }
+
   @HostListener('document:keydown.escape')
   closeAccountMenuOnEscape(): void { this.accountMenuOpen = false; }
+
   toggleAccountMenu(): void { this.accountMenuOpen = !this.accountMenuOpen; }
-  logout(): void { this.accountMenuOpen = false; this.auth.logout(); }
+
+  logout(): void {
+    this.accountMenuOpen = false;
+    this.auth.logout();
+  }
 
   get sectionActive(): string {
     return this.router.parseUrl(this.router.url).fragment || '';

@@ -17,6 +17,10 @@ export class TalentPortalService {
     });
   }
 
+  cv() {
+    return this.http.get(`${API_BASE}/talent/profile/cv`, { responseType: 'blob' });
+  }
+
   saveProfile(
     profile: CandidateProfile,
     profilePicture?: File | null,
