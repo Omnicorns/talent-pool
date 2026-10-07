@@ -3525,7 +3525,7 @@ img{max-width:100%}
 .career-header.portal-reference-header{height:56px;display:flex;justify-content:space-between;gap:20px;padding:0 max(20px,calc((100% - 1020px)/2));background:#fff;border-bottom:1px solid #e7eaed}
 .talent-portal-brand{display:inline-flex;align-items:center;gap:9px;color:#26313b;font-size:14px;font-weight:800;white-space:nowrap}
 .talent-portal-brand span{display:grid;width:28px;height:28px;place-items:center;border-radius:7px;background:#16847b;color:#fff;font-size:15px}
-.talent-portal-nav{display:flex;align-items:center;gap:24px;height:100%}.talent-portal-nav a{display:flex;align-items:center;height:34px;padding:0 12px;border-radius:8px;color:#6a737c;font-size:12px;font-weight:700}.talent-portal-nav a:hover,.talent-portal-nav a.active{background:#f0f2f4;color:#26313b}
+.talent-portal-nav{display:flex;align-items:center;gap:24px;height:100%}.talent-portal-nav a,.talent-portal-nav button{display:flex;align-items:center;height:34px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:#6a737c;font-size:12px;font-weight:700;white-space:nowrap}.talent-portal-nav a:hover,.talent-portal-nav a.active,.talent-portal-nav button:hover,.talent-portal-nav button.active{background:#f0f2f4;color:#26313b}
 .profile-container{width:min(1020px,calc(100% - 40px));padding-top:24px}
 .profile-hero-card{position:relative;overflow:hidden;padding-top:108px}
 .profile-hero-card:before{content:"";position:absolute;inset:0 0 auto;height:82px;background:#e4f3f0;border-bottom:1px solid #d5e9e5}

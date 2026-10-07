@@ -13,8 +13,8 @@ import { TalentAuthService } from '../core/service/api/talent-auth.service';
         <a routerLink="/portal" class="talent-portal-brand" aria-label="Talent Pool"><span>T</span>Talent Pool</a>
         <nav class="talent-portal-nav" aria-label="Navigasi profil talent">
           <a routerLink="/open-positions">Lowongan</a>
-          <a routerLink="/portal" fragment="my-applications">Lamaran Saya</a>
-          <a routerLink="/portal" fragment="about" class="active">Profil</a>
+          <button type="button" (click)="goToPortalSection('my-applications')">Lamaran Saya</button>
+          <button type="button" class="active" (click)="goToPortalSection('about')">Profil</button>
         </nav>
       </ng-container>
       <ng-template #standardCareerHeader>
@@ -123,6 +123,12 @@ export class CareerHeaderComponent {
       setTimeout(() => {
         document.getElementById(section)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 40);
+    });
+  }
+
+  goToPortalSection(section: 'about' | 'my-applications'): void {
+    this.router.navigate(['/portal'], { fragment: section }).then(() => {
+      setTimeout(() => document.getElementById(section)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
     });
   }
 
