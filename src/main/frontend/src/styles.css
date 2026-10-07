@@ -3426,6 +3426,10 @@ img{max-width:100%}
 .talent-details h2{font-size:20px;margin:0 0 20px}.talent-details h3{font-size:16px;margin:22px 0 12px}.talent-details p{font-size:13px;line-height:1.65}
 .talent-details strong{overflow-wrap:anywhere}.talent-detail-work{border-bottom:1px solid #e6e8ec;padding:12px 0}.talent-document-list{display:grid;gap:8px}
 .talent-document-list button{border:1px solid #cbb08b;border-radius:8px;background:#fffaf3;padding:12px;color:#74532b;text-align:left;overflow-wrap:anywhere}
+.talent-details h3.talent-details-subheading{margin-top:0}.talent-details h4{font-size:14px;margin:18px 0 8px}
+.education-supporting-documents{display:grid;gap:8px;margin-top:20px;padding-top:18px;border-top:1px solid #edf0f2}.education-supporting-documents h3{margin:0 0 4px;font-size:14px}
+.education-supporting-documents button{justify-self:start;max-width:100%;padding:9px 12px;border:1px solid #e5e9ec;border-radius:9px;background:#fff;color:#273449;text-align:left;overflow-wrap:anywhere;cursor:pointer}
+.additional-language-skills{margin-top:18px}.additional-language-skills h3{font-size:14px;margin:18px 0 8px}.additional-language-skills p{font-size:13px;line-height:1.65;color:#707984}
 @media(max-width:600px){.talent-details{padding:18px}.talent-details .info-grid{grid-template-columns:1fr}}
 
 /* Home hero and four information cards from the supplied Sarinah reference. */

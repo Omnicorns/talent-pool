@@ -48,6 +48,8 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
           </div>
         </section>
 
+        <app-talent-profile-details [profile]="profile" [showAdditionalInformation]="false" [showEducationInformation]="false"></app-talent-profile-details>
+
         <section class="profile-content-card">
           <nav class="profile-tabs">
             <button type="button" (click)="scrollToSection('about')">About</button>
@@ -95,6 +97,10 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
                 </article>
               </ng-container>
               <div class="empty-state" *ngIf="!formalEducations.length">Belum ada pendidikan formal.</div>
+              <div class="education-supporting-documents" *ngIf="profile.supportingDocuments?.length">
+                <h3>Dokumen Pendukung</h3>
+                <button type="button" *ngFor="let doc of profile.supportingDocuments" (click)="downloadSupportingDocument(doc.key, doc.originalName)">{{ supportingDocumentLabel(doc.key) }}: {{ doc.originalName }} ↓</button>
+              </div>
             </section>
 
             <section id="training" class="profile-section">
@@ -129,7 +135,6 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
             <section id="additional" class="profile-section">
               <div class="section-title"><h2>Additional Information</h2><button (click)="openDrawer('additional')">✎ Edit</button></div>
               <div class="info-grid">
-                <article><span>Languages</span><strong>{{ profile.languanges || '-' }}</strong></article>
                 <article><span>Religion</span><strong>{{ profile.religion || '-' }}</strong></article>
                 <article><span>Media Sosial</span><strong>{{ profile.profileDetails?.socialPlatform || '-' }} • {{ profile.profileDetails?.socialUsername || '-' }}</strong></article>
                 <article><span>Ekspektasi Gaji per Bulan</span><strong>{{ profile.expectedSalary | currency:'IDR':'symbol':'1.0-0' }} – {{ profile.profileDetails?.expectedSalaryMax | currency:'IDR':'symbol':'1.0-0' }}</strong></article>
@@ -137,11 +142,20 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
                 <article><span>Lokasi Kerja yang Diminati</span><strong>{{ profile.preferredLocations.join(', ') || '-' }}</strong></article>
                 <article><span>Tools / Skills</span><strong>{{ profile.tools?.join(', ') || '-' }}</strong></article>
               </div>
+              <div class="additional-language-skills">
+                <h3>Kemampuan Bahasa</h3>
+                <p *ngIf="!profile.profileDetails?.languageSkills?.length">{{ profile.languanges || 'Belum ada kemampuan bahasa yang ditambahkan.' }}</p>
+                <p *ngFor="let language of profile.profileDetails?.languageSkills">{{ language.name }} • {{ language.proficiency }}</p>
+                <h3>Keahlian & Pengalaman</h3>
+                <p *ngIf="profile.profileDetails?.noExperience">Belum memiliki pengalaman kerja.</p>
+                <article class="talent-detail-work" *ngFor="let work of profile.workExperiences">
+                  <ng-container *ngIf="work.details as data"><strong>{{ work.position }} • {{ work.companyName }}</strong><p>Skill: {{ data.skills.join(', ') || '-' }}</p><p>Tools: {{ data.tools.join(', ') || '-' }}</p></ng-container>
+                </article>
+              </div>
             </section>
           </div>
         </section>
 
-        <app-talent-profile-details [profile]="profile" [showAdditionalInformation]="false"></app-talent-profile-details>
         <section class="candidate-insight-grid">
           <article class="candidate-insight-card">
             <div class="section-title"><h2>Recruiter Activity</h2></div>
@@ -459,6 +473,29 @@ export class CandidatePortalComponent implements OnInit {
       error: (error) => {
         window.alert(error?.error?.message || 'Lamaran tidak dapat ditarik.');
       },
+    });
+  }
+
+  supportingDocumentLabel(key: string): string {
+    if (key.startsWith('language:')) {
+      const language = this.profile.profileDetails?.languageSkills.find(item => key.includes(item.key));
+      return `Sertifikat ${language?.name || 'Bahasa'}`;
+    }
+    const education = this.profile.educations.find(item => item.clientKey && key.includes(item.clientKey));
+    return `${key.endsWith(':diploma') ? 'Ijazah' : 'Transkrip'} ${education?.institution || ''}`.trim();
+  }
+
+  downloadSupportingDocument(key: string, name: string): void {
+    this.portal.supportingDocument(key).subscribe({
+      next: blob => {
+        const href = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = href;
+        link.download = name;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(href), 1000);
+      },
+      error: () => window.alert('Dokumen gagal diunduh. Silakan coba lagi.'),
     });
   }
 
