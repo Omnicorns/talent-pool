@@ -26,8 +26,8 @@ import java.util.Locale;
 @Service
 public class TalentPasswordResetService {
 
-    private static final String GENERIC_MESSAGE =
-            "Jika email terdaftar, instruksi reset password akan dikirimkan.";
+    private static final String SENT_MESSAGE =
+            "Server email menerima link reset password. Periksa Inbox atau folder Spam.";
 
     private final TalentAccountRepository accountRepository;
     private final TalentPasswordResetTokenRepository tokenRepository;
@@ -62,7 +62,7 @@ public class TalentPasswordResetService {
 
         var accountOptional = accountRepository.findByEmailIgnoreCase(email);
         if (accountOptional.isEmpty() || !accountOptional.get().isEnabled()) {
-            return new TalentForgotPasswordResponse(GENERIC_MESSAGE, null);
+            throw new BadRequestException("Email tidak terdaftar atau akun tidak aktif. Periksa kembali email yang dimasukkan.");
         }
 
         TalentAccount account = accountOptional.get();
@@ -94,7 +94,7 @@ public class TalentPasswordResetService {
         );
 
         return new TalentForgotPasswordResponse(
-                GENERIC_MESSAGE,
+                SENT_MESSAGE,
                 exposeResetUrl ? resetUrl : null
         );
     }

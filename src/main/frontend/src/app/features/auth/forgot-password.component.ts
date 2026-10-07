@@ -39,7 +39,7 @@ import { TalentAuthService } from '../../core/service/api/talent-auth.service';
         </form>
 
         <div class="recovery-success" *ngIf="submitted">
-          <strong>Periksa email Anda</strong>
+          <strong>Permintaan reset diproses</strong>
           <p>{{ message }}</p>
 
           <a
