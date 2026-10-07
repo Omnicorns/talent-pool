@@ -5,243 +5,236 @@ import { TalentProfileDetailsComponent } from '../../shared/talent-profile-detai
 import { BackofficeOverlayDirective } from '../../shared/backoffice-overlay.directive';
 import { BackofficeLayoutComponent } from '../../shared/backoffice-layout.component';
 import { BackofficeApiService } from '../../core/service/api/backoffice-api.service';
+import { FMT } from '../../shared/labels';
+import { IconComponent } from '../../shared/icon.component';
 
 @Component({
   selector: 'app-backoffice-candidates',
   standalone: true,
-  imports: [CommonModule, FormsModule, BackofficeLayoutComponent, TalentProfileDetailsComponent, BackofficeOverlayDirective],
+  imports: [CommonModule, FormsModule, BackofficeLayoutComponent, TalentProfileDetailsComponent, BackofficeOverlayDirective, IconComponent],
   template: `
     <app-backoffice-layout active="candidates">
-      <div class="bo-page-head">
+      <div class="bo-head">
         <div>
-          <span class="bo-kicker">TALENT DATABASE</span>
-          <h1>Candidates</h1>
-          <p>Kelola kandidat, lihat profil lengkap, CV, dan jadwalkan interview.</p>
+          <h1>Kandidat</h1>
+          <p>Semua profil di Talent Pool, termasuk yang belum melamar lowongan.</p>
         </div>
-        <div class="bo-head-actions">
-          <input class="bo-search" [(ngModel)]="q" (keyup.enter)="load()" placeholder="Cari nama, email, posisi...">
-          <button class="bo-primary" (click)="load()">Cari</button>
-        </div>
+        <form class="bo-actions" (ngSubmit)="load()" role="search">
+          <label class="bo-search">
+            <span class="sr-only">Cari kandidat</span>
+            <app-icon name="search" [size]="16"></app-icon>
+            <input [(ngModel)]="q" name="q" placeholder="Cari nama, email, atau posisi">
+          </label>
+          <button class="btn btn-secondary" type="submit">Cari</button>
+        </form>
       </div>
 
-      <section class="bo-table-card">
-        <div class="bo-table-meta">
-          <strong>{{ rows.length }} candidate</strong>
-          <span *ngIf="loading">Memuat...</span>
+      <section class="table-card responsive">
+        <div class="table-meta">
+          <span><strong>{{ rows.length }}</strong> kandidat<ng-container *ngIf="q.trim()"> untuk “{{ q.trim() }}”</ng-container></span>
+          <span *ngIf="loading">Memuat…</span>
         </div>
 
-        <div class="bo-table-wrap">
-          <table class="bo-table">
+        <div class="table-wrap">
+          <table class="table">
             <thead>
-              <tr>
-                <th>Candidate</th>
-                <th>Position</th>
-                <th>Experience</th>
-                <th>Tools</th>
-                <th>Status</th>
-                <th>Source</th>
-                <th></th>
-              </tr>
+              <tr><th>Kandidat</th><th>Posisi</th><th>Pengalaman</th><th>Status</th><th>Sumber</th><th><span class="sr-only">Aksi</span></th></tr>
             </thead>
             <tbody>
               <tr *ngFor="let item of rows">
                 <td>
-                  <div class="bo-person">
-                    <span class="bo-person-avatar">
-                      <img *ngIf="pictureUrls[item.id]; else tableInitials" [src]="pictureUrls[item.id]" [alt]="'Foto ' + item.fullName">
-                      <ng-template #tableInitials>{{ initials(item.fullName) }}</ng-template>
+                  <div class="person">
+                    <span class="avatar">
+                      <img *ngIf="pictureUrls[item.id]; else tableInitials" [src]="pictureUrls[item.id]" alt="">
+                      <ng-template #tableInitials>{{ fmt.initials(item.fullName) }}</ng-template>
                     </span>
                     <div><strong>{{ item.fullName }}</strong><small>{{ item.email }}</small></div>
                   </div>
                 </td>
-                <td><strong>{{ item.relatedPosition || '-' }}</strong><small>{{ item.industry || '-' }}</small></td>
-                <td>{{ experience(item.experienceMonths) }}</td>
-                <td><div class="bo-tags"><span *ngFor="let tool of item.tools?.slice(0,3)">{{ tool }}</span></div></td>
+                <td style="min-width: 180px"><strong>{{ item.relatedPosition || '-' }}</strong><small>{{ item.industry || '' }}</small></td>
+                <td>{{ fmt.experience(item.experienceMonths) }}</td>
                 <td>
-                  <select class="bo-status-select" [ngModel]="item.status" (ngModelChange)="changeStatus(item, $event)">
-                    <option *ngFor="let status of statuses" [value]="status">{{ status }}</option>
+                  <select class="select-inline" [ngModel]="item.status" (ngModelChange)="changeStatus(item, $event)" [attr.aria-label]="'Status ' + item.fullName">
+                    <option *ngFor="let status of statuses" [value]="status">{{ fmt.label(status) }}</option>
                   </select>
                 </td>
                 <td>{{ item.source || '-' }}</td>
-                <td><button class="bo-row-action" (click)="openCandidate(item)">Lihat Profil →</button></td>
+                <td class="actions"><button class="btn btn-secondary btn-sm" (click)="openCandidate(item)">Lihat profil</button></td>
               </tr>
-              <tr *ngIf="!rows.length && !loading"><td colspan="7" class="bo-empty-cell">Belum ada kandidat.</td></tr>
+              <tr *ngIf="!rows.length && !loading"><td colspan="6" class="empty-cell">{{ q.trim() ? 'Tidak ada kandidat yang cocok dengan pencarian.' : 'Belum ada kandidat di Talent Pool.' }}</td></tr>
             </tbody>
           </table>
         </div>
-      </section>
 
-      <section class="bo-mobile-list bo-candidate-mobile-list">
-        <article class="bo-mobile-card" *ngFor="let item of rows">
-          <div class="bo-mobile-card-head">
-            <div class="bo-person">
-              <span class="bo-person-avatar">
-                <img *ngIf="pictureUrls[item.id]; else mobileInitials" [src]="pictureUrls[item.id]" [alt]="'Foto ' + item.fullName">
-                <ng-template #mobileInitials>{{ initials(item.fullName) }}</ng-template>
-              </span>
-              <div><strong>{{ item.fullName }}</strong><small>{{ item.email }}</small></div>
+        <div class="cards">
+          <article *ngFor="let item of rows">
+            <div class="card-head">
+              <div class="person" style="min-width: 0">
+                <span class="avatar">
+                  <img *ngIf="pictureUrls[item.id]; else mobileInitials" [src]="pictureUrls[item.id]" alt="">
+                  <ng-template #mobileInitials>{{ fmt.initials(item.fullName) }}</ng-template>
+                </span>
+                <div><strong>{{ item.fullName }}</strong><small>{{ item.email }}</small></div>
+              </div>
             </div>
-            <span class="bo-badge green">{{ item.status }}</span>
-          </div>
-
-          <div class="bo-mobile-meta-grid">
-            <div><span>Position</span><strong>{{ item.relatedPosition || '-' }}</strong></div>
-            <div><span>Experience</span><strong>{{ experience(item.experienceMonths) }}</strong></div>
-            <div><span>Source</span><strong>{{ item.source || '-' }}</strong></div>
-          </div>
-
-          <div class="bo-tags" *ngIf="item.tools?.length">
-            <span *ngFor="let tool of item.tools?.slice(0,4)">{{ tool }}</span>
-          </div>
-
-          <div class="bo-mobile-card-actions">
-            <select class="bo-status-select" [ngModel]="item.status" (ngModelChange)="changeStatus(item, $event)">
-              <option *ngFor="let status of statuses" [value]="status">{{ status }}</option>
-            </select>
-            <button class="bo-primary" (click)="openCandidate(item)">Lihat Profil</button>
-          </div>
-        </article>
-
-        <div class="bo-empty-card" *ngIf="!rows.length && !loading">Belum ada kandidat.</div>
+            <div class="card-meta">
+              <div><span>Posisi</span>{{ item.relatedPosition || '-' }}</div>
+              <div><span>Pengalaman</span>{{ fmt.experience(item.experienceMonths) }}</div>
+              <div><span>Sumber</span>{{ item.source || '-' }}</div>
+            </div>
+            <div class="card-actions">
+              <select class="select-inline" [ngModel]="item.status" (ngModelChange)="changeStatus(item, $event)" [attr.aria-label]="'Status ' + item.fullName">
+                <option *ngFor="let status of statuses" [value]="status">{{ fmt.label(status) }}</option>
+              </select>
+              <button class="btn btn-secondary btn-sm" (click)="openCandidate(item)">Lihat profil</button>
+            </div>
+          </article>
+          <p class="empty-cell muted" style="padding: 32px 18px; text-align: center" *ngIf="!rows.length && !loading">Belum ada kandidat.</p>
+        </div>
       </section>
 
       <div class="drawer-backdrop bo-candidate-backdrop" *ngIf="drawerOpen" (click)="closeOnBackdrop($event)">
-        <aside class="side-drawer bo-candidate-drawer" [boOverlay]="true" (overlayClose)="closeDrawer()" aria-label="Profil kandidat">
-          <header>
-            <div>
-              <span class="bo-kicker">CANDIDATE PROFILE</span>
-              <h2>{{ selected?.fullName || 'Candidate' }}</h2>
-              <p>{{ selected?.email || '-' }} • {{ selected?.phone || '-' }}</p>
+        <aside class="drawer wide" [boOverlay]="true" (overlayClose)="closeDrawer()" role="dialog" aria-modal="true" aria-label="Profil kandidat">
+          <header class="drawer-head">
+            <div class="candidate-sheet" *ngIf="selected; else headLoading">
+              <span class="avatar avatar-md">
+                <img *ngIf="pictureUrls[selected.id]; else drawerInitials" [src]="pictureUrls[selected.id]" alt="">
+                <ng-template #drawerInitials>{{ fmt.initials(selected.fullName) }}</ng-template>
+              </span>
+              <div>
+                <h2>{{ selected.fullName }}</h2>
+                <p>{{ selected.relatedJobPositions?.join(', ') || selected.jobPosition || 'Kandidat Talent Pool' }}</p>
+                <span class="tag" [ngClass]="'tag-' + fmt.tone(selected.status)">{{ fmt.label(selected.status) }}</span>
+              </div>
             </div>
-            <button type="button" (click)="closeDrawer()" aria-label="Tutup panel">×</button>
+            <ng-template #headLoading><h2>Profil kandidat</h2></ng-template>
+            <button type="button" class="icon-btn" (click)="closeDrawer()" aria-label="Tutup"><app-icon name="x"></app-icon></button>
           </header>
 
           <div class="drawer-body" *ngIf="selected; else detailLoading">
-            <div class="bo-candidate-summary">
-              <span class="bo-candidate-avatar-lg">
-                <img *ngIf="pictureUrls[selected.id]; else drawerInitials" [src]="pictureUrls[selected.id]" [alt]="'Foto ' + selected.fullName">
-                <ng-template #drawerInitials>{{ initials(selected.fullName) }}</ng-template>
-              </span>
-              <div>
-                <h3>{{ selected.fullName }}</h3>
-                <p>{{ selected.relatedJobPositions?.join(', ') || selected.jobPosition || 'Talent Pool Candidate' }}</p>
-                <span class="bo-badge green">{{ selected.status || '-' }}</span>
-              </div>
+            <div class="button-row">
+              <button class="btn btn-primary" (click)="downloadCv()" [disabled]="!selected.cvOriginalName"><app-icon name="download" [size]="16"></app-icon> {{ selected.cvOriginalName ? 'Unduh CV' : 'CV belum ada' }}</button>
+              <button class="btn btn-secondary" (click)="showInterviewForm = !showInterviewForm" [attr.aria-expanded]="showInterviewForm"><app-icon name="calendar" [size]="16"></app-icon> Jadwalkan interview</button>
+              <a class="btn btn-ghost" [href]="'mailto:' + selected.email"><app-icon name="mail" [size]="16"></app-icon> Email</a>
             </div>
 
-            <div class="bo-candidate-actions">
-              <button class="bo-primary" (click)="downloadCv()" [disabled]="!selected.cvOriginalName">Lihat / Download CV</button>
-              <button class="bo-secondary" (click)="showInterviewForm = !showInterviewForm">Jadwalkan Interview</button>
-            </div>
-
-            <section class="bo-detail-section bo-move-candidate">
-              <div class="section-title"><h2>Masukkan ke Job Listing</h2></div>
-              <p *ngIf="selected.movedToJobListing" class="bo-move-success">Kandidat ini sudah pernah ditempatkan ke lowongan.</p>
-              <div class="drawer-form">
-                <label>Lowongan aktif
-                  <select [(ngModel)]="moveForm.jobListingId">
-                    <option value="">Pilih job listing</option>
-                    <option *ngFor="let job of jobs" [value]="job.id">{{ job.title }}</option>
+            <section class="drawer-section" *ngIf="showInterviewForm">
+              <h3>Jadwalkan interview</h3>
+              <div class="form-grid">
+                <label class="field">Tanggal dan jam<input type="datetime-local" [(ngModel)]="interviewForm.scheduledAt"></label>
+                <label class="field">Durasi (menit)<input type="number" min="15" max="480" [(ngModel)]="interviewForm.durationMinutes"></label>
+                <label class="field">Cara interview
+                  <select [(ngModel)]="interviewForm.mode">
+                    <option value="ONLINE">Online</option>
+                    <option value="ONSITE">Tatap muka</option>
+                    <option value="PHONE">Telepon</option>
                   </select>
                 </label>
-                <label>Tahap rekrutmen
-                  <select [(ngModel)]="moveForm.hiringStage">
-                    <option value="NEW_CANDIDATE">Kandidat Baru</option>
-                    <option value="SCREENING">Screening</option>
-                    <option value="INTERVIEW">Interview</option>
-                    <option value="OFFER">Offer</option>
-                  </select>
-                </label>
-                <button type="button" class="bo-primary" (click)="moveToJobListing()" [disabled]="moving || !jobs.length">
-                  {{ moving ? 'Menyimpan...' : 'Masukkan Kandidat' }}
-                </button>
-                <p class="form-error" *ngIf="moveError">{{ moveError }}</p>
-                <p class="bo-move-success" *ngIf="moveSuccess">{{ moveSuccess }}</p>
-                <p class="empty-state" *ngIf="!jobs.length">Belum ada job listing aktif yang bisa dipilih.</p>
-              </div>
-            </section>
-
-            <app-talent-profile-details [profile]="selected" [backoffice]="true"></app-talent-profile-details>
-            <section class="bo-detail-section" *ngIf="showInterviewForm">
-              <div class="section-title"><h2>Jadwalkan Interview</h2></div>
-              <div class="drawer-form">
-                <div class="drawer-grid">
-                  <label>Tanggal & Jam<input type="datetime-local" [(ngModel)]="interviewForm.scheduledAt"></label>
-                  <label>Durasi (menit)<input type="number" min="15" max="480" [(ngModel)]="interviewForm.durationMinutes"></label>
-                </div>
-                <div class="drawer-grid">
-                  <label>Mode
-                    <select [(ngModel)]="interviewForm.mode">
-                      <option value="ONLINE">Online</option>
-                      <option value="ONSITE">Onsite</option>
-                      <option value="PHONE">Phone</option>
-                    </select>
-                  </label>
-                  <label>Interviewer<input [(ngModel)]="interviewForm.interviewer" placeholder="Nama interviewer"></label>
-                </div>
-                <label>Lokasi / Link<input [(ngModel)]="interviewForm.locationOrLink" placeholder="Meeting link atau lokasi"></label>
-                <label>Job Listing
+                <label class="field">Pewawancara<input [(ngModel)]="interviewForm.interviewer" placeholder="Nama dan jabatan"></label>
+                <label class="field span-2">{{ interviewForm.mode === 'ONLINE' ? 'Tautan meeting' : interviewForm.mode === 'PHONE' ? 'Nomor telepon' : 'Lokasi' }}<input [(ngModel)]="interviewForm.locationOrLink"></label>
+                <label class="field span-2">Untuk lowongan
                   <select [(ngModel)]="interviewForm.jobListingId">
-                    <option [ngValue]="null">Tanpa job listing</option>
+                    <option [ngValue]="null">Talent Pool (tanpa lowongan)</option>
                     <option *ngFor="let job of jobs" [ngValue]="job.id">{{ job.title }}</option>
                   </select>
                 </label>
-                <label>Catatan<textarea [(ngModel)]="interviewForm.notes" placeholder="Catatan untuk interview"></textarea></label>
-                <button class="bo-primary" (click)="scheduleInterview()" [disabled]="scheduling">
-                  {{ scheduling ? 'Menyimpan...' : 'Simpan Jadwal Interview' }}
-                </button>
-                <p class="form-error" *ngIf="interviewError">{{ interviewError }}</p>
+                <label class="field span-2">Catatan <span class="opt">(opsional)</span><textarea [(ngModel)]="interviewForm.notes" rows="3"></textarea></label>
+              </div>
+              <div class="alert alert-error" *ngIf="interviewError" role="alert"><app-icon name="alert"></app-icon><span>{{ interviewError }}</span></div>
+              <div class="button-row">
+                <button class="btn btn-primary" (click)="scheduleInterview()" [disabled]="scheduling">{{ scheduling ? 'Menyimpan…' : 'Simpan jadwal' }}</button>
+                <button class="btn btn-ghost" (click)="showInterviewForm = false">Batal</button>
               </div>
             </section>
 
-            <section class="bo-detail-section">
-              <div class="section-title"><h2>About</h2></div>
-              <p>{{ selected.about || '-' }}</p>
-            </section>
-
-            <section class="bo-detail-section">
-              <div class="section-title"><h2>Data Pribadi</h2></div>
-              <div class="info-grid">
-                <article><span>Email</span><strong>{{ selected.email || '-' }}</strong></article>
-                <article><span>WhatsApp</span><strong>{{ selected.phone || '-' }}</strong></article>
-                <article><span>Birth Date</span><strong>{{ selected.birthDate || '-' }}</strong></article>
+            <section class="drawer-section">
+              <h3>Masukkan ke lowongan</h3>
+              <p class="muted" style="font-size: 14px" *ngIf="selected.movedToJobListing">Kandidat ini sudah pernah dimasukkan ke lowongan.</p>
+              <div class="form-grid" *ngIf="jobs.length; else noJobs">
+                <label class="field">Lowongan
+                  <select [(ngModel)]="moveForm.jobListingId">
+                    <option value="">Pilih lowongan yang dibuka</option>
+                    <option *ngFor="let job of jobs" [value]="job.id">{{ job.title }}</option>
+                  </select>
+                </label>
+                <label class="field">Mulai dari tahap
+                  <select [(ngModel)]="moveForm.hiringStage">
+                    <option value="NEW_CANDIDATE">Baru</option>
+                    <option value="SCREENING">Screening</option>
+                    <option value="INTERVIEW">Interview</option>
+                    <option value="OFFER">Penawaran</option>
+                  </select>
+                </label>
+              </div>
+              <ng-template #noJobs><p class="muted" style="font-size: 14px">Belum ada lowongan yang dibuka.</p></ng-template>
+              <div class="alert alert-error" *ngIf="moveError" role="alert"><app-icon name="alert"></app-icon><span>{{ moveError }}</span></div>
+              <div class="alert alert-success" *ngIf="moveSuccess" role="status"><app-icon name="check"></app-icon><span>{{ moveSuccess }}</span></div>
+              <div class="button-row" *ngIf="jobs.length">
+                <button type="button" class="btn btn-secondary" (click)="moveToJobListing()" [disabled]="moving">{{ moving ? 'Menyimpan…' : 'Masukkan ke lowongan' }}</button>
               </div>
             </section>
 
-            <section class="bo-detail-section">
-              <div class="section-title"><h2>Work Experience</h2></div>
-              <article class="bo-detail-item" *ngFor="let exp of selected.workExperiences">
-                <strong>{{ exp.position }} • {{ exp.companyName }}</strong>
-                <span>{{ exp.startDate }} — {{ exp.currentJob ? 'Sekarang' : (exp.endDate || '-') }}</span>
-                <p>{{ exp.description || '-' }}</p>
+            <section class="drawer-section" *ngIf="selected.tools?.length">
+              <h3>Tools yang dikuasai</h3>
+              <div class="chips"><span class="chip" *ngFor="let tool of selected.tools">{{ tool }}</span></div>
+            </section>
+
+            <section class="drawer-section">
+              <h3>Kontak</h3>
+              <dl class="facts two">
+                <div><dt>Email</dt><dd>{{ selected.email || '-' }}</dd></div>
+                <div><dt>WhatsApp</dt><dd>{{ selected.phone || '-' }}</dd></div>
+                <div><dt>Tanggal lahir</dt><dd>{{ selected.birthDate ? fmt.fullDate(selected.birthDate) : '-' }}</dd></div>
+                <div><dt>Ekspektasi gaji</dt><dd>{{ fmt.salaryRange(selected.expectedSalary, selected.profileDetails?.expectedSalaryMax) }}</dd></div>
+              </dl>
+            </section>
+
+            <section class="drawer-section" *ngIf="selected.about">
+              <h3>Tentang kandidat</h3>
+              <p class="about-copy" style="font-size: 14.5px">{{ selected.about }}</p>
+            </section>
+
+            <section class="drawer-section">
+              <h3>Pengalaman kerja</h3>
+              <article class="detail-item" *ngFor="let exp of selected.workExperiences">
+                <strong>{{ exp.position }}, {{ exp.companyName }}</strong>
+                <span>{{ fmt.monthYear(exp.startDate) }} – {{ exp.currentJob ? 'sekarang' : fmt.monthYear(exp.endDate) }}</span>
+                <p *ngIf="exp.description">{{ exp.description }}</p>
+                <div class="chips" style="margin-top: 8px" *ngIf="exp.details?.skills?.length || exp.details?.tools?.length">
+                  <span class="chip" *ngFor="let skill of (exp.details?.skills || []).concat(exp.details?.tools || [])">{{ skill }}</span>
+                </div>
               </article>
-              <div class="empty-state" *ngIf="!selected.workExperiences?.length">Belum ada pengalaman kerja.</div>
+              <p class="muted" style="font-size: 14px" *ngIf="!selected.workExperiences?.length">Belum ada pengalaman kerja.</p>
             </section>
 
-            <section class="bo-detail-section">
-              <div class="section-title"><h2>Education</h2></div>
-              <article class="bo-detail-item" *ngFor="let edu of selected.educations">
+            <section class="drawer-section">
+              <h3>Pendidikan dan pelatihan</h3>
+              <article class="detail-item" *ngFor="let edu of selected.educations">
                 <strong>{{ edu.institution }}</strong>
-                <span>{{ edu.level || '-' }} • {{ edu.major || '-' }} • {{ edu.startYear || '-' }} — {{ edu.endYear || '-' }}</span>
-                <p>{{ edu.description || '-' }}</p>
+                <span>{{ edu.level || '-' }}{{ edu.major ? ', ' + edu.major : '' }} · {{ edu.startYear || '-' }}–{{ edu.endYear || '-' }}{{ edu.ipk ? ' · IPK ' + edu.ipk : '' }}</span>
+                <p *ngIf="edu.description">{{ edu.description }}</p>
+              </article>
+              <article class="detail-item" *ngFor="let cert of selected.profileDetails?.trainingCertifications || []">
+                <strong>{{ cert.name }}</strong>
+                <span>{{ cert.issuingOrganization }} · berlaku sampai {{ fmt.fullDate(cert.expiryDate) }}</span>
               </article>
             </section>
 
-            <section class="bo-detail-section">
-              <div class="section-title"><h2>Tools & Skills</h2></div>
-              <div class="bo-tags"><span *ngFor="let tool of selected.tools">{{ tool }}</span></div>
+            <section class="drawer-section">
+              <h3>Data pribadi</h3>
+              <app-talent-profile-details [profile]="selected" [backoffice]="true"></app-talent-profile-details>
             </section>
 
-            <section class="bo-detail-section">
-              <div class="section-title"><h2>Portfolio</h2></div>
-              <a class="bo-portfolio-link" *ngFor="let item of selected.portfolios" [href]="item.url" target="_blank" rel="noreferrer">
-                {{ item.title || item.originalName || 'Portfolio' }} ↗
+            <section class="drawer-section" *ngIf="selected.portfolios?.length">
+              <h3>Portofolio</h3>
+              <a class="link" *ngFor="let item of selected.portfolios" [href]="item.url" target="_blank" rel="noreferrer">
+                {{ item.title || item.originalName || 'Portofolio' }} <app-icon name="arrow-up-right" [size]="14"></app-icon>
               </a>
             </section>
           </div>
 
           <ng-template #detailLoading>
-            <div class="full-loading bo-drawer-loading">Memuat profil kandidat...</div>
+            <div class="full-loading">Memuat profil kandidat…</div>
           </ng-template>
         </aside>
       </div>
@@ -249,6 +242,7 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
   `,
 })
 export class BackofficeCandidatesComponent implements OnInit, OnDestroy {
+  readonly fmt = FMT;
   rows: any[] = [];
   jobs: any[] = [];
   pictureUrls: Record<string, string> = {};
@@ -353,7 +347,7 @@ export class BackofficeCandidatesComponent implements OnInit, OnDestroy {
 
   scheduleInterview(): void {
     if (!this.selected?.id || !this.interviewForm.scheduledAt || !this.interviewForm.interviewer.trim()) {
-      this.interviewError = 'Tanggal/jam dan interviewer wajib diisi.';
+      this.interviewError = 'Isi tanggal, jam, dan nama pewawancara.';
       return;
     }
 
@@ -376,14 +370,14 @@ export class BackofficeCandidatesComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         this.scheduling = false;
-        this.interviewError = error?.error?.message || 'Jadwal interview gagal disimpan.';
+        this.interviewError = error?.error?.message || 'Jadwal interview belum tersimpan. Periksa isian lalu coba lagi.';
       },
     });
   }
 
   moveToJobListing(): void {
     if (!this.selected?.id || !this.moveForm.jobListingId) {
-      this.moveError = 'Pilih job listing terlebih dahulu.';
+      this.moveError = 'Pilih lowongan terlebih dahulu.';
       return;
     }
     this.moving = true;
@@ -395,11 +389,11 @@ export class BackofficeCandidatesComponent implements OnInit, OnDestroy {
         const row = this.rows.find((item) => item.id === updated.id);
         if (row) row.movedToJobListing = updated.movedToJobListing;
         this.moving = false;
-        this.moveSuccess = 'Kandidat berhasil dimasukkan ke job listing.';
+        this.moveSuccess = 'Kandidat dimasukkan ke lowongan.';
       },
       error: (error) => {
         this.moving = false;
-        this.moveError = error?.error?.message || 'Kandidat gagal dimasukkan ke job listing.';
+        this.moveError = error?.error?.message || 'Kandidat belum berhasil dimasukkan ke lowongan. Coba lagi.';
       },
     });
   }

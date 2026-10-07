@@ -3,6 +3,8 @@ import { Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { BackofficeLayoutComponent } from '../../shared/backoffice-layout.component';
 import { BackofficeApiService } from '../../core/service/api/backoffice-api.service';
+import { IconComponent } from '../../shared/icon.component';
+import { FMT } from '../../shared/labels';
 
 interface Insight {
   name: string;
@@ -12,169 +14,154 @@ interface Insight {
 @Component({
   selector: 'app-backoffice-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, BackofficeLayoutComponent],
+  imports: [CommonModule, RouterLink, BackofficeLayoutComponent, IconComponent],
   template: `
     <app-backoffice-layout active="dashboard">
-      <div class="bo-page-head">
+      <div class="bo-head">
         <div>
-          <span class="bo-kicker">OVERVIEW</span>
-          <h1>Dashboard</h1>
-          <p>Pantau Talent Pool, lowongan, dan proses rekrutmen dalam satu tempat.</p>
+          <h1>Ringkasan rekrutmen</h1>
+          <p>{{ today }}</p>
+        </div>
+        <div class="bo-actions">
+          <a class="btn btn-secondary" routerLink="/backoffice/interviews"><app-icon name="calendar" [size]="16"></app-icon> Jadwal interview</a>
+          <a class="btn btn-primary" routerLink="/backoffice/job-listings"><app-icon name="plus" [size]="16"></app-icon> Buat lowongan</a>
         </div>
       </div>
 
-      <section class="dashboard-grid">
-        <a routerLink="/backoffice/candidates">
-          <span>Total Candidate</span>
-          <strong>{{ dashboard?.totalCandidates ?? '-' }}</strong>
-          <small>Lihat kandidat →</small>
-        </a>
-        <a routerLink="/backoffice/candidates">
-          <span>Available Talent</span>
-          <strong>{{ dashboard?.availableCandidates ?? '-' }}</strong>
-          <small>Talent siap proses →</small>
-        </a>
-        <a routerLink="/backoffice/job-listings">
-          <span>Open Positions</span>
-          <strong>{{ dashboard?.openJobListings ?? '-' }}</strong>
-          <small>Kelola lowongan →</small>
-        </a>
-        <a routerLink="/backoffice/applications">
-          <span>Applications</span>
-          <strong>{{ dashboard?.totalApplications ?? '-' }}</strong>
-          <small>Lihat pipeline →</small>
-        </a>
+      <p class="alert alert-error" *ngIf="error" role="alert"><app-icon name="alert"></app-icon>{{ error }}</p>
+
+      <section class="stat-strip" aria-label="Angka utama">
+        <div class="stat"><span>Kandidat di Talent Pool</span><strong>{{ dashboard?.totalCandidates ?? '–' }}</strong><a routerLink="/backoffice/candidates">Lihat kandidat <app-icon name="chevron-right" [size]="14"></app-icon></a></div>
+        <div class="stat"><span>Siap diproses</span><strong>{{ dashboard?.availableCandidates ?? '–' }}</strong><a routerLink="/backoffice/candidates">Status tersedia <app-icon name="chevron-right" [size]="14"></app-icon></a></div>
+        <div class="stat"><span>Lowongan dibuka</span><strong>{{ dashboard?.openJobListings ?? '–' }}</strong><a routerLink="/backoffice/job-listings">Dari {{ dashboard?.totalJobListings ?? 0 }} lowongan <app-icon name="chevron-right" [size]="14"></app-icon></a></div>
+        <div class="stat"><span>Lamaran masuk</span><strong>{{ dashboard?.totalApplications ?? '–' }}</strong><a routerLink="/backoffice/applications">Lihat lamaran <app-icon name="chevron-right" [size]="14"></app-icon></a></div>
       </section>
 
-      <section class="bo-analytics-grid">
-        <article class="bo-analytics-card bo-donut-card">
-          <div class="bo-panel-head">
-            <div>
-              <span class="bo-kicker">TALENT OVERVIEW</span>
-              <h2>Candidate Status</h2>
-            </div>
-            <a routerLink="/backoffice/candidates">Detail →</a>
+      <div class="bo-grid">
+        <section class="panel span-7">
+          <div class="panel-head">
+            <div><h2>Tahapan lamaran</h2><p>Jumlah lamaran di setiap tahap rekrutmen.</p></div>
+            <a class="btn btn-ghost btn-sm" routerLink="/backoffice/applications">Kelola</a>
           </div>
-
-          <div class="bo-donut-layout">
-            <div
-              class="bo-donut"
-              [style.background]="candidateDonutBackground"
-              [attr.aria-label]="'Candidate status distribution'"
-            >
-              <div class="bo-donut-center">
-                <strong>{{ candidateTotal }}</strong>
-                <span>Candidate</span>
-              </div>
-            </div>
-
-            <div class="bo-chart-legend">
-              <div *ngFor="let item of candidateStatuses; let i = index">
-                <i [style.background]="chartColors[i % chartColors.length]"></i>
-                <span>{{ label(item.name) }}</span>
+          <div class="panel-body">
+            <div class="bars" *ngIf="applicationStages.length; else emptyPipeline">
+              <div class="bar-row" *ngFor="let item of applicationStages">
+                <span>{{ fmt.label(item.name) }}</span>
+                <div class="bar-track"><div class="bar-fill" [class.accent]="item.name === 'HIRED'" [style.width.%]="percentage(item.count, applicationMax)"></div></div>
                 <strong>{{ item.count }}</strong>
               </div>
-              <div *ngIf="!candidateStatuses.length" class="bo-chart-empty">Belum ada data kandidat.</div>
             </div>
+            <ng-template #emptyPipeline><p class="muted">Belum ada lamaran.</p></ng-template>
           </div>
-        </article>
+        </section>
 
-        <article class="bo-analytics-card">
-          <div class="bo-panel-head">
-            <div>
-              <span class="bo-kicker">RECRUITMENT FUNNEL</span>
-              <h2>Application Pipeline</h2>
-            </div>
-            <a routerLink="/backoffice/applications">Detail →</a>
+        <section class="panel span-5">
+          <div class="panel-head">
+            <div><h2>Interview terdekat</h2><p>{{ dashboard?.interviewsToday || 0 }} interview hari ini</p></div>
+            <a class="btn btn-ghost btn-sm" routerLink="/backoffice/interviews">Semua</a>
           </div>
-
-          <div class="bo-bar-chart" *ngIf="applicationStages.length; else emptyPipeline">
-            <div class="bo-bar-row" *ngFor="let item of applicationStages">
-              <span class="bo-bar-label">{{ label(item.name) }}</span>
-              <div class="bo-bar-track">
-                <div class="bo-bar-fill" [style.width.%]="percentage(item.count, applicationMax)"></div>
+          <div class="panel-body">
+            <div class="list-plain" *ngIf="upcoming.length; else noInterview">
+              <div *ngFor="let item of upcoming">
+                <div>
+                  <strong>{{ item.candidateName }}</strong>
+                  <small>{{ item.jobTitle || 'Talent Pool' }} · {{ item.interviewer }}</small>
+                </div>
+                <div style="text-align: right; flex: none">
+                  <strong>{{ fmt.fullDate(item.scheduledAt) }}</strong>
+                  <small>{{ fmt.time(item.scheduledAt) }} · {{ fmt.label(item.mode) }}</small>
+                </div>
               </div>
-              <strong>{{ item.count }}</strong>
+            </div>
+            <ng-template #noInterview><p class="muted">Tidak ada interview terjadwal.</p></ng-template>
+          </div>
+        </section>
+
+        <section class="panel span-5">
+          <div class="panel-head"><div><h2>Status kandidat</h2><p>Sebaran status di Talent Pool.</p></div></div>
+          <div class="panel-body">
+            <div class="donut-layout">
+              <div class="donut" [style.background]="candidateDonutBackground" role="img" [attr.aria-label]="'Sebaran status dari ' + candidateTotal + ' kandidat'">
+                <div><strong>{{ candidateTotal }}</strong><small>kandidat</small></div>
+              </div>
+              <div class="legend">
+                <div *ngFor="let item of candidateStatuses; let i = index">
+                  <i [style.background]="chartColors[i % chartColors.length]"></i>
+                  <span>{{ fmt.label(item.name) }}</span>
+                  <strong>{{ item.count }}</strong>
+                </div>
+                <p class="muted" *ngIf="!candidateStatuses.length">Belum ada data kandidat.</p>
+              </div>
             </div>
           </div>
-          <ng-template #emptyPipeline>
-            <div class="bo-chart-empty">Belum ada application pipeline.</div>
-          </ng-template>
-        </article>
+        </section>
 
-        <article class="bo-analytics-card bo-job-status-card">
-          <div class="bo-panel-head">
-            <div>
-              <span class="bo-kicker">POSITION HEALTH</span>
-              <h2>Job Listing Status</h2>
-            </div>
-            <a routerLink="/backoffice/job-listings">Detail →</a>
+        <section class="panel span-7">
+          <div class="panel-head">
+            <div><h2>Kandidat terbaru</h2><p>Profil yang terakhir diperbarui.</p></div>
+            <a class="btn btn-ghost btn-sm" routerLink="/backoffice/candidates">Semua</a>
           </div>
+          <div class="panel-body" style="padding-top: 8px; padding-bottom: 8px">
+            <div class="list-plain" *ngIf="recent.length; else noRecent">
+              <div *ngFor="let item of recent">
+                <div class="person" style="min-width: 0">
+                  <span class="avatar">{{ fmt.initials(item.fullName) }}</span>
+                  <div><strong>{{ item.fullName }}</strong><small>{{ item.relatedPosition || 'Posisi belum diisi' }}</small></div>
+                </div>
+                <span class="tag" [ngClass]="'tag-' + fmt.tone(item.status)">{{ fmt.label(item.status) }}</span>
+              </div>
+            </div>
+            <ng-template #noRecent><p class="muted">Belum ada kandidat.</p></ng-template>
+          </div>
+        </section>
 
-          <div class="bo-job-status-list">
-            <div class="bo-job-status-row" *ngFor="let item of jobListingStatuses; let i = index">
-              <div class="bo-job-status-head">
-                <span><i [style.background]="jobStatusColors[i % jobStatusColors.length]"></i>{{ label(item.name) }}</span>
+        <section class="panel span-12">
+          <div class="panel-head">
+            <div><h2>Status lowongan</h2></div>
+            <a class="btn btn-ghost btn-sm" routerLink="/backoffice/job-listings">Kelola</a>
+          </div>
+          <div class="panel-body">
+            <div class="bars">
+              <div class="bar-row" *ngFor="let item of jobListingStatuses">
+                <span>{{ fmt.label(item.name) }}</span>
+                <div class="bar-track"><div class="bar-fill" [style.background]="jobColor(item.name)" [style.width.%]="percentage(item.count, jobListingTotal)"></div></div>
                 <strong>{{ item.count }}</strong>
               </div>
-              <div class="bo-job-status-track">
-                <div
-                  class="bo-job-status-fill"
-                  [style.width.%]="percentage(item.count, jobListingTotal)"
-                  [style.background]="jobStatusColors[i % jobStatusColors.length]"
-                ></div>
-              </div>
-            </div>
-            <div *ngIf="!jobListingStatuses.length" class="bo-chart-empty">Belum ada data job listing.</div>
-          </div>
-
-          <div class="bo-job-status-total">
-            <span>Total posisi</span>
-            <strong>{{ jobListingTotal }}</strong>
-          </div>
-        </article>
-      </section>
-
-      <section class="bo-dashboard-panels">
-        <article class="bo-dashboard-panel">
-          <div class="bo-panel-head">
-            <div>
-              <span class="bo-kicker">QUICK ACCESS</span>
-              <h2>Recruitment Workspace</h2>
+              <p class="muted" *ngIf="!jobListingStatuses.length">Belum ada lowongan.</p>
             </div>
           </div>
-          <div class="bo-quick-grid">
-            <a routerLink="/backoffice/candidates"><b>👥</b><strong>Candidates</strong><span>Kelola profil dan status talent.</span></a>
-            <a routerLink="/backoffice/job-listings"><b>▤</b><strong>Job Listings</strong><span>Pantau posisi dan kebutuhan rekrutmen.</span></a>
-            <a routerLink="/backoffice/applications"><b>✓</b><strong>Applications</strong><span>Kelola pipeline kandidat per tahap.</span></a>
-          </div>
-        </article>
-
-        <article class="bo-dashboard-panel bo-highlight-panel">
-          <span class="bo-kicker">SARINAH TALENT MANAGEMENT</span>
-          <h2>Satu dashboard untuk seluruh proses kandidat.</h2>
-          <p>Gunakan menu di sebelah kiri untuk berpindah antara kandidat, lowongan, dan application pipeline tanpa kembali ke halaman login.</p>
-        </article>
-      </section>
+        </section>
+      </div>
     </app-backoffice-layout>
   `,
 })
 export class BackofficeDashboardComponent implements OnInit {
+  readonly fmt = FMT;
   dashboard: any;
+  error = '';
+  readonly today = new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
 
-  readonly chartColors = ['#d9271c', '#2ca58d', '#4d7cfe', '#f0a23b', '#8c63d8', '#8e98a3', '#c45b9d', '#3aa1a6'];
-  readonly jobStatusColors = ['#2ca58d', '#f0a23b', '#8e98a3'];
+  readonly chartColors = ['#1e7a4e', '#24456b', '#c98a1c', '#c4161c', '#6b645e', '#8a5a3b', '#5b7fa6', '#b9b2ab', '#3f3934'];
 
   constructor(private api: BackofficeApiService) {}
 
   ngOnInit(): void {
     this.api.dashboard().subscribe({
       next: (value) => this.dashboard = value,
+      error: () => this.error = 'Data ringkasan belum bisa dimuat. Muat ulang halaman untuk mencoba lagi.',
     });
   }
 
+  get upcoming(): any[] {
+    return (this.dashboard?.upcomingInterviewItems || []).slice(0, 4);
+  }
+
+  get recent(): any[] {
+    return (this.dashboard?.recentCandidates || []).slice(0, 5);
+  }
+
   get candidateStatuses(): Insight[] {
-    return this.dashboard?.candidateStatuses || [];
+    return [...(this.dashboard?.candidateStatuses || [])].sort((a: Insight, b: Insight) => b.count - a.count);
   }
 
   get applicationStages(): Insight[] {
@@ -201,32 +188,23 @@ export class BackofficeDashboardComponent implements OnInit {
     return this.jobListingStatuses.reduce((sum, item) => sum + Number(item.count || 0), 0);
   }
 
-  get candidateDonutBackground(): string {
-    if (!this.candidateStatuses.length || !this.candidateTotal) {
-      return 'conic-gradient(#e8ecef 0deg 360deg)';
-    }
+  jobColor(status: string): string {
+    return status === 'PUBLISHED' ? '#1e7a4e' : status === 'DRAFT' ? '#c98a1c' : '#b9b2ab';
+  }
 
+  get candidateDonutBackground(): string {
+    if (!this.candidateStatuses.length || !this.candidateTotal) return 'conic-gradient(#e7e4e1 0deg 360deg)';
     let cursor = 0;
     const slices = this.candidateStatuses.map((item, index) => {
       const start = cursor;
-      const degrees = (Number(item.count || 0) / this.candidateTotal) * 360;
-      cursor += degrees;
-      const color = this.chartColors[index % this.chartColors.length];
-      return `${color} ${start}deg ${cursor}deg`;
+      cursor += (Number(item.count || 0) / this.candidateTotal) * 360;
+      return `${this.chartColors[index % this.chartColors.length]} ${start}deg ${cursor}deg`;
     });
-
     return `conic-gradient(${slices.join(', ')})`;
   }
 
   percentage(value: number, total: number): number {
     if (!total) return 0;
     return Math.max(0, Math.min(100, (Number(value || 0) / total) * 100));
-  }
-
-  label(value: string): string {
-    return String(value || '-')
-      .toLowerCase()
-      .replaceAll('_', ' ')
-      .replace(/\b\w/g, (char) => char.toUpperCase());
   }
 }

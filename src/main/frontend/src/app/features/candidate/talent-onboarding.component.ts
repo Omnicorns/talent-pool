@@ -8,14 +8,15 @@ import { TalentPortalService } from '../../core/service/api/talent-portal.servic
 import { ChoiceFieldComponent } from '../../shared/choice-field.component';
 import { TagSelectComponent } from '../../shared/tag-select.component';
 import { TALENT_OPTIONS } from '../../shared/talent-options';
-@Component({selector:'app-talent-onboarding',standalone:true,imports:[CommonModule,FormsModule,RouterLink,ChoiceFieldComponent,TagSelectComponent],templateUrl:'./talent-onboarding.component.html'})
+import { IconComponent } from '../../shared/icon.component';
+@Component({selector:'app-talent-onboarding',standalone:true,imports:[CommonModule,FormsModule,RouterLink,ChoiceFieldComponent,TagSelectComponent,IconComponent],templateUrl:'./talent-onboarding.component.html'})
 export class TalentOnboardingComponent implements OnInit, OnDestroy {
   profile!:CandidateProfile; details!:TalentProfileDetails; options=TALENT_OPTIONS;
   step=1; saving=false; editing=false; error=''; returnUrl='/portal';
   today=new Date().toLocaleDateString('en-CA'); currentYear=new Date().getFullYear();
   cvFile:File|null=null; profilePicture:File|null=null; profilePicturePreviewUrl:string|null=null; portfolioFiles:File[]=[]; supportingUploads:SupportingUpload[]=[];
   portfolioLinks=[{title:'Portfolio',url:''}]; postalRegions:string[]=[]; postalLoading=false; postalError='';
-  steps=['Informasi Pribadi','Pendidikan','Pengalaman Kerja','Sertifikat Pelatihan','Additional Info','Upload CV & Portofolio'];
+  steps=['Informasi pribadi','Pendidikan','Pengalaman kerja','Sertifikat','Informasi tambahan','CV & portofolio'];
   constructor(private portal:TalentPortalService,private auth:TalentAuthService,private router:Router,private route:ActivatedRoute) {
     const requested=route.snapshot.queryParamMap.get('returnUrl');
     if(requested?.startsWith('/') && !requested.startsWith('//')) this.returnUrl=requested;
@@ -41,8 +42,8 @@ export class TalentOnboardingComponent implements OnInit, OnDestroy {
   get stepLabel():string{return String(this.step).padStart(2,'0');}
   get formalEducations():EducationItem[]{return this.profile?.educations.filter(e=>e.type==='FORMAL')||[];}
   get existingPortfolioFiles():PortfolioItem[]{return this.profile?.portfolios.filter(item=>item.type==='FILE')||[];}
-  get stepTitle():string{return ['Informasi Pribadi','Pendidikan','Pengalaman Kerja','Sertifikat Pelatihan','Additional Information','Upload CV & Portofolio'][this.step-1];}
-  get stepDescription():string{return ['Lengkapi identitas, alamat, dan kontak yang dapat dihubungi.','Isi pendidikan terakhir beserta ijazah dan transkrip.','Ceritakan pengalaman, keahlian, dan pencapaian Anda.','Tambahkan sertifikat pelatihan dan kredensial yang Anda miliki.','Isi kompensasi, minat kerja, lokasi, sumber informasi, dan kemampuan bahasa.','Unggah CV terbaru dan dokumen atau tautan portofolio Anda.'][this.step-1];}
+  get stepTitle():string{return ['Informasi pribadi','Pendidikan','Pengalaman kerja','Sertifikat pelatihan','Informasi tambahan','CV dan portofolio'][this.step-1];}
+  get stepDescription():string{return ['Lengkapi identitas, alamat, dan kontak yang dapat dihubungi.','Isi pendidikan terakhir beserta ijazah dan transkrip.','Ceritakan pengalaman, keahlian, dan pencapaian Anda.','Sertifikat pelatihan atau kompetensi yang Anda miliki. Langkah ini opsional.','Ekspektasi gaji, minat kerja, dan kemampuan bahasa.','Unggah CV terbaru dan dokumen atau tautan portofolio Anda.'][this.step-1];}
   get age():number|null {
     if(!this.profile?.birthDate)return null;const date=new Date(this.profile.birthDate+'T00:00:00'),now=new Date();if(isNaN(date.getTime()) || date>now)return null;
     let age=now.getFullYear()-date.getFullYear();if(now.getMonth()<date.getMonth() || now.getMonth()===date.getMonth() && now.getDate()<date.getDate())age--;return age;

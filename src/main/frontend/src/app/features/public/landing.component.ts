@@ -3,100 +3,81 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CareerHeaderComponent } from '../../shared/career-header.component';
 import { CareerFooterComponent } from '../../shared/career-footer.component';
+import { IconComponent } from '../../shared/icon.component';
 import { OpenPositionsComponent } from './open-positions.component';
+import { TalentAuthService } from '../../core/service/api/talent-auth.service';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, RouterLink, CareerHeaderComponent, CareerFooterComponent, OpenPositionsComponent],
+  imports: [CommonModule, RouterLink, CareerHeaderComponent, CareerFooterComponent, OpenPositionsComponent, IconComponent],
   template: `
-    <div class="career-shell">
+    <div class="site">
       <app-career-header active="home"></app-career-header>
 
       <main>
-        <section class="hero home-hero" aria-labelledby="home-hero-title">
-          <div class="home-hero-visual">
-            <div class="home-hero-crop">
-              <img src="assets/images/home-hero-reference.png" width="1456" height="810"
-                alt="Dua rekan kerja Sarinah berkolaborasi menggunakan laptop" fetchpriority="high">
-            </div>
-          </div>
-          <svg class="home-hero-flower" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-            <g fill="currentColor"><path *ngFor="let angle of flowerPetals" d="M50 50C35 35 35 12 50 3C65 12 65 35 50 50Z" [attr.transform]="'rotate(' + angle + ' 50 50)'"></path></g>
+        <section class="hero" aria-labelledby="hero-title">
+          <svg class="hero-motif" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+            <g fill="currentColor"><path *ngFor="let angle of petals" d="M50 50C36 36 36 13 50 4c14 9 14 32 0 46Z" [attr.transform]="'rotate(' + angle + ' 50 50)'"></path></g>
           </svg>
-          <div class="hero-copy home-hero-copy">
-            <h1 id="home-hero-title"><span>Be Part of Indonesia’s</span><span>Creative Retail Legacy</span></h1>
-            <p>Discover opportunities to grow, create impact, and champion local excellence</p>
+          <div class="hero-copy">
+            <h1 id="hero-title">Be Part of Indonesia’s Creative Retail Legacy</h1>
+            <p>Discover opportunities to grow, create impact, and champion local excellence.</p>
             <div class="hero-actions">
-              <a routerLink="/" fragment="open-positions" class="primary-cta home-hero-cta">Explore opportunities <span aria-hidden="true">→</span></a>
+              <a routerLink="/" fragment="open-positions" class="btn btn-primary btn-lg">Explore opportunities</a>
+              <a [routerLink]="talentPoolLink" class="btn btn-secondary btn-lg">Gabung Talent Pool</a>
+            </div>
+          </div>
+          <div class="hero-media">
+            <img src="assets/images/hero-sarinah.jpg" width="611" height="462"
+              alt="Dua karyawan Sarinah berbusana tenun dan batik bekerja bersama di depan laptop" fetchpriority="high">
+          </div>
+        </section>
+
+        <section class="values" aria-label="Alasan bergabung dengan Sarinah">
+          <div class="container">
+            <div class="values-card">
+              <article class="value" *ngFor="let item of values">
+                <app-icon [name]="item.icon" [size]="28" [stroke]="1.6"></app-icon>
+                <h2>{{ item.title }}</h2>
+                <p>{{ item.text }}</p>
+              </article>
             </div>
           </div>
         </section>
 
-        <section class="home-benefits" aria-label="Mengapa bergabung dengan Sarinah">
-          <article class="home-benefit">
-            <div class="home-benefit-heading">
-              <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="13" r="7"/><path d="M12 43v-9c0-6 5-11 12-11s12 5 12 11v9M18 43v-9m12 9v-9M12 12a5 5 0 0 0 0 10M7 39v-8c0-4 2-7 6-8M36 12a5 5 0 0 1 0 10m5 17v-8c0-4-2-7-6-8"/></g></svg>
-              <h2>Bergabung dalam <br>Talent Pool</h2>
+        <section id="life" class="section">
+          <div class="container">
+            <div class="section-head">
+              <h2>Life at Sarinah</h2>
+              <p>Berkarya, bertumbuh, dan merayakan kebersamaan bersama keluarga besar Sarinah.</p>
             </div>
-            <p>Kesempatan untuk menjadi bagian dari jaringan talenta Sarinah.</p>
-          </article>
-          <article class="home-benefit">
-            <div class="home-benefit-heading">
-              <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 42V28h7v14m7 0V22h7v20m7 0V14h7v28M5 23 17 11l9 7L43 3m-8 0h8v8M3 43h40"/></g></svg>
-              <h2>Peluang <br>Berkembang</h2>
+            <div class="life-grid">
+              <figure class="life-item" *ngFor="let program of lifePrograms">
+                <div class="life-photo"><img [src]="program.image" [alt]="program.title" loading="lazy" width="436" height="146"></div>
+                <figcaption><h3>{{ program.title }}</h3><p>{{ program.description }}</p></figcaption>
+              </figure>
             </div>
-            <p>Dapatkan kesempatan karier yang sesuai dengan kompetensi dan minat Anda.</p>
-          </article>
-          <article class="home-benefit">
-            <div class="home-benefit-heading">
-              <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 21-12 21 12H3Zm2 25h38v4H5Zm5-4V20m6 17V20m5 17V20m6 17V20m5 17V20m6 17V20M7 20h34M7 37h34"/></g></svg>
-              <h2>Berkontribusi untuk <br>Indonesia</h2>
-            </div>
-            <p>Bersama Sarinah, hadirkan nilai dan inspirasi bagi masyarakat Indonesia.</p>
-          </article>
-          <article class="home-benefit">
-            <div class="home-benefit-heading">
-              <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M24 3c6 4 11 6 17 7v13c0 11-8 18-17 22C15 41 7 34 7 23V10c6-1 11-3 17-7Z"/><path d="m17 24 5 5 10-11"/></g></svg>
-              <h2>Keamanan Data</h2>
-            </div>
-            <p>Data Anda dikelola sesuai UU Perlindungan Data Pribadi dan hanya digunakan untuk proses rekrutmen.</p>
-          </article>
-          <svg class="home-benefits-flower" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-            <g fill="none" stroke="currentColor" stroke-width="1.2"><path *ngFor="let angle of flowerPetals" d="M50 50C35 35 35 12 50 3C65 12 65 35 50 50Z" [attr.transform]="'rotate(' + angle + ' 50 50)'"></path></g>
-          </svg>
-        </section>
-
-        <section id="life" class="section life-section">
-          <div class="section-head life-program-heading">
-            <span>LIFE AT SARINAH</span>
-            <h2>Berkarya, bertumbuh, dan merayakan kebersamaan.</h2>
-            <p>Kenali kehidupan di Sarinah melalui kegiatan dan cerita kebersamaan tim kami.</p>
-          </div>
-          <div class="life-program-grid">
-            <article class="life-program-card" *ngFor="let program of lifePrograms; let i = index">
-              <div class="life-program-photo">
-                <img src="assets/images/life-at-sarinah-reference.png" [alt]="program.title"
-                  loading="lazy" [style.left.%]="-program.x / 436 * 100" [style.top.%]="-program.y / 230 * 100">
-              </div>
-              <div class="life-program-caption"><h3>{{ program.title }}</h3><p>{{ program.description }}</p></div>
-            </article>
           </div>
         </section>
 
-        <section id="open-positions" class="section positions-section" aria-label="Open Positions">
-          <app-open-positions></app-open-positions>
+        <section id="open-positions" class="section alt" aria-labelledby="positions-title">
+          <div class="container">
+            <app-open-positions></app-open-positions>
+          </div>
         </section>
 
-        <section id="faq" class="section soft">
-          <div class="section-head">
-            <span>FAQ</span>
-            <h2>Frequently asked questions.</h2>
-          </div>
-          <div class="faq-grid">
-            <article><h3>Apa itu Talent Pool?</h3><p>Talent Pool menyimpan profil kandidat untuk dipertimbangkan pada peluang yang relevan.</p></article>
-            <article><h3>Harus melamar posisi tertentu?</h3><p>Tidak. Anda dapat bergabung ke Talent Pool sambil tetap melihat posisi yang sedang terbuka.</p></article>
-            <article><h3>Bagaimana proses berikutnya?</h3><p>Tim rekrutmen dapat meninjau profil dan menghubungi Anda jika ada kebutuhan yang sesuai.</p></article>
+        <section id="faq" class="section">
+          <div class="container">
+            <div class="section-head">
+              <h2>Pertanyaan yang sering diajukan</h2>
+            </div>
+            <div class="faq">
+              <details *ngFor="let item of faqs; let first = first" [open]="first">
+                <summary>{{ item.q }} <app-icon name="chevron-down" [size]="20"></app-icon></summary>
+                <p>{{ item.a }}</p>
+              </details>
+            </div>
           </div>
         </section>
       </main>
@@ -105,13 +86,35 @@ import { OpenPositionsComponent } from './open-positions.component';
   `,
 })
 export class LandingComponent {
-  flowerPetals = [0,45,90,135,180,225,270,315];
-  lifePrograms = [
-    {x:80,y:64,title:'Kebersamaan Sarinah',description:'Bergerak bersama dalam kegiatan yang mempererat kebersamaan keluarga Sarinah.'},
-    {x:532,y:64,title:'Semangat Kolaborasi',description:'Berbagi ide dan energi positif untuk mendukung keberhasilan bersama.'},
-    {x:986,y:64,title:'Kegiatan Tim Sarinah',description:'Membangun hubungan antarrekan melalui pengalaman dan kegiatan bersama.'},
-    {x:80,y:307,title:'Perayaan Bersama',description:'Merayakan pencapaian dan momen istimewa bersama tim Sarinah.'},
-    {x:532,y:307,title:'Belajar Bersama',description:'Berbagi pengalaman dan saling mendukung untuk terus bertumbuh.'},
-    {x:986,y:307,title:'Keluarga Besar Sarinah',description:'Menghargai keberagaman dan menghadirkan suasana kerja yang inklusif.'},
+  readonly petals = [0, 45, 90, 135, 180, 225, 270, 315];
+
+  readonly values = [
+    { icon: 'users', title: 'Bergabung dalam Talent Pool', text: 'Kesempatan untuk menjadi bagian dari jaringan talenta Sarinah.' },
+    { icon: 'sprout', title: 'Peluang berkembang', text: 'Dapatkan kesempatan karier yang sesuai dengan kompetensi dan minat Anda.' },
+    { icon: 'building', title: 'Berkontribusi untuk Indonesia', text: 'Bersama Sarinah, hadirkan nilai dan inspirasi bagi masyarakat Indonesia.' },
+    { icon: 'shield', title: 'Keamanan data', text: 'Data Anda dikelola sesuai UU Perlindungan Data Pribadi dan hanya digunakan untuk rekrutmen.' },
   ];
+
+  readonly lifePrograms = [
+    { image: 'assets/images/life/life-1.jpg', title: 'Kebersamaan Sarinah', description: 'Bergerak bersama dalam kegiatan yang mempererat keluarga Sarinah.' },
+    { image: 'assets/images/life/life-2.jpg', title: 'Semangat kolaborasi', description: 'Berbagi ide dan energi positif untuk keberhasilan bersama.' },
+    { image: 'assets/images/life/life-3.jpg', title: 'Kegiatan tim', description: 'Membangun hubungan antarrekan melalui pengalaman bersama.' },
+    { image: 'assets/images/life/life-4.jpg', title: 'Perayaan bersama', description: 'Merayakan pencapaian dan momen istimewa bersama tim.' },
+    { image: 'assets/images/life/life-5.jpg', title: 'Belajar bersama', description: 'Berbagi pengalaman dan saling mendukung untuk terus bertumbuh.' },
+    { image: 'assets/images/life/life-6.jpg', title: 'Keluarga besar Sarinah', description: 'Menghargai keberagaman dalam suasana kerja yang inklusif.' },
+  ];
+
+  readonly faqs = [
+    { q: 'Apa itu Talent Pool?', a: 'Talent Pool adalah basis data profil kandidat Sarinah. Profil Anda akan dipertimbangkan saat ada kebutuhan posisi yang relevan, meskipun Anda belum melamar lowongan tertentu.' },
+    { q: 'Apakah saya harus melamar posisi tertentu?', a: 'Tidak. Anda dapat bergabung ke Talent Pool terlebih dahulu, lalu melamar lowongan yang sedang dibuka kapan saja dari akun yang sama.' },
+    { q: 'Bagaimana proses setelah saya mendaftar?', a: 'Tim Human Capital meninjau profil dan CV Anda. Jika ada posisi yang sesuai, kami menghubungi Anda melalui email atau WhatsApp untuk tahap berikutnya.' },
+    { q: 'Bagaimana saya memantau status lamaran?', a: 'Masuk ke akun Anda, lalu buka Profil saya. Status setiap lamaran tampil di bagian Lamaran saya, lengkap dengan riwayat prosesnya.' },
+  ];
+
+  constructor(private auth: TalentAuthService) {}
+
+  get talentPoolLink(): string {
+    if (!this.auth.authenticated) return '/register';
+    return this.auth.session?.onboardingCompleted === false ? '/onboarding' : '/portal';
+  }
 }

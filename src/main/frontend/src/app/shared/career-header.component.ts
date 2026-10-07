@@ -2,80 +2,67 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, HostListener, Input } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TalentAuthService } from '../core/service/api/talent-auth.service';
+import { IconComponent } from './icon.component';
+import { initials } from './labels';
 
 @Component({
   selector: 'app-career-header',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, IconComponent],
   template: `
-    <header class="career-header" [class.is-authenticated]="auth.authenticated">
-      <a routerLink="/" class="career-brand-link" aria-label="Sarinah Career Home">
-        <img class="danantara-logo" src="images/Danantara_Indonesia.png" alt="Danantara Indonesia">
-      </a>
+    <header class="site-header">
+      <div class="container">
+        <a routerLink="/" class="site-brand" aria-label="Beranda Sarinah Karier">
+          <img src="images/Danantara_Indonesia.png" alt="Danantara Indonesia">
+        </a>
 
-      <button
-        type="button"
-        class="mobile-menu-toggle"
-        (click)="mobileMenuOpen = !mobileMenuOpen"
-        [attr.aria-expanded]="mobileMenuOpen"
-        aria-controls="career-navigation"
-        aria-label="Buka menu navigasi">
-        <span></span><span></span><span></span>
-      </button>
+        <nav id="site-navigation" class="site-nav" [class.open]="mobileMenuOpen" aria-label="Navigasi utama">
+          <a routerLink="/" [class.active]="active === 'home' && sectionActive === ''" (click)="mobileMenuOpen = false">Home</a>
+          <button type="button" [class.active]="sectionActive === 'life'" (click)="goToSection('life')">Life at Sarinah</button>
+          <button type="button" [class.active]="active === 'open' || sectionActive === 'open-positions'" (click)="goToSection('open-positions')">Open Positions</button>
+          <button type="button" [class.active]="sectionActive === 'faq'" (click)="goToSection('faq')">FAQ</button>
+        </nav>
 
-      <nav id="career-navigation" class="career-main-nav" [class.mobile-open]="mobileMenuOpen" aria-label="Navigasi utama">
-        <a routerLink="/" [class.active]="active === 'home' && sectionActive === ''" (click)="mobileMenuOpen = false">Home</a>
-        <button type="button" class="career-nav-button" [class.active]="sectionActive === 'life'" (click)="goToSection('life'); mobileMenuOpen = false">Life at Sarinah</button>
-        <button type="button" class="career-nav-button" [class.active]="active === 'open' || sectionActive === 'open-positions'" (click)="goToSection('open-positions'); mobileMenuOpen = false">Open Positions</button>
-        <button type="button" class="career-nav-button" [class.active]="sectionActive === 'faq'" (click)="goToSection('faq'); mobileMenuOpen = false">FAQ</button>
-      </nav>
+        <div class="site-actions">
+          <a *ngIf="!auth.authenticated" class="btn btn-secondary btn-sm" routerLink="/sign-in">Masuk</a>
 
-      <div class="career-header-right">
-        <ng-container *ngIf="!auth.authenticated; else loggedIn">
-          <div class="career-auth-actions">
-            <a class="career-sign-in" routerLink="/sign-in" (click)="mobileMenuOpen = false">Masuk</a>
-          </div>
-        </ng-container>
-
-        <ng-template #loggedIn>
-          <div class="header-account-menu" [class.is-open]="accountMenuOpen">
-            <button type="button" class="header-user-chip" [class.active]="active === 'portal' || accountMenuOpen"
-              [attr.aria-expanded]="accountMenuOpen" aria-haspopup="menu" aria-label="Buka menu akun"
-              (click)="toggleAccountMenu(); mobileMenuOpen = false">
-              <span class="header-user-avatar">
-                <img *ngIf="profilePictureUrl; else headerInitials" [src]="profilePictureUrl" [alt]="'Foto ' + (auth.session?.fullName || 'Talent')">
+          <div class="account" *ngIf="auth.authenticated">
+            <button type="button" class="account-chip" [attr.aria-expanded]="accountMenuOpen" aria-haspopup="menu"
+              aria-label="Menu akun" (click)="toggleAccountMenu(); mobileMenuOpen = false">
+              <span class="avatar">
+                <img *ngIf="profilePictureUrl; else headerInitials" [src]="profilePictureUrl" alt="">
                 <ng-template #headerInitials>{{ userInitials }}</ng-template>
               </span>
-              <span class="header-user-copy">
-                <strong>{{ auth.session?.fullName || 'Talent' }}</strong>
-                <small>Profil Saya</small>
-              </span>
-              <span class="header-account-chevron" aria-hidden="true"></span>
+              <strong>{{ auth.session?.fullName || 'Talent' }}</strong>
+              <app-icon name="chevron-down" [size]="16"></app-icon>
             </button>
-            <div class="header-account-dropdown" *ngIf="accountMenuOpen" role="menu" aria-label="Menu akun">
-              <div class="header-account-summary">
-                <span class="header-account-avatar">
-                  <img *ngIf="profilePictureUrl; else dropdownInitials" [src]="profilePictureUrl" [alt]="'Foto ' + (auth.session?.fullName || 'Talent')">
-                  <ng-template #dropdownInitials>{{ userInitials }}</ng-template>
-                </span>
-                <span class="header-account-identity">
-                  <strong>{{ auth.session?.fullName || 'Talent' }}</strong>
-                  <small>{{ auth.session?.email }}</small>
-                </span>
+            <div class="menu-pop" *ngIf="accountMenuOpen" role="menu">
+              <div class="menu-pop-head">
+                <strong>{{ auth.session?.fullName || 'Talent' }}</strong>
+                <small>{{ auth.session?.email }}</small>
               </div>
-              <a routerLink="/portal" role="menuitem" class="header-account-item" (click)="accountMenuOpen = false">
-                <span class="header-account-profile-icon" aria-hidden="true">◉</span> Profil Saya
+              <a routerLink="/portal" role="menuitem" class="menu-item" (click)="accountMenuOpen = false">
+                <app-icon name="users"></app-icon> Profil saya
               </a>
-              <button type="button" role="menuitem" class="header-account-item is-logout" (click)="logout()">
-                <span class="header-account-logout-icon" aria-hidden="true">↪</span> Keluar
+              <a routerLink="/portal" fragment="my-applications" role="menuitem" class="menu-item" (click)="accountMenuOpen = false">
+                <app-icon name="clipboard"></app-icon> Lamaran saya
+              </a>
+              <button type="button" role="menuitem" class="menu-item danger" (click)="logout()">
+                <app-icon name="logout"></app-icon> Keluar
               </button>
             </div>
           </div>
-        </ng-template>
 
-        <a routerLink="/" class="career-brand-link sarinah-brand-link" aria-label="Sarinah Home">
-          <img class="sarinah-logo" src="images/sarinah.png" alt="Sarinah">
-        </a>
+          <a routerLink="/" aria-label="Sarinah" class="site-brand">
+            <img class="sarinah-mark" src="images/sarinah.png" alt="Sarinah">
+          </a>
+
+          <button type="button" class="icon-btn menu-toggle" (click)="mobileMenuOpen = !mobileMenuOpen"
+            [attr.aria-expanded]="mobileMenuOpen" aria-controls="site-navigation"
+            [attr.aria-label]="mobileMenuOpen ? 'Tutup menu' : 'Buka menu'">
+            <app-icon [name]="mobileMenuOpen ? 'x' : 'menu'" [size]="22"></app-icon>
+          </button>
+        </div>
       </div>
     </header>
   `,
@@ -89,11 +76,15 @@ export class CareerHeaderComponent {
   constructor(public auth: TalentAuthService, private router: Router, private elementRef: ElementRef<HTMLElement>) {}
 
   @HostListener('document:click', ['$event'])
-  closeAccountMenuOnOutsideClick(event: MouseEvent): void {
-    if (!this.elementRef.nativeElement.contains(event.target as Node)) this.accountMenuOpen = false;
+  closeMenusOnOutsideClick(event: MouseEvent): void {
+    // composedPath still holds the clicked node even if the click re-rendered it (e.g. the menu icon swap).
+    if (!event.composedPath().includes(this.elementRef.nativeElement)) {
+      this.accountMenuOpen = false;
+      this.mobileMenuOpen = false;
+    }
   }
   @HostListener('document:keydown.escape')
-  closeAccountMenuOnEscape(): void { this.accountMenuOpen = false; }
+  closeMenusOnEscape(): void { this.accountMenuOpen = false; this.mobileMenuOpen = false; }
   toggleAccountMenu(): void { this.accountMenuOpen = !this.accountMenuOpen; }
   logout(): void { this.accountMenuOpen = false; this.auth.logout(); }
 
@@ -102,22 +93,14 @@ export class CareerHeaderComponent {
   }
 
   goToSection(section: 'life' | 'open-positions' | 'faq'): void {
+    this.mobileMenuOpen = false;
     this.router.navigate(['/'], { fragment: section }).then(() => {
       // Also scroll when the user selects the current fragment again.
-      setTimeout(() => {
-        document.getElementById(section)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 40);
+      setTimeout(() => document.getElementById(section)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 40);
     });
   }
 
   get userInitials(): string {
-    const name = this.auth.session?.fullName || 'Talent';
-    return name
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0])
-      .join('')
-      .toUpperCase();
+    return initials(this.auth.session?.fullName);
   }
 }
