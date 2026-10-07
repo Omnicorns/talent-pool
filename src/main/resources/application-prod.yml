@@ -4,19 +4,19 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
   mail:
-    host: mail.sarinah.com
-    port: 465
+    host: ${MAIL_HOST:mail.sarinah.com}
+    port: ${MAIL_PORT:465}
     username: ${MAIL_USERNAME:talentpool@sarinah.co.id}
     password: ${MAIL_PASSWORD}
     properties:
       mail:
         smtp:
-          auth: true
+          auth: ${MAIL_SMTP_AUTH:true}
           ssl:
-            enable: true
+            enable: ${MAIL_SMTP_SSL_ENABLE:true}
           starttls:
-            enable: false
-            required: false
+            enable: ${MAIL_STARTTLS_ENABLE:false}
+            required: ${MAIL_STARTTLS_REQUIRED:false}
 
 app:
   storage:
