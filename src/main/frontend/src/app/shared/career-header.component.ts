@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, ElementRef, HostListener, Input } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TalentAuthService } from '../core/service/api/talent-auth.service';
 
@@ -38,11 +38,22 @@ import { TalentAuthService } from '../core/service/api/talent-auth.service';
         </ng-container>
 
         <ng-template #loggedIn>
-          <a routerLink="/portal" class="header-user-chip" [class.active]="active === 'portal'" aria-label="Buka profil saya" title="Profil Saya" (click)="mobileMenuOpen = false">
-            <span class="header-user-avatar">
-              <img *ngIf="profilePictureUrl; else headerInitials" [src]="profilePictureUrl" [alt]="'Foto ' + (auth.session?.fullName || 'Talent')">
-              <ng-template #headerInitials>{{ userInitials }}</ng-template>
-            </span>
+          <div class="header-account-menu" [class.is-open]="accountMenuOpen">
+            <button type="button" class="header-user-chip" [class.active]="active === 'portal' || accountMenuOpen" [attr.aria-expanded]="accountMenuOpen" aria-haspopup="menu" aria-label="Buka menu akun" (click)="toggleAccountMenu(); mobileMenuOpen = false">
+              <span class="header-user-avatar"><img *ngIf="profilePictureUrl; else headerInitials" [src]="profilePictureUrl" [alt]="'Foto ' + (auth.session?.fullName || 'Talent')"><ng-template #headerInitials>{{ userInitials }}</ng-template></span>
+              <span class="header-user-copy"><strong>{{ auth.session?.fullName || 'Talent' }}</strong><small>Profil Saya</small></span>
+              <span class="header-account-chevron" aria-hidden="true"></span>
+            </button>
+            <div class="header-account-dropdown" *ngIf="accountMenuOpen" role="menu" aria-label="Menu akun">
+              <div class="header-account-summary">
+                <span class="header-account-avatar"><img *ngIf="profilePictureUrl; else dropdownInitials" [src]="profilePictureUrl" [alt]="'Foto ' + (auth.session?.fullName || 'Talent')"><ng-template #dropdownInitials>{{ userInitials }}</ng-template></span>
+                <span class="header-account-identity"><strong>{{ auth.session?.fullName || 'Talent' }}</strong><small>{{ auth.session?.email }}</small></span>
+              </div>
+              <a routerLink="/portal" role="menuitem" class="header-account-item" (click)="accountMenuOpen = false"><span class="header-account-profile-icon" aria-hidden="true">◉</span> Profil Saya</a>
+              <button type="button" role="menuitem" class="header-account-item is-logout" (click)="logout()"><span class="header-account-logout-icon" aria-hidden="true">↪</span> Keluar</button>
+            </div>
+          </div>
+        </ng-template>            </span>
             <span class="header-user-copy">
               <strong>{{ auth.session?.fullName || 'Talent' }}</strong>
               <small>Profil Saya</small>
@@ -62,8 +73,18 @@ export class CareerHeaderComponent {
   @Input() active: 'home' | 'open' | 'portal' | '' = '';
   @Input() profilePictureUrl: string | null = null;
   mobileMenuOpen = false;
+  accountMenuOpen = false;
 
-  constructor(public auth: TalentAuthService, private router: Router) {}
+  constructor(public auth: TalentAuthService, private router: Router, private elementRef: ElementRef<HTMLElement>) {}
+
+  @HostListener('document:click', ['$event'])
+  closeAccountMenuOnOutsideClick(event: MouseEvent): void {
+    if (!this.elementRef.nativeElement.contains(event.target as Node)) this.accountMenuOpen = false;
+  }
+  @HostListener('document:keydown.escape')
+  closeAccountMenuOnEscape(): void { this.accountMenuOpen = false; }
+  toggleAccountMenu(): void { this.accountMenuOpen = !this.accountMenuOpen; }
+  logout(): void { this.accountMenuOpen = false; this.auth.logout(); }
 
   get sectionActive(): string {
     return this.router.parseUrl(this.router.url).fragment || '';
