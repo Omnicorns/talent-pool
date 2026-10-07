@@ -4,151 +4,105 @@ import { FormsModule } from '@angular/forms';
 import { BackofficeOverlayDirective } from '../../shared/backoffice-overlay.directive';
 import { BackofficeLayoutComponent } from '../../shared/backoffice-layout.component';
 import { BackofficeApiService } from '../../core/service/api/backoffice-api.service';
+import { FMT } from '../../shared/labels';
+import { IconComponent } from '../../shared/icon.component';
 
 @Component({
   selector: 'app-backoffice-job-listings',
   standalone: true,
-  imports: [CommonModule, FormsModule, BackofficeLayoutComponent, BackofficeOverlayDirective],
+  imports: [CommonModule, FormsModule, BackofficeLayoutComponent, BackofficeOverlayDirective, IconComponent],
   template: `
     <app-backoffice-layout active="jobs">
-      <div class="bo-page-head">
+      <div class="bo-head">
         <div>
-          <span class="bo-kicker">RECRUITMENT</span>
-          <h1>Job Listings</h1>
-          <p>Pantau posisi, status publikasi, deadline, dan jumlah pelamar.</p>
+          <h1>Lowongan</h1>
+          <p>Buat lowongan, buka untuk pelamar, dan tutup saat posisi sudah terisi.</p>
         </div>
-        <div class="bo-head-actions">
-          <input class="bo-search" [(ngModel)]="q" (keyup.enter)="load()" placeholder="Cari posisi atau departemen...">
-          <button class="bo-primary" (click)="load()">Cari</button>
-          <button class="bo-primary" (click)="openCreate()">＋ Tambah Lowongan</button>
+        <div class="bo-actions">
+          <form (ngSubmit)="load()" role="search" class="bo-search">
+            <span class="sr-only">Cari lowongan</span>
+            <app-icon name="search" [size]="16"></app-icon>
+            <input [(ngModel)]="q" name="q" placeholder="Cari posisi atau departemen">
+          </form>
+          <button class="btn btn-primary" (click)="openCreate()"><app-icon name="plus" [size]="16"></app-icon> Buat lowongan</button>
         </div>
       </div>
 
-      <section class="bo-card-grid">
-        <article class="bo-job-card" *ngFor="let job of rows">
-          <div class="bo-job-top">
-            <span class="bo-badge"
-              [class.green]="job.status === 'PUBLISHED'"
-              [class.gray]="job.status === 'DRAFT'"
-              [class.red]="job.status === 'CLOSED'">
-              {{ job.status }}
-            </span>
-            <small>{{ job.applicationCount || 0 }} applications</small>
+      <p class="muted" *ngIf="loading">Memuat lowongan…</p>
+
+      <section class="job-cards">
+        <article class="job-card" *ngFor="let job of rows">
+          <div class="job-card-top">
+            <span class="tag" [ngClass]="'tag-' + fmt.tone(job.status)">{{ fmt.label(job.status) }}</span>
+            <small>{{ job.applicationCount || 0 }} pelamar</small>
           </div>
-
-          <h2>{{ job.title }}</h2>
-          <p>{{ job.department || 'Sarinah' }} • {{ job.location || '-' }}</p>
-
-          <div class="bo-job-info">
-            <span><b>{{ job.openings }}</b><small>Openings</small></span>
-            <span><b>{{ job.employmentType || '-' }}</b><small>Type</small></span>
-            <span><b>{{ job.applicationDeadline || '-' }}</b><small>Deadline</small></span>
+          <div>
+            <h2>{{ job.title }}</h2>
+            <p class="dept">{{ job.department || 'Sarinah' }} · {{ job.location || '-' }}</p>
           </div>
-
-          <div class="bo-job-actions">
-            <button class="bo-secondary" (click)="openEdit(job)">Edit</button>
-
-            <button
-              class="bo-primary"
-              *ngIf="job.status !== 'PUBLISHED'"
-              (click)="changeStatus(job, 'PUBLISHED')">
-              Publish
-            </button>
-
-            <button
-              class="bo-warning"
-              *ngIf="job.status === 'PUBLISHED'"
-              (click)="changeStatus(job, 'CLOSED')">
-              Close
-            </button>
-
-            <button
-              class="bo-secondary"
-              *ngIf="job.status === 'CLOSED'"
-              (click)="changeStatus(job, 'DRAFT')">
-              Reopen Draft
-            </button>
-
-            <button
-              class="bo-danger"
-              *ngIf="!job.applicationCount"
-              (click)="deleteJob(job)">
-              Delete
-            </button>
+          <dl class="facts">
+            <div><dt>Kebutuhan</dt><dd>{{ job.openings }} orang</dd></div>
+            <div><dt>Tipe</dt><dd>{{ fmt.label(job.employmentType) }}</dd></div>
+            <div><dt>Batas lamaran</dt><dd>{{ job.applicationDeadline ? fmt.fullDate(job.applicationDeadline) : '-' }}</dd></div>
+          </dl>
+          <div class="job-card-actions">
+            <button class="btn btn-secondary btn-sm" (click)="openEdit(job)"><app-icon name="edit" [size]="15"></app-icon> Ubah</button>
+            <button class="btn btn-primary btn-sm" *ngIf="job.status === 'DRAFT'" (click)="changeStatus(job, 'PUBLISHED')">Buka lowongan</button>
+            <button class="btn btn-secondary btn-sm" *ngIf="job.status === 'PUBLISHED'" (click)="changeStatus(job, 'CLOSED')">Tutup lowongan</button>
+            <button class="btn btn-secondary btn-sm" *ngIf="job.status === 'CLOSED'" (click)="changeStatus(job, 'DRAFT')"><app-icon name="undo" [size]="15"></app-icon> Jadikan draf</button>
+            <button class="btn btn-ghost btn-sm" style="margin-left: auto; color: var(--negative)" *ngIf="!job.applicationCount" (click)="deleteJob(job)" [attr.aria-label]="'Hapus ' + job.title"><app-icon name="trash" [size]="15"></app-icon> Hapus</button>
           </div>
         </article>
-
-        <div class="bo-empty-card" *ngIf="!rows.length && !loading">Belum ada job listing.</div>
       </section>
 
+      <div class="empty" *ngIf="!rows.length && !loading">
+        <strong>{{ q.trim() ? 'Tidak ada lowongan yang cocok' : 'Belum ada lowongan' }}</strong>
+        {{ q.trim() ? 'Coba kata kunci lain.' : 'Buat lowongan pertama untuk mulai menerima pelamar.' }}
+      </div>
+
       <div class="drawer-backdrop" *ngIf="drawerOpen" (click)="closeOnBackdrop($event)">
-        <aside class="side-drawer" [boOverlay]="true" (overlayClose)="closeDrawer()" aria-label="Form lowongan">
-          <header>
+        <aside class="drawer" [boOverlay]="true" (overlayClose)="closeDrawer()" role="dialog" aria-modal="true" aria-labelledby="job-form-title">
+          <header class="drawer-head">
             <div>
-              <span class="bo-kicker">JOB LISTING</span>
-              <h2>{{ editingId ? 'Edit Lowongan' : 'Tambah Lowongan' }}</h2>
-              <p>Isi detail posisi dan status publikasi.</p>
+              <h2 id="job-form-title">{{ editingId ? 'Ubah lowongan' : 'Buat lowongan' }}</h2>
+              <p>Lowongan berstatus Dibuka langsung tampil di portal kandidat.</p>
             </div>
-            <button type="button" (click)="closeDrawer()" aria-label="Tutup panel">×</button>
+            <button type="button" class="icon-btn" (click)="closeDrawer()" aria-label="Tutup"><app-icon name="x"></app-icon></button>
           </header>
 
           <div class="drawer-body">
-            <div class="drawer-form">
-              <label>Judul Posisi
-                <input [(ngModel)]="form.title" placeholder="Contoh: Backend Engineer">
-              </label>
-
-              <div class="drawer-grid">
-                <label>Department
-                  <input [(ngModel)]="form.department" placeholder="Technology">
-                </label>
-                <label>Location
-                  <input [(ngModel)]="form.location" placeholder="Jakarta">
-                </label>
-              </div>
-
-              <div class="drawer-grid">
-                <label>Employment Type
+            <div class="form-stack">
+              <label class="field">Nama posisi<input [(ngModel)]="form.title" placeholder="Contoh: Retail Operations Supervisor"></label>
+              <div class="form-grid">
+                <label class="field">Departemen<input [(ngModel)]="form.department" placeholder="Contoh: Retail"></label>
+                <label class="field">Lokasi<input [(ngModel)]="form.location" placeholder="Contoh: Jakarta"></label>
+                <label class="field">Tipe pekerjaan
                   <select [(ngModel)]="form.employmentType">
-                    <option value="FULL_TIME">Full Time</option>
-                    <option value="PART_TIME">Part Time</option>
-                    <option value="CONTRACT">Contract</option>
-                    <option value="INTERNSHIP">Internship</option>
-                    <option value="TEMPORARY">Temporary</option>
+                    <option value="FULL_TIME">Penuh waktu</option>
+                    <option value="PART_TIME">Paruh waktu</option>
+                    <option value="CONTRACT">Kontrak</option>
+                    <option value="INTERNSHIP">Magang</option>
+                    <option value="TEMPORARY">Sementara</option>
                   </select>
                 </label>
-
-                <label>Openings
-                  <input type="number" min="1" [(ngModel)]="form.openings">
-                </label>
-              </div>
-
-              <div class="drawer-grid">
-                <label>Application Deadline
-                  <input type="date" [(ngModel)]="form.applicationDeadline">
-                </label>
-                <label>Status
+                <label class="field">Jumlah kebutuhan<input type="number" min="1" [(ngModel)]="form.openings"></label>
+                <label class="field">Batas lamaran<input type="date" [(ngModel)]="form.applicationDeadline"></label>
+                <label class="field">Status
                   <select [(ngModel)]="form.status">
-                    <option value="DRAFT">Draft</option>
-                    <option value="PUBLISHED">Published</option>
-                    <option value="CLOSED">Closed</option>
+                    <option value="DRAFT">Draf</option>
+                    <option value="PUBLISHED">Dibuka</option>
+                    <option value="CLOSED">Ditutup</option>
                   </select>
                 </label>
               </div>
-
-              <label>Deskripsi
-                <textarea rows="8" [(ngModel)]="form.description" placeholder="Deskripsi pekerjaan, tanggung jawab, dan requirements..."></textarea>
-              </label>
-
-              <p class="form-error" *ngIf="error">{{ error }}</p>
+              <label class="field">Deskripsi<textarea rows="10" [(ngModel)]="form.description" placeholder="Tanggung jawab, kualifikasi, dan informasi lain untuk pelamar"></textarea></label>
+              <div class="alert alert-error" *ngIf="error" role="alert"><app-icon name="alert"></app-icon><span>{{ error }}</span></div>
             </div>
           </div>
 
-          <footer>
-            <button class="cancel-button" (click)="closeDrawer()" [disabled]="saving">Batal</button>
-            <button class="primary-button" (click)="save()" [disabled]="saving">
-              {{ saving ? 'Menyimpan...' : (editingId ? 'Simpan Perubahan' : 'Tambah Lowongan') }}
-            </button>
+          <footer class="drawer-foot">
+            <button class="btn btn-secondary" (click)="closeDrawer()" [disabled]="saving">Batal</button>
+            <button class="btn btn-primary" (click)="save()" [disabled]="saving">{{ saving ? 'Menyimpan…' : (editingId ? 'Simpan perubahan' : 'Buat lowongan') }}</button>
           </footer>
         </aside>
       </div>
@@ -156,6 +110,7 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
   `,
 })
 export class BackofficeJobListingsComponent implements OnInit {
+  readonly fmt = FMT;
   rows: any[] = [];
   q = '';
   loading = false;
@@ -222,17 +177,17 @@ export class BackofficeJobListingsComponent implements OnInit {
     this.error = '';
 
     if (!this.form.title?.trim()) {
-      this.error = 'Judul posisi wajib diisi.';
+      this.error = 'Isi nama posisi.';
       return;
     }
 
     if (!this.form.employmentType) {
-      this.error = 'Employment type wajib dipilih.';
+      this.error = 'Pilih tipe pekerjaan.';
       return;
     }
 
     if (!this.form.openings || Number(this.form.openings) < 1) {
-      this.error = 'Jumlah opening minimal 1.';
+      this.error = 'Jumlah kebutuhan minimal 1 orang.';
       return;
     }
 
@@ -261,7 +216,7 @@ export class BackofficeJobListingsComponent implements OnInit {
       },
       error: (err) => {
         this.saving = false;
-        this.error = err?.error?.message || 'Job listing gagal disimpan.';
+        this.error = err?.error?.message || 'Lowongan belum tersimpan. Periksa isian lalu coba lagi.';
       },
     });
   }
@@ -271,8 +226,8 @@ export class BackofficeJobListingsComponent implements OnInit {
       status === 'CLOSED'
         ? `Tutup lowongan "${job.title}"?`
         : status === 'PUBLISHED'
-          ? `Publish lowongan "${job.title}"?`
-          : `Ubah lowongan "${job.title}" menjadi Draft?`;
+          ? `Buka lowongan "${job.title}" untuk pelamar?`
+          : `Jadikan lowongan "${job.title}" sebagai draf?`;
 
     if (!window.confirm(message)) return;
 
@@ -281,7 +236,7 @@ export class BackofficeJobListingsComponent implements OnInit {
         Object.assign(job, updated);
       },
       error: (err) => {
-        window.alert(err?.error?.message || 'Status lowongan gagal diperbarui.');
+        window.alert(err?.error?.message || 'Status lowongan belum berubah. Coba lagi.');
       },
     });
   }
@@ -294,7 +249,7 @@ export class BackofficeJobListingsComponent implements OnInit {
       error: (err) => {
         window.alert(
           err?.error?.message ||
-          'Lowongan tidak dapat dihapus. Jika sudah memiliki kandidat/interview, gunakan Close.'
+          'Lowongan yang sudah punya pelamar atau interview tidak bisa dihapus. Tutup lowongan sebagai gantinya.'
         );
       },
     });

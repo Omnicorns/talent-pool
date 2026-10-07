@@ -3,56 +3,41 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { TalentAuthService } from '../../core/service/api/talent-auth.service';
+import { IconComponent } from '../../shared/icon.component';
 
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, IconComponent],
   template: `
-    <main class="password-recovery-page">
-      <section class="password-recovery-card">
-        <a routerLink="/sign-in" class="back-link">← Kembali ke Sign In</a>
+    <main class="recovery">
+      <section class="recovery-card">
+        <a routerLink="/" aria-label="Beranda Sarinah Karier"><img class="logo" src="images/sarinah.png" alt="Sarinah"></a>
 
-        <div class="recovery-brand">
-          <img src="images/sarinah.png" alt="Sarinah">
-          <span>TALENT POOL</span>
-        </div>
+        <ng-container *ngIf="!submitted">
+          <div>
+            <h1>Atur ulang password</h1>
+            <p>Masukkan email akun Anda. Jika terdaftar, kami kirimkan tautan untuk membuat password baru.</p>
+          </div>
+          <form class="form-stack" (ngSubmit)="submit()">
+            <label class="field">Email
+              <input type="email" [(ngModel)]="email" name="email" placeholder="nama@email.com" autocomplete="email" required>
+            </label>
+            <button class="btn btn-primary btn-lg btn-block" [disabled]="loading">{{ loading ? 'Mengirim…' : 'Kirim tautan' }}</button>
+          </form>
+        </ng-container>
 
-        <div class="recovery-icon">✉</div>
-        <h1>Lupa Password?</h1>
-        <p>Masukkan email akun Anda. Jika email terdaftar, link reset akan dikirimkan.</p>
+        <ng-container *ngIf="submitted">
+          <div class="alert alert-success" role="status">
+            <app-icon name="mail"></app-icon>
+            <div><strong>Periksa email Anda</strong><p>{{ message }}</p></div>
+          </div>
+          <a *ngIf="debugResetUrl" [href]="debugResetUrl" class="link">Buka tautan reset (mode debug)</a>
+        </ng-container>
 
-        <form *ngIf="!submitted" (ngSubmit)="submit()">
-          <label>Email
-            <input
-              type="email"
-              [(ngModel)]="email"
-              name="email"
-              placeholder="nama@email.com"
-              autocomplete="email"
-              required>
-          </label>
+        <div class="alert alert-error" *ngIf="error" role="alert"><app-icon name="alert"></app-icon><span>{{ error }}</span></div>
 
-          <button class="primary-button recovery-submit" [disabled]="loading">
-            {{ loading ? 'Mengirim...' : 'Kirim Link Reset Password' }}
-          </button>
-        </form>
-
-        <div class="recovery-success" *ngIf="submitted">
-          <strong>Permintaan reset diproses</strong>
-          <p>{{ message }}</p>
-
-          <a
-            *ngIf="debugResetUrl"
-            [href]="debugResetUrl"
-            class="debug-reset-link">
-            Buka link reset (debug)
-          </a>
-
-          <a routerLink="/sign-in" class="primary-button recovery-submit">Kembali ke Sign In</a>
-        </div>
-
-        <p class="form-error" *ngIf="error">{{ error }}</p>
+        <a routerLink="/sign-in" class="back-link"><app-icon name="arrow-left" [size]="16"></app-icon> Kembali ke halaman masuk</a>
       </section>
     </main>
   `,

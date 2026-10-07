@@ -7,344 +7,325 @@ import { CareerHeaderComponent } from '../../shared/career-header.component';
 import { CandidateProfile, EducationItem, JobApplication, WorkExperienceItem } from '../../core/models/talent.models';
 import { TalentAuthService } from '../../core/service/api/talent-auth.service';
 import { TalentPortalService } from '../../core/service/api/talent-portal.service';
+import { FMT } from '../../shared/labels';
+import { IconComponent } from '../../shared/icon.component';
 
 type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'training' | 'additional';
 
 @Component({
   selector: 'app-candidate-portal',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, CareerHeaderComponent, TalentProfileDetailsComponent],
+  imports: [CommonModule, FormsModule, RouterLink, CareerHeaderComponent, TalentProfileDetailsComponent, IconComponent],
   template: `
-    <div class="portal-page" *ngIf="profile; else loadingTpl">
+    <div class="site" *ngIf="profile; else loadingTpl">
       <app-career-header active="portal" [profilePictureUrl]="profilePictureUrl"></app-career-header>
 
-      <main class="profile-container">
-        <div class="application-success-banner" *ngIf="applicationSubmitted">
-          <div>
-            <strong>✓ Lamaran berhasil dikirim</strong>
-            <span>Status lamaran sekarang dapat dipantau di bagian “Lamaran Saya”.</span>
+      <main class="portal">
+        <div class="container">
+          <div class="alert alert-success" *ngIf="applicationSubmitted" role="status" style="margin-bottom: 20px">
+            <app-icon name="check"></app-icon>
+            <div><strong>Lamaran terkirim</strong><p>Pantau perkembangannya di bagian Lamaran saya di bawah.</p></div>
+            <button type="button" class="icon-btn alert-dismiss" (click)="applicationSubmitted = false" aria-label="Tutup pesan"><app-icon name="x" [size]="16"></app-icon></button>
           </div>
-          <button type="button" (click)="applicationSubmitted = false">×</button>
-        </div>
-        <section class="profile-hero-card">
-          <div class="profile-main">
-            <div class="profile-avatar">
-              <img *ngIf="profilePictureUrl; else initialsTpl" [src]="profilePictureUrl" [alt]="profile.fullName">
-              <ng-template #initialsTpl>{{ initials(profile.fullName) }}</ng-template>
-            </div>
+
+          <section class="profile-head">
+            <span class="avatar avatar-lg">
+              <img *ngIf="profilePictureUrl; else initialsTpl" [src]="profilePictureUrl" [alt]="'Foto ' + profile.fullName">
+              <ng-template #initialsTpl>{{ fmt.initials(profile.fullName) }}</ng-template>
+            </span>
             <div>
               <h1>{{ profile.fullName }}</h1>
-              <p>{{ headline }}</p>
+              <p class="headline">{{ headline }}</p>
+              <div class="contact-list">
+                <span><app-icon name="mail" [size]="16"></app-icon>{{ profile.email }}</span>
+                <span><app-icon name="phone" [size]="16"></app-icon>{{ profile.phone || 'Nomor belum diisi' }}</span>
+                <span><app-icon name="pin" [size]="16"></app-icon>{{ profile.preferredLocations.length ? profile.preferredLocations.join(', ') : 'Lokasi belum dipilih' }}</span>
+                <span *ngIf="firstPortfolio"><app-icon name="link" [size]="16"></app-icon>{{ firstPortfolio }}</span>
+              </div>
             </div>
-            <div class="profile-actions">
-              <button class="outline-button" (click)="openDrawer('profile')">✎ Edit Profil</button>
+            <div class="profile-head-actions">
+              <button class="btn btn-secondary" (click)="openDrawer('profile')"><app-icon name="edit" [size]="16"></app-icon> Ubah profil</button>
             </div>
-          </div>
-          <div class="contact-grid">
-            <span>✉ {{ profile.email }}</span>
-            <span>☎ {{ profile.phone || '-' }}</span>
-            <span>⌖ {{ profile.preferredLocations?.length ? profile.preferredLocations.join(', ') : 'Lokasi belum ditentukan' }}</span>
-            <span>↗ {{ firstPortfolio || 'Portfolio belum ditambahkan' }}</span>
-          </div>
-        </section>
+          </section>
 
-        <app-talent-profile-details [profile]="profile" [showAdditionalInformation]="false" [showEducationInformation]="false"></app-talent-profile-details>
-
-        <section class="profile-content-card">
-          <nav class="profile-tabs" aria-label="Bagian profil">
-            <button type="button" [class.active]="activeSection === 'about'" [attr.aria-current]="activeSection === 'about' ? 'true' : null" (click)="scrollToSection('about')">About</button>
-            <button type="button" [class.active]="activeSection === 'experiences'" [attr.aria-current]="activeSection === 'experiences' ? 'true' : null" (click)="scrollToSection('experiences')">Experiences</button>
-            <button type="button" [class.active]="activeSection === 'education'" [attr.aria-current]="activeSection === 'education' ? 'true' : null" (click)="scrollToSection('education')">Education</button>
-            <button type="button" [class.active]="activeSection === 'training'" [attr.aria-current]="activeSection === 'training' ? 'true' : null" (click)="scrollToSection('training')">Training & Certification</button>
-            <button type="button" [class.active]="activeSection === 'additional'" [attr.aria-current]="activeSection === 'additional' ? 'true' : null" (click)="scrollToSection('additional')">Additional Information</button>
-          </nav>
-
-          <div class="profile-sections">
-            <section id="about" class="profile-section">
-              <div class="section-title"><h2>About</h2><button (click)="openDrawer('about')">✎ Edit</button></div>
-              <p class="about-copy">{{ profile.about || 'Tambahkan ringkasan profesional Anda agar recruiter lebih mudah memahami profil Anda.' }}</p>
-            </section>
-
-            <section id="experiences" class="profile-section">
-              <div class="section-title"><h2>Work Experience</h2><button (click)="openDrawer('experience')">＋ Add</button></div>
-              <ng-container *ngIf="profile.workExperiences?.length; else emptyExperience">
-                <article class="timeline-item" *ngFor="let item of profile.workExperiences; let i = index">
-                  <span class="timeline-dot"></span>
-                  <div class="timeline-icon">▣</div>
-                  <div>
-                    <h3>{{ item.position }} <button class="icon-link" (click)="openDrawer('experience', i)">✎</button></h3>
-                    <p>{{ item.companyName }}</p>
-                    <small>{{ item.description || '-' }}</small>
-                  </div>
-                  <time>{{ monthYear(item.startDate) }} — {{ item.currentJob ? 'Sekarang' : monthYear(item.endDate) }}</time>
-                </article>
-              </ng-container>
-              <ng-template #emptyExperience><div class="empty-state">Belum ada pengalaman kerja.</div></ng-template>
-            </section>
-
-            <section id="education" class="profile-section">
-              <div class="section-title"><h2>Education</h2><button (click)="openDrawer('education')">＋ Add</button></div>
-              <ng-container *ngFor="let item of formalEducations">
-                <article class="timeline-item">
-                  <span class="timeline-dot"></span>
-                  <div class="timeline-icon">⌂</div>
-                  <div>
-                    <h3>{{ item.institution }} <button class="icon-link" (click)="openEducationDrawer('education', item)">✎</button></h3>
-                    <p>{{ item.level }} • {{ item.major }}</p>
-                    <small>{{ item.description || '-' }}</small>
-                  </div>
-                  <time>{{ item.startYear || '-' }} — {{ item.endYear || 'Sekarang' }}</time>
-                </article>
-              </ng-container>
-              <div class="empty-state" *ngIf="!formalEducations.length">Belum ada pendidikan formal.</div>
-              <div class="education-supporting-documents" *ngIf="profile.supportingDocuments?.length">
-                <h3>Dokumen Pendukung</h3>
-                <button type="button" *ngFor="let doc of profile.supportingDocuments" (click)="downloadSupportingDocument(doc.key, doc.originalName)">{{ supportingDocumentLabel(doc.key) }}: {{ doc.originalName }} ↓</button>
-              </div>
-            </section>
-
-            <section id="training" class="profile-section">
-              <div class="section-title"><h2>Training & Certification</h2><button (click)="openDrawer('training')">＋ Add</button></div>
-              <ng-container *ngFor="let item of profile.profileDetails?.trainingCertifications || []">
-                <article class="timeline-item">
-                  <span class="timeline-dot"></span>
-                  <div class="timeline-icon">✓</div>
-                  <div>
-                    <h3>{{ item.name }}</h3>
-                    <p>{{ joinParts(item.issuingOrganization, item.credentialId ? 'ID ' + item.credentialId : '') }}</p>
-                    <small>{{ certificationDates(item.issueDate, item.expiryDate) }}</small>
-                    <a *ngIf="item.credentialUrl" class="training-cert-link" [href]="item.credentialUrl" target="_blank" rel="noopener noreferrer">Lihat sertifikat ↗</a>
-                  </div>
-                </article>
-              </ng-container>
-              <ng-container *ngFor="let item of informalEducations">
-                <article class="timeline-item">
-                  <span class="timeline-dot"></span>
-                  <div class="timeline-icon">✓</div>
-                  <div>
-                    <h3>{{ item.major || item.level }} <button class="icon-link" (click)="openEducationDrawer('training', item)">✎</button></h3>
-                    <p>{{ item.institution }}</p>
-                    <small>{{ item.description || '-' }}</small>
-                  </div>
-                  <time>{{ item.startYear || '-' }} — {{ item.endYear || '-' }}</time>
-                </article>
-              </ng-container>
-              <div class="empty-state" *ngIf="!informalEducations.length && !profile.profileDetails?.trainingCertifications?.length">Belum ada training atau sertifikasi.</div>
-            </section>
-
-            <section id="additional" class="profile-section">
-              <div class="section-title"><h2>Additional Information</h2><button (click)="openDrawer('additional')">✎ Edit</button></div>
-              <div class="info-grid">
-                <article><span>LinkedIn</span><strong>{{ profile.profileDetails?.linkedinUrl || '-' }}</strong></article>
-                <article><span>Media Sosial</span><strong>{{ joinParts(profile.profileDetails?.socialPlatform, profile.profileDetails?.socialUsername) }}</strong></article>
-                <article><span>Ekspektasi Gaji per Bulan</span><strong>{{ salaryRange(profile.expectedSalary, profile.profileDetails?.expectedSalaryMax) }}</strong></article>
-                <article><span>Fungsi yang Diminati</span><strong>{{ profile.jobInterests.join(', ') || '-' }}</strong></article>
-                <article><span>Lokasi Kerja yang Diminati</span><strong>{{ profile.preferredLocations.join(', ') || '-' }}</strong></article>
-                <article><span>Tools / Skills</span><strong>{{ profile.tools?.join(', ') || '-' }}</strong></article>
-              </div>
-              <div class="additional-language-skills">
-                <h3>Kemampuan Bahasa</h3>
-                <p *ngIf="!profile.profileDetails?.languageSkills?.length">{{ profile.languanges || 'Belum ada kemampuan bahasa yang ditambahkan.' }}</p>
-                <p *ngFor="let language of profile.profileDetails?.languageSkills">{{ language.name }} • {{ language.proficiency }}</p>
-                <h3>Keahlian & Pengalaman</h3>
-                <p *ngIf="profile.profileDetails?.noExperience">Belum memiliki pengalaman kerja.</p>
-                <article class="talent-detail-work" *ngFor="let work of profile.workExperiences">
-                  <ng-container *ngIf="work.details as data"><strong>{{ work.position }} • {{ work.companyName }}</strong><p>Skill: {{ data.skills.join(', ') || '-' }}</p><p>Tools: {{ data.tools.join(', ') || '-' }}</p></ng-container>
-                </article>
-              </div>
-            </section>
-          </div>
-        </section>
-
-        <section class="candidate-insight-grid">
-          <article class="candidate-insight-card">
-            <div class="section-title"><h2>Recruiter Activity</h2></div>
-            <div class="candidate-activity-list" *ngIf="activities.length; else noActivity">
-              <div class="candidate-activity-item" *ngFor="let item of activities">
-                <span class="candidate-activity-icon">{{ item.type === 'CV_VIEW' ? 'CV' : '👁' }}</span>
-                <div>
-                  <strong>{{ item.message }}</strong>
-                  <small>{{ item.viewedAt | date:'dd MMM yyyy, HH:mm' }}</small>
+          <div class="profile-layout">
+            <div class="profile-main">
+              <section id="my-applications" class="profile-card profile-section">
+                <div class="section-title"><h2>Lamaran saya</h2><a class="btn btn-secondary btn-sm" routerLink="/" fragment="open-positions">Cari lowongan</a></div>
+                <div class="app-list" *ngIf="applications.length; else noApplications">
+                  <article class="app" *ngFor="let app of applications">
+                    <div>
+                      <h3>{{ app.jobTitle }}</h3>
+                      <p class="when">Dilamar {{ fmt.fullDate(app.appliedAt) }}</p>
+                    </div>
+                    <div class="app-actions">
+                      <button type="button" class="btn btn-ghost btn-sm" (click)="openApplicationHistory(app)"><app-icon name="history" [size]="16"></app-icon> Riwayat</button>
+                      <button *ngIf="app.status === 'ACTIVE'" type="button" class="btn btn-danger btn-sm" (click)="withdrawApplication(app)">Tarik lamaran</button>
+                    </div>
+                    <div class="stage-track" *ngIf="app.status !== 'REJECTED' && app.status !== 'WITHDRAWN'; else ended" [attr.aria-label]="'Tahap saat ini: ' + applicationStages[applicationStageIndex(app.stage)].label">
+                      <div *ngFor="let stage of applicationStages; let i = index"
+                        [class.done]="applicationStageIndex(app.stage) > i || app.status === 'HIRED'"
+                        [class.current]="applicationStageIndex(app.stage) === i && app.status !== 'HIRED'">
+                        <i></i><span>{{ stage.label }}</span>
+                      </div>
+                    </div>
+                    <ng-template #ended>
+                      <p class="app-ended"><app-icon name="info" [size]="16"></app-icon>{{ app.status === 'REJECTED' ? 'Lamaran tidak dilanjutkan ke tahap berikutnya.' : 'Anda telah menarik lamaran ini.' }}</p>
+                    </ng-template>
+                  </article>
                 </div>
-              </div>
-            </div>
-            <ng-template #noActivity>
-              <div class="empty-state">Belum ada aktivitas recruiter pada profil Anda.</div>
-            </ng-template>
-          </article>
+                <ng-template #noApplications>
+                  <div class="empty"><strong>Belum ada lamaran</strong>Lihat lowongan yang sedang dibuka dan lamar dengan profil ini.</div>
+                </ng-template>
+              </section>
+              <section class="profile-card">
+                <nav class="profile-tabs" aria-label="Bagian profil">
+                  <button type="button" *ngFor="let tab of tabs" [class.active]="activeSection === tab.id"
+                    [attr.aria-current]="activeSection === tab.id ? 'true' : null" (click)="scrollToSection(tab.id)">{{ tab.label }}</button>
+                </nav>
 
-          <article class="candidate-insight-card">
-            <div class="section-title"><h2>Jadwal Interview</h2></div>
-            <div class="candidate-interview-list" *ngIf="interviews.length; else noInterview">
-              <article class="candidate-interview-item" *ngFor="let item of interviews">
-                <div>
-                  <strong>{{ item.jobTitle || 'Talent Pool Interview' }}</strong>
-                  <p>{{ item.scheduledAt | date:'dd MMM yyyy, HH:mm' }} • {{ item.durationMinutes }} menit</p>
-                  <small>{{ item.mode }} • {{ item.locationOrLink || '-' }}</small>
+                <section id="about" class="profile-section">
+                  <div class="section-title"><h2>Tentang saya</h2><button class="btn btn-ghost btn-sm" (click)="openDrawer('about')"><app-icon name="edit" [size]="16"></app-icon> Ubah</button></div>
+                  <p class="about-copy" [class.placeholder]="!profile.about">{{ profile.about || 'Tulis ringkasan singkat tentang pengalaman dan tujuan karier Anda agar recruiter cepat memahami profil Anda.' }}</p>
+                </section>
+
+                <section id="experiences" class="profile-section">
+                  <div class="section-title"><h2>Pengalaman kerja</h2><button class="btn btn-ghost btn-sm" (click)="openDrawer('experience')"><app-icon name="plus" [size]="16"></app-icon> Tambah</button></div>
+                  <div class="timeline" *ngIf="profile.workExperiences.length; else emptyExperience">
+                    <article class="timeline-item" *ngFor="let item of profile.workExperiences; let i = index">
+                      <span class="timeline-mark"><app-icon name="briefcase"></app-icon></span>
+                      <div>
+                        <h3>{{ item.position }} <button class="icon-btn" (click)="openDrawer('experience', i)" [attr.aria-label]="'Ubah ' + item.position"><app-icon name="edit" [size]="15"></app-icon></button></h3>
+                        <p class="org">{{ item.companyName }}</p>
+                        <p class="desc" *ngIf="item.description">{{ item.description }}</p>
+                        <div class="chips" *ngIf="item.details?.skills?.length || item.details?.tools?.length" style="margin-top: 10px">
+                          <span class="chip" *ngFor="let skill of (item.details?.skills || []).concat(item.details?.tools || [])">{{ skill }}</span>
+                        </div>
+                      </div>
+                      <time>{{ monthYear(item.startDate) }} – {{ item.currentJob ? 'sekarang' : monthYear(item.endDate) }}</time>
+                    </article>
+                  </div>
+                  <ng-template #emptyExperience>
+                    <p class="muted">{{ profile.profileDetails?.noExperience ? 'Belum memiliki pengalaman kerja.' : 'Belum ada pengalaman kerja yang ditambahkan.' }}</p>
+                  </ng-template>
+                </section>
+
+                <section id="education" class="profile-section">
+                  <div class="section-title"><h2>Pendidikan</h2><button class="btn btn-ghost btn-sm" (click)="openDrawer('education')"><app-icon name="plus" [size]="16"></app-icon> Tambah</button></div>
+                  <div class="timeline" *ngIf="formalEducations.length; else emptyEducation">
+                    <article class="timeline-item" *ngFor="let item of formalEducations">
+                      <span class="timeline-mark"><app-icon name="grad"></app-icon></span>
+                      <div>
+                        <h3>{{ item.institution }} <button class="icon-btn" (click)="openEducationDrawer('education', item)" [attr.aria-label]="'Ubah ' + item.institution"><app-icon name="edit" [size]="15"></app-icon></button></h3>
+                        <p class="org">{{ joinParts(item.level, item.major) }}</p>
+                        <p class="desc" *ngIf="item.ipk">IPK {{ item.ipk }}</p>
+                        <p class="desc" *ngIf="item.description">{{ item.description }}</p>
+                      </div>
+                      <time>{{ item.startYear || '-' }} – {{ item.endYear || 'sekarang' }}</time>
+                    </article>
+                  </div>
+                  <ng-template #emptyEducation><p class="muted">Belum ada pendidikan formal yang ditambahkan.</p></ng-template>
+                  <ng-container *ngIf="profile.supportingDocuments?.length">
+                    <p class="subhead">Dokumen pendukung</p>
+                    <div class="doc-list">
+                      <button type="button" class="doc" *ngFor="let doc of profile.supportingDocuments" (click)="downloadSupportingDocument(doc.key, doc.originalName)">
+                        <app-icon name="file"></app-icon>
+                        <span><strong>{{ supportingDocumentLabel(doc.key) }}</strong><small>{{ doc.originalName }}</small></span>
+                        <app-icon name="download" [size]="16"></app-icon>
+                      </button>
+                    </div>
+                  </ng-container>
+                </section>
+
+                <section id="training" class="profile-section">
+                  <div class="section-title"><h2>Pelatihan &amp; sertifikasi</h2><button class="btn btn-ghost btn-sm" (click)="openDrawer('training')"><app-icon name="plus" [size]="16"></app-icon> Tambah</button></div>
+                  <div class="timeline" *ngIf="informalEducations.length || profile.profileDetails?.trainingCertifications?.length; else emptyTraining">
+                    <article class="timeline-item" *ngFor="let item of profile.profileDetails?.trainingCertifications || []">
+                      <span class="timeline-mark"><app-icon name="award"></app-icon></span>
+                      <div>
+                        <h3>{{ item.name }}</h3>
+                        <p class="org">{{ joinParts(item.issuingOrganization, item.credentialId ? 'No. ' + item.credentialId : '') }}</p>
+                        <p class="desc">{{ certificationDates(item.issueDate, item.expiryDate) }}</p>
+                        <a *ngIf="item.credentialUrl" class="link" style="font-size: 14px; margin-top: 6px" [href]="item.credentialUrl" target="_blank" rel="noopener noreferrer">Lihat sertifikat <app-icon name="arrow-up-right" [size]="14"></app-icon></a>
+                      </div>
+                    </article>
+                    <article class="timeline-item" *ngFor="let item of informalEducations">
+                      <span class="timeline-mark"><app-icon name="award"></app-icon></span>
+                      <div>
+                        <h3>{{ item.major || item.level }} <button class="icon-btn" (click)="openEducationDrawer('training', item)" [attr.aria-label]="'Ubah ' + (item.major || item.level)"><app-icon name="edit" [size]="15"></app-icon></button></h3>
+                        <p class="org">{{ item.institution }}</p>
+                        <p class="desc" *ngIf="item.description">{{ item.description }}</p>
+                      </div>
+                      <time>{{ item.startYear || '-' }}{{ item.endYear && item.endYear !== item.startYear ? ' – ' + item.endYear : '' }}</time>
+                    </article>
+                  </div>
+                  <ng-template #emptyTraining><p class="muted">Belum ada pelatihan atau sertifikasi.</p></ng-template>
+                </section>
+
+                <section id="additional" class="profile-section">
+                  <div class="section-title"><h2>Informasi tambahan</h2><button class="btn btn-ghost btn-sm" (click)="openDrawer('additional')"><app-icon name="edit" [size]="16"></app-icon> Ubah</button></div>
+                  <dl class="facts two">
+                    <div><dt>Ekspektasi gaji per bulan</dt><dd>{{ salaryRange(profile.expectedSalary, profile.profileDetails?.expectedSalaryMax) }}</dd></div>
+                    <div><dt>Fungsi yang diminati</dt><dd>{{ profile.jobInterests.join(', ') || '-' }}</dd></div>
+                    <div><dt>Lokasi kerja yang diminati</dt><dd>{{ profile.preferredLocations.join(', ') || '-' }}</dd></div>
+                    <div><dt>Kemampuan bahasa</dt><dd>{{ languageSummary }}</dd></div>
+                    <div><dt>LinkedIn</dt><dd>{{ profile.profileDetails?.linkedinUrl || '-' }}</dd></div>
+                    <div><dt>Media sosial</dt><dd>{{ joinParts(profile.profileDetails?.socialPlatform, profile.profileDetails?.socialUsername) }}</dd></div>
+                  </dl>
+                  <ng-container *ngIf="profile.tools.length">
+                    <p class="subhead">Tools yang dikuasai</p>
+                    <div class="chips"><span class="chip" *ngFor="let tool of profile.tools">{{ tool }}</span></div>
+                  </ng-container>
+                </section>
+              </section>
+
+            </div>
+
+            <aside class="profile-side">
+              <section class="side-card">
+                <h2>Data pribadi <button class="btn btn-ghost btn-sm" (click)="openDrawer('profile')" aria-label="Ubah data pribadi"><app-icon name="edit" [size]="16"></app-icon></button></h2>
+                <app-talent-profile-details [profile]="profile" [showAdditionalInformation]="false" [showEducationInformation]="false"></app-talent-profile-details>
+              </section>
+
+              <section class="side-card">
+                <h2>Jadwal interview</h2>
+                <div *ngIf="interviews.length; else noInterview">
+                  <article class="interview-item" *ngFor="let item of interviews">
+                    <div style="display: flex; justify-content: space-between; gap: 8px; align-items: flex-start">
+                      <strong>{{ item.jobTitle || 'Interview Talent Pool' }}</strong>
+                      <span class="tag" [ngClass]="'tag-' + fmt.tone(item.status)">{{ fmt.label(item.status) }}</span>
+                    </div>
+                    <p><app-icon name="clock" [size]="15"></app-icon>{{ fmt.fullDate(item.scheduledAt) }}, {{ fmt.time(item.scheduledAt) }} · {{ item.durationMinutes }} menit</p>
+                    <p><app-icon [name]="item.mode === 'ONLINE' ? 'video' : item.mode === 'PHONE' ? 'phone' : 'pin'" [size]="15"></app-icon>{{ item.locationOrLink || fmt.label(item.mode) }}</p>
+                  </article>
                 </div>
-                <span class="candidate-status">{{ item.status }}</span>
-              </article>
-            </div>
-            <ng-template #noInterview>
-              <div class="empty-state">Belum ada jadwal interview.</div>
-            </ng-template>
-          </article>
-        </section>
+                <ng-template #noInterview><p class="muted" style="font-size: 14px">Belum ada jadwal interview.</p></ng-template>
+              </section>
 
-        <section id="my-applications" class="applications-card">
-          <div class="section-title"><h2>Lamaran Saya</h2><a routerLink="/open-positions">Lihat Lowongan</a></div>
-          <article class="application-row application-progress-row" *ngFor="let app of applications">
-            <div class="application-main-copy">
-              <h3>{{ app.jobTitle }}</h3>
-              <p>Applied {{ app.appliedAt | date:'dd MMM yyyy' }}</p>
-
-              <div class="application-stage-progress" *ngIf="app.status !== 'REJECTED' && app.status !== 'WITHDRAWN'">
-                <div
-                  *ngFor="let stage of applicationStages; let i = index"
-                  [class.active]="applicationStageIndex(app.stage) >= i"
-                  [class.current]="applicationStageIndex(app.stage) === i">
-                  <span>{{ applicationStageIndex(app.stage) > i ? '✓' : i + 1 }}</span>
-                  <b>{{ stage.label }}</b>
+              <section class="side-card">
+                <h2>Aktivitas recruiter</h2>
+                <div class="activity" *ngIf="activities.length; else noActivity">
+                  <div *ngFor="let item of activities">
+                    <app-icon [name]="item.type === 'CV_VIEW' ? 'file' : 'eye'" [size]="16"></app-icon>
+                    <div><strong>{{ item.message }}</strong><small>{{ fmt.fullDate(item.viewedAt) }}, {{ fmt.time(item.viewedAt) }}</small></div>
+                  </div>
                 </div>
-              </div>
-
-              <div class="application-terminal-status" *ngIf="app.status === 'REJECTED' || app.status === 'WITHDRAWN'">
-                {{ app.status === 'REJECTED' ? 'Lamaran tidak dilanjutkan' : 'Lamaran telah ditarik' }}
-              </div>
-            </div>
-
-            <div class="application-row-actions">
-              <button
-                type="button"
-                class="application-history-button"
-                (click)="openApplicationHistory(app)">
-                Lihat Riwayat
-              </button>
-              <button
-                *ngIf="app.status === 'ACTIVE'"
-                type="button"
-                class="withdraw-button"
-                (click)="withdrawApplication(app)">
-                Tarik Lamaran
-              </button>
-            </div>
-          </article>
-          <div class="empty-state" *ngIf="!applications.length">Belum ada lamaran.</div>
-        </section>
+                <ng-template #noActivity><p class="muted" style="font-size: 14px">Belum ada recruiter yang melihat profil Anda.</p></ng-template>
+              </section>
+            </aside>
+          </div>
+        </div>
       </main>
 
       <div class="drawer-backdrop" *ngIf="applicationHistoryOpen" (click)="closeApplicationHistoryOnBackdrop($event)">
-        <aside class="side-drawer application-history-drawer">
-          <header>
+        <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="history-title">
+          <header class="drawer-head">
             <div>
-              <span class="bo-kicker">APPLICATION HISTORY</span>
-              <h2>{{ selectedApplication?.jobTitle || 'Riwayat Lamaran' }}</h2>
-              <p>Perjalanan proses rekrutmen untuk lowongan ini.</p>
+              <h2 id="history-title">{{ selectedApplication?.jobTitle || 'Riwayat lamaran' }}</h2>
+              <p>Riwayat proses rekrutmen untuk lowongan ini.</p>
             </div>
-            <button (click)="closeApplicationHistory()">×</button>
+            <button class="icon-btn" (click)="closeApplicationHistory()" aria-label="Tutup"><app-icon name="x"></app-icon></button>
           </header>
-
           <div class="drawer-body">
-            <div class="application-history-loading" *ngIf="applicationHistoryLoading">Memuat riwayat...</div>
-
-            <div class="application-history-timeline" *ngIf="!applicationHistoryLoading && applicationHistory.length">
-              <article *ngFor="let item of applicationHistory; let i = index">
-                <div class="application-history-marker">
-                  <span>{{ i + 1 }}</span>
-                  <i *ngIf="i < applicationHistory.length - 1"></i>
-                </div>
+            <p class="muted" *ngIf="applicationHistoryLoading">Memuat riwayat…</p>
+            <div class="timeline" *ngIf="!applicationHistoryLoading && applicationHistory.length">
+              <article class="timeline-item" *ngFor="let item of applicationHistory">
+                <span class="timeline-mark"><app-icon name="check" [size]="16"></app-icon></span>
                 <div>
-                  <strong>{{ historyTitle(item) }}</strong>
-                  <p>{{ historyDescription(item) }}</p>
-                  <small>{{ item.changedAt | date:'dd MMM yyyy, HH:mm' }}</small>
+                  <h3>{{ historyTitle(item) }}</h3>
+                  <p class="desc">{{ historyDescription(item) }}</p>
                 </div>
+                <time>{{ fmt.fullDate(item.changedAt) }}</time>
               </article>
             </div>
-
-            <div class="empty-state" *ngIf="!applicationHistoryLoading && !applicationHistory.length">
-              Belum ada riwayat proses.
-            </div>
+            <p class="muted" *ngIf="!applicationHistoryLoading && !applicationHistory.length">Belum ada riwayat proses.</p>
           </div>
         </aside>
       </div>
 
       <div class="drawer-backdrop" *ngIf="drawerOpen" (click)="backdropClose($event)">
-        <aside class="side-drawer">
-          <header>
+        <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+          <header class="drawer-head">
             <div>
-              <h2>{{ drawerTitle }}</h2>
-              <p>Perbarui data kandidat Anda.</p>
+              <h2 id="drawer-title">{{ drawerTitle }}</h2>
+              <p>Perubahan langsung terlihat oleh tim rekrutmen.</p>
             </div>
-            <button (click)="cancelDrawer()">×</button>
+            <button class="icon-btn" (click)="cancelDrawer()" aria-label="Tutup"><app-icon name="x"></app-icon></button>
           </header>
 
           <div class="drawer-body">
-            <div class="drawer-form" *ngIf="drawerSection === 'profile'">
-              <div class="profile-photo-editor">
-                <div class="profile-photo-preview">
-                  <img *ngIf="profilePicturePreview || profilePictureUrl; else photoInitials" [src]="profilePicturePreview || profilePictureUrl" [alt]="profile.fullName">
-                  <ng-template #photoInitials>{{ initials(profile.fullName) }}</ng-template>
-                </div>
+            <div class="form-stack" *ngIf="drawerSection === 'profile'">
+              <div class="photo-edit">
+                <span class="avatar avatar-lg">
+                  <img *ngIf="profilePicturePreview || profilePictureUrl; else photoInitials" [src]="profilePicturePreview || profilePictureUrl" alt="">
+                  <ng-template #photoInitials>{{ fmt.initials(profile.fullName) }}</ng-template>
+                </span>
                 <div>
-                  <strong>Foto Profil</strong>
-                  <p>JPG, JPEG, atau PNG. Foto akan tampil di dashboard Talent.</p>
-                  <label class="photo-upload-button">
-                    Pilih Foto
+                  <strong>Foto profil</strong>
+                  <p>JPG atau PNG.</p>
+                  <label class="btn btn-secondary btn-sm">
+                    Pilih foto
                     <input type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" (change)="onProfilePictureSelected($event)" hidden>
                   </label>
-                  <small *ngIf="profilePictureFile">{{ profilePictureFile.name }}</small>
+                  <small class="field-hint" *ngIf="profilePictureFile" style="display: block; margin-top: 6px">{{ profilePictureFile.name }}</small>
                 </div>
               </div>
-              <label>Nama Lengkap<input [(ngModel)]="profile.fullName"></label>
-              <label>Email<input [ngModel]="profile.email" disabled></label>
-              <label>WhatsApp<input [(ngModel)]="profile.phone"></label>
-              <label>Agama<input [(ngModel)]="profile.religion"></label>
-              <label>Preferred Locations<input [ngModel]="profile.preferredLocations.join(', ')" (ngModelChange)="profile.preferredLocations = splitList($event)"></label>
-              <label>Related Positions<input [ngModel]="profile.relatedJobPositions.join(', ')" (ngModelChange)="profile.relatedJobPositions = splitList($event)"></label>
+              <label class="field">Nama lengkap<input [(ngModel)]="profile.fullName"></label>
+              <label class="field">Email<input [ngModel]="profile.email" disabled><small>Email dipakai untuk masuk dan tidak dapat diubah.</small></label>
+              <label class="field">Nomor WhatsApp<input type="tel" [(ngModel)]="profile.phone"></label>
+              <label class="field">Agama<input [(ngModel)]="profile.religion"></label>
+              <label class="field">Lokasi kerja yang diminati<input [ngModel]="profile.preferredLocations.join(', ')" (ngModelChange)="profile.preferredLocations = splitList($event)"><small>Pisahkan dengan koma, maksimal 3.</small></label>
+              <label class="field">Posisi yang diminati<input [ngModel]="profile.relatedJobPositions.join(', ')" (ngModelChange)="profile.relatedJobPositions = splitList($event)"><small>Pisahkan dengan koma, maksimal 3.</small></label>
             </div>
 
-            <div class="drawer-form" *ngIf="drawerSection === 'about'">
-              <label>About<textarea rows="9" [(ngModel)]="profile.about" maxlength="4000"></textarea></label>
+            <div class="form-stack" *ngIf="drawerSection === 'about'">
+              <label class="field">Tentang saya<textarea rows="10" [(ngModel)]="profile.about" maxlength="4000"></textarea><small>{{ (profile.about || '').length }} / 4000 karakter</small></label>
             </div>
 
-            <div class="drawer-form" *ngIf="drawerSection === 'experience' && editExperience">
-              <label>Posisi<input [(ngModel)]="editExperience.position"></label>
-              <label>Perusahaan<input [(ngModel)]="editExperience.companyName"></label>
-              <div class="drawer-grid"><label>Tanggal Mulai<input type="date" [(ngModel)]="editExperience.startDate"></label><label>Tanggal Selesai<input type="date" [(ngModel)]="editExperience.endDate" [disabled]="editExperience.currentJob"></label></div>
-              <label class="check-row"><input type="checkbox" [(ngModel)]="editExperience.currentJob"> Saya masih bekerja di sini</label>
-              <label>Deskripsi<textarea [(ngModel)]="editExperience.description"></textarea></label>
+            <div class="form-stack" *ngIf="drawerSection === 'experience' && editExperience">
+              <label class="field">Posisi<input [(ngModel)]="editExperience.position"></label>
+              <label class="field">Perusahaan<input [(ngModel)]="editExperience.companyName"></label>
+              <div class="form-grid">
+                <label class="field">Mulai<input type="date" [(ngModel)]="editExperience.startDate"></label>
+                <label class="field">Selesai<input type="date" [(ngModel)]="editExperience.endDate" [disabled]="editExperience.currentJob"></label>
+              </div>
+              <label class="check"><input type="checkbox" [(ngModel)]="editExperience.currentJob"> Saya masih bekerja di sini</label>
+              <label class="field">Tugas dan pencapaian<textarea rows="5" [(ngModel)]="editExperience.description"></textarea></label>
             </div>
 
-            <div class="drawer-form" *ngIf="(drawerSection === 'education' || drawerSection === 'training') && editEducation">
-              <label *ngIf="drawerSection === 'education'">Institusi<input [(ngModel)]="editEducation.institution"></label>
-              <label *ngIf="drawerSection === 'education'">Jurusan<input [(ngModel)]="editEducation.major"></label>
-              <label *ngIf="drawerSection === 'training'">Nama Training / Sertifikasi<input [(ngModel)]="editEducation.major"></label>
-              <label *ngIf="drawerSection === 'training'">Penyelenggara<input [(ngModel)]="editEducation.institution"></label>
-              <label>Level / Jenis<input [(ngModel)]="editEducation.level"></label>
-              <div class="drawer-grid"><label>Tahun Mulai<input type="number" [(ngModel)]="editEducation.startYear"></label><label>Tahun Selesai<input type="number" [(ngModel)]="editEducation.endYear"></label></div>
-              <label>Deskripsi<textarea [(ngModel)]="editEducation.description"></textarea></label>
+            <div class="form-stack" *ngIf="(drawerSection === 'education' || drawerSection === 'training') && editEducation">
+              <label class="field" *ngIf="drawerSection === 'education'">Institusi<input [(ngModel)]="editEducation.institution"></label>
+              <label class="field" *ngIf="drawerSection === 'education'">Jurusan<input [(ngModel)]="editEducation.major"></label>
+              <label class="field" *ngIf="drawerSection === 'training'">Nama pelatihan atau sertifikasi<input [(ngModel)]="editEducation.major"></label>
+              <label class="field" *ngIf="drawerSection === 'training'">Penyelenggara<input [(ngModel)]="editEducation.institution"></label>
+              <label class="field">{{ drawerSection === 'education' ? 'Jenjang' : 'Jenis' }}<input [(ngModel)]="editEducation.level"></label>
+              <div class="form-grid">
+                <label class="field">Tahun mulai<input type="number" [(ngModel)]="editEducation.startYear"></label>
+                <label class="field">Tahun selesai<input type="number" [(ngModel)]="editEducation.endYear"></label>
+              </div>
+              <label class="field">Keterangan<textarea [(ngModel)]="editEducation.description"></textarea></label>
             </div>
 
-            <div class="drawer-form" *ngIf="drawerSection === 'additional'">
-              <label>Languages<input [(ngModel)]="profile.languanges"></label>
-              <label>LinkedIn<input [ngModel]="profile.profileDetails?.linkedinUrl || ''" (ngModelChange)="setLinkedInUrl($event)" type="url" placeholder="https://www.linkedin.com/in/..."></label>
-              <label>Job Interests<input [ngModel]="profile.jobInterests.join(', ')" (ngModelChange)="profile.jobInterests = splitList($event)"></label>
-              <label>Preferred Locations<input [ngModel]="profile.preferredLocations.join(', ')" (ngModelChange)="profile.preferredLocations = splitList($event)"></label>
-              <label>Related Industries<input [ngModel]="profile.relatedIndustries.join(', ')" (ngModelChange)="profile.relatedIndustries = splitList($event)"></label>
-              <label>Tools / Skills<input [ngModel]="profile.tools.join(', ')" (ngModelChange)="profile.tools = splitList($event)"></label>
-              <label>Expected Salary<input type="number" [(ngModel)]="profile.expectedSalary"></label>
+            <div class="form-stack" *ngIf="drawerSection === 'additional'">
+              <label class="field">Ekspektasi gaji minimum per bulan<input type="number" [(ngModel)]="profile.expectedSalary"></label>
+              <label class="field">Fungsi yang diminati<input [ngModel]="profile.jobInterests.join(', ')" (ngModelChange)="profile.jobInterests = splitList($event)"><small>Pisahkan dengan koma, maksimal 3.</small></label>
+              <label class="field">Lokasi kerja yang diminati<input [ngModel]="profile.preferredLocations.join(', ')" (ngModelChange)="profile.preferredLocations = splitList($event)"><small>Pisahkan dengan koma, maksimal 3.</small></label>
+              <label class="field">Industri<input [ngModel]="profile.relatedIndustries.join(', ')" (ngModelChange)="profile.relatedIndustries = splitList($event)"><small>Pisahkan dengan koma, maksimal 3.</small></label>
+              <label class="field">Tools<input [ngModel]="profile.tools.join(', ')" (ngModelChange)="profile.tools = splitList($event, 20)"><small>Pisahkan dengan koma.</small></label>
+              <label class="field">Bahasa<input [(ngModel)]="profile.languanges"></label>
+              <label class="field">LinkedIn<input [ngModel]="profile.profileDetails?.linkedinUrl || ''" (ngModelChange)="setLinkedInUrl($event)" type="url" placeholder="https://www.linkedin.com/in/…"></label>
             </div>
           </div>
 
-          <footer>
-            <button class="cancel-button" (click)="cancelDrawer()" [disabled]="saving">Batal</button>
-            <button class="primary-button" (click)="saveDrawer()" [disabled]="saving">{{ saving ? 'Menyimpan...' : 'Simpan Perubahan' }}</button>
+          <footer class="drawer-foot">
+            <button class="btn btn-secondary" (click)="cancelDrawer()" [disabled]="saving">Batal</button>
+            <button class="btn btn-primary" (click)="saveDrawer()" [disabled]="saving">{{ saving ? 'Menyimpan…' : 'Simpan perubahan' }}</button>
           </footer>
         </aside>
       </div>
     </div>
 
-    <ng-template #loadingTpl><div class="full-loading">Memuat profil kandidat...</div></ng-template>
+    <ng-template #loadingTpl><div class="full-loading">Memuat profil…</div></ng-template>
   `,
 })
 export class CandidatePortalComponent implements OnInit {
@@ -362,6 +343,14 @@ export class CandidatePortalComponent implements OnInit {
   profilePictureUrl: string | null = null;
   profilePicturePreview: string | null = null;
   saving = false;
+  readonly fmt = FMT;
+  readonly tabs = [
+    { id: 'about', label: 'Tentang' },
+    { id: 'experiences', label: 'Pengalaman' },
+    { id: 'education', label: 'Pendidikan' },
+    { id: 'training', label: 'Sertifikasi' },
+    { id: 'additional', label: 'Info tambahan' },
+  ];
   activeSection = 'about';
   private tabClickedAt = 0;
   private readonly profileSectionIds = ['about', 'experiences', 'education', 'training', 'additional'];
@@ -371,11 +360,11 @@ export class CandidatePortalComponent implements OnInit {
   applicationHistory: any[] = [];
   selectedApplication: JobApplication | null = null;
   applicationStages = [
-    { value: 'NEW_CANDIDATE', label: 'Applied' },
+    { value: 'NEW_CANDIDATE', label: 'Dikirim' },
     { value: 'SCREENING', label: 'Screening' },
     { value: 'INTERVIEW', label: 'Interview' },
-    { value: 'OFFER', label: 'Offer' },
-    { value: 'HIRED', label: 'Hired' },
+    { value: 'OFFER', label: 'Penawaran' },
+    { value: 'HIRED', label: 'Diterima' },
   ];
 
   constructor(
@@ -456,7 +445,7 @@ export class CandidatePortalComponent implements OnInit {
   }
 
   joinParts(...parts: Array<string | null | undefined>): string {
-    return parts.map((part) => (part || '').trim()).filter(Boolean).join(' • ') || '-';
+    return parts.map((part) => (part || '').trim()).filter(Boolean).join(', ') || '-';
   }
 
   salaryRange(min: number | null | undefined, max: number | null | undefined): string {
@@ -601,17 +590,17 @@ export class CandidatePortalComponent implements OnInit {
   get firstPortfolio(): string { return this.profile?.portfolios?.find((item) => item.url)?.title || ''; }
   get headline(): string {
     const current = this.profile?.workExperiences?.find((item) => item.currentJob);
-    if (current) return `${current.position} • ${current.companyName}`;
-    return this.profile?.relatedJobPositions?.[0] || 'Talent Pool Candidate • PT Sarinah';
+    if (current) return `${current.position} di ${current.companyName}`;
+    return this.profile?.relatedJobPositions?.[0] || 'Kandidat Talent Pool Sarinah';
   }
   get drawerTitle(): string {
     const map: Record<DrawerSection, string> = {
-      profile: 'Edit Profil',
-      about: 'Edit About',
-      experience: 'Work Experience',
-      education: 'Education',
-      training: 'Training & Certification',
-      additional: 'Additional Information',
+      profile: 'Ubah profil',
+      about: 'Tentang saya',
+      experience: this.drawerIndex == null ? 'Tambah pengalaman kerja' : 'Ubah pengalaman kerja',
+      education: this.drawerIndex == null ? 'Tambah pendidikan' : 'Ubah pendidikan',
+      training: this.drawerIndex == null ? 'Tambah pelatihan' : 'Ubah pelatihan',
+      additional: 'Informasi tambahan',
     };
     return this.drawerSection ? map[this.drawerSection] : '';
   }
@@ -620,8 +609,14 @@ export class CandidatePortalComponent implements OnInit {
     return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
   }
 
-  splitList(value: string): string[] {
-    return String(value || '').split(',').map((item) => item.trim()).filter(Boolean).slice(0, 3);
+  splitList(value: string, limit = 3): string[] {
+    return String(value || '').split(',').map((item) => item.trim()).filter(Boolean).slice(0, limit);
+  }
+
+  get languageSummary(): string {
+    const skills = this.profile?.profileDetails?.languageSkills || [];
+    if (skills.length) return skills.map((item) => `${item.name} (${item.proficiency.toLowerCase()})`).join(', ');
+    return this.profile?.languanges || '-';
   }
 
   openDrawer(section: DrawerSection, index: number | null = null): void {

@@ -3,88 +3,67 @@ import { Component, HostListener, Input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { BackofficeAuthService } from '../core/service/api/backoffice-auth.service';
 import { BackofficeOverlayDirective } from './backoffice-overlay.directive';
+import { IconComponent } from './icon.component';
+
+type Section = 'dashboard' | 'candidates' | 'jobs' | 'applications' | 'interviews';
 
 @Component({
   selector: 'app-backoffice-layout',
   standalone: true,
-  imports: [CommonModule, RouterLink, BackofficeOverlayDirective],
+  imports: [CommonModule, RouterLink, BackofficeOverlayDirective, IconComponent],
   template: `
-    <div class="bo-shell">
-      <header class="bo-mobile-header">
-        <div class="bo-mobile-brand">
-          <img src="images/sarinah.png" alt="Sarinah">
-          <div>
-            <strong>{{ pageTitle }}</strong>
-            <span>Talent Management</span>
-          </div>
-        </div>
-        <button
-          type="button"
-          class="bo-mobile-menu-button"
-          (click)="mobileMenuOpen = true"
-          [attr.aria-expanded]="mobileMenuOpen"
-          aria-controls="backoffice-navigation"
-          aria-label="Buka menu Back Office">
-          <span></span><span></span><span></span>
+    <div class="bo">
+      <header class="bo-topbar">
+        <button type="button" class="icon-btn" (click)="mobileMenuOpen = true" [attr.aria-expanded]="mobileMenuOpen"
+          aria-controls="backoffice-navigation" aria-label="Buka menu">
+          <app-icon name="menu" [size]="22"></app-icon>
         </button>
+        <strong>{{ pageTitle }}</strong>
+        <img src="images/sarinah.png" alt="Sarinah">
       </header>
 
-      <div
-        class="bo-mobile-overlay"
-        *ngIf="mobileMenuOpen"
-        (click)="mobileMenuOpen = false">
-      </div>
+      <div class="bo-scrim" *ngIf="mobileMenuOpen" (click)="mobileMenuOpen = false"></div>
 
-      <aside id="backoffice-navigation" class="bo-sidebar" [class.mobile-open]="mobileMenuOpen"
+      <aside id="backoffice-navigation" class="bo-sidebar" [class.open]="mobileMenuOpen"
         [boOverlay]="mobileMenuOpen" (overlayClose)="mobileMenuOpen = false"
-        [attr.inert]="isMobile && !mobileMenuOpen ? '' : null" aria-label="Menu Back Office">
+        [attr.inert]="isMobile && !mobileMenuOpen ? '' : null" aria-label="Menu back office">
         <div class="bo-brand">
           <img src="images/sarinah.png" alt="Sarinah">
-          <div>
-            <strong>Talent Management</strong>
-            <span>Back Office</span>
-          </div>
-          <button
-            type="button"
-            class="bo-sidebar-close"
-            (click)="mobileMenuOpen = false"
-            aria-label="Tutup menu">×</button>
+          <span>Human<br>Capital</span>
+          <button type="button" class="icon-btn" (click)="mobileMenuOpen = false" aria-label="Tutup menu"><app-icon name="x"></app-icon></button>
         </div>
 
-        <nav class="bo-nav" aria-label="Navigasi Back Office">
-          <a routerLink="/backoffice/dashboard" [class.active]="active === 'dashboard'" (click)="mobileMenuOpen = false">
-            <span>▦</span><b>Dashboard</b>
-          </a>
-          <a routerLink="/backoffice/candidates" [class.active]="active === 'candidates'" (click)="mobileMenuOpen = false">
-            <span>◉</span><b>Candidates</b>
-          </a>
-          <a routerLink="/backoffice/job-listings" [class.active]="active === 'jobs'" (click)="mobileMenuOpen = false">
-            <span>▤</span><b>Job Listings</b>
-          </a>
-          <a routerLink="/backoffice/applications" [class.active]="active === 'applications'" (click)="mobileMenuOpen = false">
-            <span>✓</span><b>Applications</b>
-          </a>
-          <a routerLink="/backoffice/interviews" [class.active]="active === 'interviews'" (click)="mobileMenuOpen = false">
-            <span>◷</span><b>Interviews</b>
+        <nav class="bo-nav" aria-label="Navigasi back office">
+          <a *ngFor="let item of nav" [routerLink]="item.link" [class.active]="active === item.id"
+            [attr.aria-current]="active === item.id ? 'page' : null" (click)="mobileMenuOpen = false">
+            <app-icon [name]="item.icon"></app-icon>{{ item.label }}
           </a>
         </nav>
 
-        <div class="bo-sidebar-footer">
-          <a routerLink="/" class="bo-portal-link" (click)="mobileMenuOpen = false">← Portal Kandidat</a>
-          <button class="logout" (click)="auth.logout()">Keluar</button>
+        <div class="bo-sidebar-foot">
+          <a routerLink="/" (click)="mobileMenuOpen = false"><app-icon name="globe"></app-icon>Lihat portal kandidat</a>
+          <button type="button" (click)="auth.logout()"><app-icon name="logout"></app-icon>Keluar</button>
         </div>
       </aside>
 
-      <main class="bo-content" [attr.inert]="mobileMenuOpen ? '' : null">
+      <main class="bo-main" [attr.inert]="mobileMenuOpen ? '' : null">
         <ng-content />
       </main>
     </div>
   `,
 })
 export class BackofficeLayoutComponent {
-  @Input() active: 'dashboard' | 'candidates' | 'jobs' | 'applications' | 'interviews' = 'dashboard';
+  @Input() active: Section = 'dashboard';
   mobileMenuOpen = false;
   isMobile = window.innerWidth <= 1024;
+
+  readonly nav: Array<{ id: Section; label: string; icon: string; link: string }> = [
+    { id: 'dashboard', label: 'Ringkasan', icon: 'dashboard', link: '/backoffice/dashboard' },
+    { id: 'candidates', label: 'Kandidat', icon: 'users', link: '/backoffice/candidates' },
+    { id: 'jobs', label: 'Lowongan', icon: 'briefcase', link: '/backoffice/job-listings' },
+    { id: 'applications', label: 'Lamaran', icon: 'clipboard', link: '/backoffice/applications' },
+    { id: 'interviews', label: 'Interview', icon: 'calendar', link: '/backoffice/interviews' },
+  ];
 
   @HostListener('window:resize')
   onResize(): void {
@@ -95,13 +74,6 @@ export class BackofficeLayoutComponent {
   constructor(public auth: BackofficeAuthService) {}
 
   get pageTitle(): string {
-    const labels = {
-      dashboard: 'Dashboard',
-      candidates: 'Candidates',
-      jobs: 'Job Listings',
-      applications: 'Applications',
-      interviews: 'Interviews',
-    };
-    return labels[this.active];
+    return this.nav.find((item) => item.id === this.active)?.label || '';
   }
 }

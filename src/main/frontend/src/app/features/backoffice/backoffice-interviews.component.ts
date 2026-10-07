@@ -5,194 +5,138 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BackofficeOverlayDirective } from '../../shared/backoffice-overlay.directive';
 import { BackofficeLayoutComponent } from '../../shared/backoffice-layout.component';
 import { BackofficeApiService } from '../../core/service/api/backoffice-api.service';
+import { FMT } from '../../shared/labels';
+import { IconComponent } from '../../shared/icon.component';
 
 @Component({
   selector: 'app-backoffice-interviews',
   standalone: true,
-  imports: [CommonModule, FormsModule, BackofficeLayoutComponent, BackofficeOverlayDirective],
+  imports: [CommonModule, FormsModule, BackofficeLayoutComponent, BackofficeOverlayDirective, IconComponent],
   template: `
     <app-backoffice-layout active="interviews">
-      <div class="bo-page-head">
+      <div class="bo-head">
         <div>
-          <span class="bo-kicker">INTERVIEW SCHEDULE</span>
-          <h1>Interviews</h1>
-          <p>Pantau jadwal interview kandidat, edit jadwal, dan update hasil prosesnya.</p>
+          <h1>Interview</h1>
+          <p>Jadwal interview kandidat. Ubah status setelah interview selesai untuk mencatat hasilnya.</p>
         </div>
-        <div class="bo-head-actions">
-          <button class="bo-primary" (click)="openCreate()">＋ Tambah Interview</button>
+        <div class="bo-actions">
+          <button class="btn btn-primary" (click)="openCreate()"><app-icon name="plus" [size]="16"></app-icon> Jadwalkan interview</button>
         </div>
       </div>
 
-      <section class="bo-table-card">
-        <div class="bo-table-meta">
-          <strong>{{ rows.length }} interview</strong>
-          <span *ngIf="loading">Memuat...</span>
-        </div>
-        <div class="bo-table-wrap">
-          <table class="bo-table">
+      <div class="chips" role="tablist" aria-label="Filter interview">
+        <button type="button" role="tab" class="btn btn-sm" *ngFor="let f of filters" [class.btn-primary]="filter === f.id" [class.btn-secondary]="filter !== f.id" [attr.aria-selected]="filter === f.id" (click)="filter = f.id">{{ f.label }} ({{ countFor(f.id) }})</button>
+      </div>
+
+      <section class="table-card responsive">
+        <div class="table-meta"><span><strong>{{ visible.length }}</strong> interview</span><span *ngIf="loading">Memuat…</span></div>
+        <div class="table-wrap">
+          <table class="table">
             <thead>
-              <tr>
-                <th>Candidate</th>
-                <th>Job</th>
-                <th>Schedule</th>
-                <th>Mode</th>
-                <th>Interviewer</th>
-                <th>Status</th>
-                <th>Result</th>
-                <th></th>
-              </tr>
+              <tr><th>Jadwal</th><th>Kandidat</th><th>Cara dan tempat</th><th>Pewawancara</th><th>Status</th><th>Hasil</th><th><span class="sr-only">Aksi</span></th></tr>
             </thead>
             <tbody>
-              <tr *ngFor="let item of rows">
-                <td><strong>{{ item.candidateName }}</strong></td>
-                <td>{{ item.jobTitle || 'General Talent Pool' }}</td>
-                <td>
-                  <strong>{{ item.scheduledAt | date:'dd MMM yyyy' }}</strong>
-                  <small>{{ item.scheduledAt | date:'HH:mm' }} • {{ item.durationMinutes }} menit</small>
-                </td>
-                <td><span class="bo-badge">{{ item.mode }}</span><small>{{ item.locationOrLink || '-' }}</small></td>
+              <tr *ngFor="let item of visible">
+                <td><strong>{{ fmt.fullDate(item.scheduledAt) }}</strong><small>{{ fmt.time(item.scheduledAt) }} · {{ item.durationMinutes }} menit</small></td>
+                <td><strong>{{ item.candidateName }}</strong><small>{{ item.jobTitle || 'Talent Pool' }}</small></td>
+                <td style="max-width: 240px"><strong>{{ fmt.label(item.mode) }}</strong><small style="overflow-wrap: anywhere">{{ item.locationOrLink || '-' }}</small></td>
                 <td>{{ item.interviewer }}</td>
                 <td>
-                  <select class="bo-stage-select" [ngModel]="item.status" (ngModelChange)="changeStatus(item, $event)">
-                    <option value="SCHEDULED">Scheduled</option>
-                    <option value="RESCHEDULED">Rescheduled</option>
-                    <option value="COMPLETED">Completed</option>
-                    <option value="CANCELLED">Cancelled</option>
+                  <select class="select-inline" [ngModel]="item.status" (ngModelChange)="changeStatus(item, $event)" [attr.aria-label]="'Status interview ' + item.candidateName">
+                    <option *ngFor="let s of statuses" [value]="s">{{ fmt.label(s) }}</option>
                   </select>
                 </td>
                 <td>
-                  <select class="bo-stage-select" [(ngModel)]="item.result" [disabled]="item.status !== 'COMPLETED'">
-                    <option value="PENDING">Pending</option>
-                    <option value="PASSED">Passed</option>
-                    <option value="FAILED">Failed</option>
-                    <option value="HOLD">Hold</option>
+                  <select class="select-inline" [(ngModel)]="item.result" [disabled]="item.status !== 'COMPLETED'" [attr.aria-label]="'Hasil interview ' + item.candidateName" style="min-width: 120px">
+                    <option *ngFor="let r of results" [value]="r">{{ fmt.label(r) }}</option>
                   </select>
                 </td>
-                <td>
-                  <div class="bo-inline-actions">
-                    <button class="bo-secondary" (click)="openEdit(item)">Edit</button>
-                    <button class="bo-danger" (click)="deleteInterview(item)">Delete</button>
-                  </div>
+                <td class="actions">
+                  <button class="icon-btn" (click)="openEdit(item)" [attr.aria-label]="'Ubah interview ' + item.candidateName"><app-icon name="edit" [size]="16"></app-icon></button>
+                  <button class="icon-btn" (click)="deleteInterview(item)" [attr.aria-label]="'Hapus interview ' + item.candidateName"><app-icon name="trash" [size]="16"></app-icon></button>
                 </td>
               </tr>
-              <tr *ngIf="!rows.length && !loading">
-                <td colspan="8" class="bo-empty-cell">Belum ada jadwal interview.</td>
-              </tr>
+              <tr *ngIf="!visible.length && !loading"><td colspan="7" class="empty-cell">Tidak ada interview di kategori ini.</td></tr>
             </tbody>
           </table>
         </div>
-      </section>
 
-      <section class="bo-mobile-list bo-interview-mobile-list">
-        <article class="bo-mobile-card" *ngFor="let item of rows">
-          <div class="bo-mobile-card-head">
-            <div>
-              <strong>{{ item.candidateName }}</strong>
-              <small>{{ item.jobTitle || 'General Talent Pool' }}</small>
+        <div class="cards">
+          <article *ngFor="let item of visible">
+            <div class="card-head">
+              <div><strong>{{ item.candidateName }}</strong><small>{{ item.jobTitle || 'Talent Pool' }}</small></div>
+              <span class="tag" [ngClass]="'tag-' + fmt.tone(item.status)">{{ fmt.label(item.status) }}</span>
             </div>
-            <span class="bo-badge">{{ item.mode }}</span>
-          </div>
-
-          <div class="bo-mobile-meta-grid">
-            <div><span>Schedule</span><strong>{{ item.scheduledAt | date:'dd MMM yyyy, HH:mm' }}</strong></div>
-            <div><span>Interviewer</span><strong>{{ item.interviewer }}</strong></div>
-            <div><span>Location</span><strong>{{ item.locationOrLink || '-' }}</strong></div>
-          </div>
-
-          <div class="bo-mobile-controls">
-            <label>Status
-              <select class="bo-stage-select" [ngModel]="item.status" (ngModelChange)="changeStatus(item, $event)">
-                <option value="SCHEDULED">Scheduled</option>
-                <option value="RESCHEDULED">Rescheduled</option>
-                <option value="COMPLETED">Completed</option>
-                <option value="CANCELLED">Cancelled</option>
+            <div class="card-meta">
+              <div><span>Jadwal</span>{{ fmt.fullDate(item.scheduledAt) }}, {{ fmt.time(item.scheduledAt) }}</div>
+              <div><span>Cara</span>{{ fmt.label(item.mode) }}</div>
+              <div><span>Pewawancara</span>{{ item.interviewer }}</div>
+              <div><span>Tempat</span><span style="color: var(--ink); font-size: 13.5px; overflow-wrap: anywhere">{{ item.locationOrLink || '-' }}</span></div>
+            </div>
+            <div class="card-actions">
+              <select class="select-inline" [ngModel]="item.status" (ngModelChange)="changeStatus(item, $event)" aria-label="Status">
+                <option *ngFor="let s of statuses" [value]="s">{{ fmt.label(s) }}</option>
               </select>
-            </label>
-            <label>Result
-              <select class="bo-stage-select" [(ngModel)]="item.result" [disabled]="item.status !== 'COMPLETED'">
-                <option value="PENDING">Pending</option>
-                <option value="PASSED">Passed</option>
-                <option value="FAILED">Failed</option>
-                <option value="HOLD">Hold</option>
+              <select class="select-inline" [(ngModel)]="item.result" [disabled]="item.status !== 'COMPLETED'" aria-label="Hasil">
+                <option *ngFor="let r of results" [value]="r">{{ fmt.label(r) }}</option>
               </select>
-            </label>
-          </div>
-
-          <div class="bo-mobile-card-actions">
-            <button class="bo-secondary" (click)="openEdit(item)">Edit Interview</button>
-            <button class="bo-danger" (click)="deleteInterview(item)">Delete</button>
-          </div>
-        </article>
-
-        <div class="bo-empty-card" *ngIf="!rows.length && !loading">Belum ada jadwal interview.</div>
+            </div>
+            <div class="card-actions">
+              <button class="btn btn-secondary btn-sm" (click)="openEdit(item)">Ubah</button>
+              <button class="btn btn-ghost btn-sm" style="color: var(--negative)" (click)="deleteInterview(item)">Hapus</button>
+            </div>
+          </article>
+          <p class="muted" style="padding: 32px 18px; text-align: center" *ngIf="!visible.length && !loading">Tidak ada interview.</p>
+        </div>
       </section>
 
       <div class="drawer-backdrop" *ngIf="drawerOpen" (click)="closeOnBackdrop($event)">
-        <aside class="side-drawer" [boOverlay]="true" (overlayClose)="closeDrawer()" aria-label="Form interview">
-          <header>
+        <aside class="drawer" [boOverlay]="true" (overlayClose)="closeDrawer()" role="dialog" aria-modal="true" aria-labelledby="interview-form-title">
+          <header class="drawer-head">
             <div>
-              <span class="bo-kicker">INTERVIEW</span>
-              <h2>{{ editingId ? 'Edit Interview' : 'Jadwalkan Interview' }}</h2>
-              <p>{{ selectedCandidateName || 'Pilih kandidat dan detail jadwal interview.' }}</p>
+              <h2 id="interview-form-title">{{ editingId ? 'Ubah interview' : 'Jadwalkan interview' }}</h2>
+              <p>{{ selectedCandidateName || 'Pilih kandidat dan atur jadwalnya.' }}</p>
             </div>
-            <button type="button" (click)="closeDrawer()" aria-label="Tutup panel">×</button>
+            <button type="button" class="icon-btn" (click)="closeDrawer()" aria-label="Tutup"><app-icon name="x"></app-icon></button>
           </header>
 
           <div class="drawer-body">
-            <div class="drawer-form">
-              <label>Candidate
+            <div class="form-stack">
+              <label class="field">Kandidat
                 <select [(ngModel)]="form.candidateId" [disabled]="!!lockedCandidateId">
                   <option [ngValue]="null">Pilih kandidat</option>
                   <option *ngFor="let candidate of candidates" [ngValue]="candidate.id">{{ candidate.fullName }}</option>
                 </select>
               </label>
-
-              <label>Job Listing
+              <label class="field">Untuk lowongan
                 <select [(ngModel)]="form.jobListingId" [disabled]="!!lockedJobId">
-                  <option [ngValue]="null">General Talent Pool</option>
+                  <option [ngValue]="null">Talent Pool (tanpa lowongan)</option>
                   <option *ngFor="let job of jobs" [ngValue]="job.id">{{ job.title }}</option>
                 </select>
               </label>
-
-              <div class="drawer-grid">
-                <label>Tanggal & Jam
-                  <input type="datetime-local" [(ngModel)]="form.scheduledAt">
-                </label>
-                <label>Durasi
-                  <input type="number" min="15" max="480" [(ngModel)]="form.durationMinutes">
-                </label>
-              </div>
-
-              <div class="drawer-grid">
-                <label>Mode
+              <div class="form-grid">
+                <label class="field">Tanggal dan jam<input type="datetime-local" [(ngModel)]="form.scheduledAt"></label>
+                <label class="field">Durasi (menit)<input type="number" min="15" max="480" [(ngModel)]="form.durationMinutes"></label>
+                <label class="field">Cara interview
                   <select [(ngModel)]="form.mode">
                     <option value="ONLINE">Online</option>
-                    <option value="ONSITE">Onsite</option>
-                    <option value="PHONE">Phone</option>
+                    <option value="ONSITE">Tatap muka</option>
+                    <option value="PHONE">Telepon</option>
                   </select>
                 </label>
-                <label>Interviewer
-                  <input [(ngModel)]="form.interviewer" placeholder="Nama interviewer">
-                </label>
+                <label class="field">Pewawancara<input [(ngModel)]="form.interviewer" placeholder="Nama dan jabatan"></label>
               </div>
-
-              <label>Lokasi / Link
-                <input [(ngModel)]="form.locationOrLink" placeholder="Google Meet / Zoom / lokasi interview">
+              <label class="field">{{ form.mode === 'ONLINE' ? 'Tautan meeting' : form.mode === 'PHONE' ? 'Nomor telepon' : 'Lokasi' }}
+                <input [(ngModel)]="form.locationOrLink" [placeholder]="form.mode === 'ONLINE' ? 'https://meet.google.com/…' : form.mode === 'PHONE' ? '08xxxxxxxxxx' : 'Gedung Sarinah lantai …'">
               </label>
-
-              <label>Catatan
-                <textarea [(ngModel)]="form.notes" placeholder="Catatan interview"></textarea>
-              </label>
-
-              <p class="form-error" *ngIf="error">{{ error }}</p>
+              <label class="field">Catatan <span class="opt">(opsional)</span><textarea [(ngModel)]="form.notes" rows="4"></textarea></label>
+              <div class="alert alert-error" *ngIf="error" role="alert"><app-icon name="alert"></app-icon><span>{{ error }}</span></div>
             </div>
           </div>
 
-          <footer>
-            <button class="cancel-button" (click)="closeDrawer()" [disabled]="saving">Batal</button>
-            <button class="primary-button" (click)="save()" [disabled]="saving">
-              {{ saving ? 'Menyimpan...' : (editingId ? 'Simpan Perubahan' : 'Buat Jadwal Interview') }}
-            </button>
+          <footer class="drawer-foot">
+            <button class="btn btn-secondary" (click)="closeDrawer()" [disabled]="saving">Batal</button>
+            <button class="btn btn-primary" (click)="save()" [disabled]="saving">{{ saving ? 'Menyimpan…' : (editingId ? 'Simpan perubahan' : 'Simpan jadwal') }}</button>
           </footer>
         </aside>
       </div>
@@ -200,6 +144,16 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
   `,
 })
 export class BackofficeInterviewsComponent implements OnInit {
+  readonly fmt = FMT;
+  readonly statuses = ['SCHEDULED', 'RESCHEDULED', 'COMPLETED', 'CANCELLED'];
+  readonly results = ['PENDING', 'PASSED', 'FAILED', 'HOLD'];
+  readonly filters = [
+    { id: 'upcoming', label: 'Akan datang' },
+    { id: 'COMPLETED', label: 'Selesai' },
+    { id: 'CANCELLED', label: 'Dibatalkan' },
+    { id: 'all', label: 'Semua' },
+  ];
+  filter = 'upcoming';
   rows: any[] = [];
   candidates: any[] = [];
   jobs: any[] = [];
@@ -230,6 +184,20 @@ export class BackofficeInterviewsComponent implements OnInit {
     if (candidateId) {
       setTimeout(() => this.openFromApplication(candidateId, jobId), 250);
     }
+  }
+
+  private matches(item: any, filter: string): boolean {
+    if (filter === 'all') return true;
+    if (filter === 'upcoming') return item.status === 'SCHEDULED' || item.status === 'RESCHEDULED';
+    return item.status === filter;
+  }
+
+  get visible(): any[] {
+    return this.rows.filter((item) => this.matches(item, this.filter));
+  }
+
+  countFor(filter: string): number {
+    return this.rows.filter((item) => this.matches(item, filter)).length;
   }
 
   load(): void {
@@ -263,7 +231,7 @@ export class BackofficeInterviewsComponent implements OnInit {
       jobListingId: jobId,
     };
     this.selectedCandidateName =
-      this.candidates.find((item) => item.id === candidateId)?.fullName || 'Candidate';
+      this.candidates.find((item) => item.id === candidateId)?.fullName || 'Kandidat';
     this.drawerOpen = true;
   }
 
@@ -323,19 +291,19 @@ export class BackofficeInterviewsComponent implements OnInit {
     this.error = '';
 
     if (!this.form.candidateId) {
-      this.error = 'Candidate wajib dipilih.';
+      this.error = 'Pilih kandidat.';
       return;
     }
     if (!this.form.scheduledAt) {
-      this.error = 'Tanggal dan jam interview wajib diisi.';
+      this.error = 'Isi tanggal dan jam interview.';
       return;
     }
     if (!this.form.interviewer?.trim()) {
-      this.error = 'Interviewer wajib diisi.';
+      this.error = 'Isi nama pewawancara.';
       return;
     }
     if ((this.form.mode === 'ONLINE' || this.form.mode === 'ONSITE') && !this.form.locationOrLink?.trim()) {
-      this.error = 'Link/lokasi wajib diisi untuk interview online atau onsite.';
+      this.error = 'Isi tautan meeting atau lokasi interview.';
       return;
     }
 
@@ -363,7 +331,7 @@ export class BackofficeInterviewsComponent implements OnInit {
       },
       error: (error) => {
         this.saving = false;
-        this.error = error?.error?.message || 'Interview gagal disimpan.';
+        this.error = error?.error?.message || 'Jadwal belum tersimpan. Periksa isian lalu coba lagi.';
       },
     });
   }
@@ -373,7 +341,7 @@ export class BackofficeInterviewsComponent implements OnInit {
 
     this.api.deleteInterview(item.id).subscribe({
       next: () => this.load(),
-      error: (error) => window.alert(error?.error?.message || 'Interview gagal dihapus.'),
+      error: (error) => window.alert(error?.error?.message || 'Jadwal belum terhapus. Coba lagi.'),
     });
   }
 
