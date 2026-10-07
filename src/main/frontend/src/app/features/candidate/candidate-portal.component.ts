@@ -92,7 +92,7 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
                   <div>
                     <h3>{{ item.institution }} <button class="icon-link" (click)="openEducationDrawer('education', item)">✎</button></h3>
                     <p>{{ item.level }} • {{ item.major }}</p>
-                    <small>{{ item.description || '-' }}</small>
+                    <small>IPK / nilai {{ item.ipk || '-' }}</small>
                   </div>
                   <time>{{ item.startYear || '-' }} — {{ item.endYear || 'Sekarang' }}</time>
                 </article>
@@ -100,7 +100,7 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
               <div class="empty-state" *ngIf="!formalEducations.length">Belum ada pendidikan formal.</div>
               <div class="education-supporting-documents" *ngIf="profile.supportingDocuments?.length">
                 <h3>Dokumen Pendukung</h3>
-                <button type="button" *ngFor="let doc of profile.supportingDocuments" (click)="downloadSupportingDocument(doc.key, doc.originalName)">{{ supportingDocumentLabel(doc.key) }}: {{ doc.originalName }} ↓</button>
+                <button type="button" *ngFor="let doc of profile.supportingDocuments" (click)="downloadSupportingDocument(doc.key, doc.originalName)"><span class="document-type">PDF</span><span class="document-copy"><strong>{{ supportingDocumentLabel(doc.key) }}</strong><small>{{ doc.originalName }}</small></span><span class="document-download">↓</span></button>
               </div>
             </section>
 
@@ -141,17 +141,12 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
                 <article><span>Ekspektasi Gaji per Bulan</span><strong>{{ profile.expectedSalary | currency:'IDR':'symbol':'1.0-0' }} – {{ profile.profileDetails?.expectedSalaryMax | currency:'IDR':'symbol':'1.0-0' }}</strong></article>
                 <article><span>Fungsi yang Diminati</span><strong>{{ profile.jobInterests.join(', ') || '-' }}</strong></article>
                 <article><span>Lokasi Kerja yang Diminati</span><strong>{{ profile.preferredLocations.join(', ') || '-' }}</strong></article>
-                <article><span>Tools / Skills</span><strong>{{ profile.tools.join(', ') || '-' }}</strong></article>
+                <article><span>Kemampuan Bahasa</span><strong>{{ languageSummary }}</strong></article>
               </div>
               <div class="additional-language-skills">
-                <h3>Kemampuan Bahasa</h3>
-                <p *ngIf="!profile.profileDetails?.languageSkills?.length">{{ profile.languanges || 'Belum ada kemampuan bahasa yang ditambahkan.' }}</p>
-                <p *ngFor="let language of profile.profileDetails?.languageSkills">{{ language.name }} • {{ language.proficiency }}</p>
-                <h3>Keahlian & Pengalaman</h3>
-                <p *ngIf="profile.profileDetails?.noExperience">Belum memiliki pengalaman kerja.</p>
-                <article class="talent-detail-work" *ngFor="let work of profile.workExperiences">
-                  <ng-container *ngIf="work.details as data"><strong>{{ work.position }} • {{ work.companyName }}</strong><p>Skill: {{ data.skills.join(', ') || '-' }}</p><p>Tools: {{ data.tools.join(', ') || '-' }}</p></ng-container>
-                </article>
+                <h3>Tools & Keahlian</h3>
+                <div class="profile-skill-tags" *ngIf="profileSkills.length; else noProfileSkills"><span *ngFor="let skill of profileSkills">{{ skill }}</span></div>
+                <ng-template #noProfileSkills><span class="profile-empty-skill">Belum ada keahlian</span></ng-template>
               </div>
             </section>
           </div>
@@ -557,6 +552,16 @@ export class CandidatePortalComponent implements OnInit {
 
   get formalEducations(): EducationItem[] { return (this.profile?.educations || []).filter((item) => item.type === 'FORMAL'); }
   get informalEducations(): EducationItem[] { return (this.profile?.educations || []).filter((item) => item.type === 'INFORMAL'); }
+  get languageSummary(): string {
+    const languages = this.profile?.profileDetails?.languageSkills || [];
+    return languages.length ? languages.map(item => `${item.name} (${item.proficiency})`).join(', ') : (this.profile?.languanges || '-');
+  }
+  get profileSkills(): string[] {
+    return [...new Set([
+      ...(this.profile?.tools || []),
+      ...(this.profile?.workExperiences || []).flatMap(item => item.details?.skills || []),
+    ].map(item => item.trim()).filter(Boolean))];
+  }
   get profileCompletion(): number {
     if (!this.profile) return 0;
     const checks = [
