@@ -8,16 +8,17 @@ import { API_BASE } from '../core/service/api/api-base';
   <section class="talent-details" *ngIf="profile.profileDetails as details">
     <h3 class="talent-details-subheading">Data Personal</h3>
     <div class="info-grid">
+      <article><span>Agama</span><strong>{{ profile.religion || '-' }}</strong></article>
       <article><span>Jenis Kelamin</span><strong>{{ details.gender || '-' }}</strong></article>
       <article><span>Alamat KTP</span><strong>{{ profile.citizenIdAddress || '-' }}</strong></article>
       <article><span>Wilayah & Kode Pos</span><strong>{{ details.region || '-' }} • {{ details.postalCode || '-' }}</strong></article>
       <article><span>Alamat Domisili</span><strong>{{ profile.sameAsCitizenIdAddress ? profile.citizenIdAddress : profile.residentialAddress || '-' }}</strong></article>
-      <article><span>LinkedIn</span><strong>{{ details.linkedinUrl || '-' }}</strong></article>
       <article><span>Sumber Informasi</span><strong>{{ profile.source || '-' }}</strong></article>
     </div>
     <ng-container *ngIf="showAdditionalInformation">
     <h3 class="talent-details-subheading">Additional Information</h3>
     <div class="info-grid">
+      <article><span>LinkedIn</span><strong>{{ details.linkedinUrl || '-' }}</strong></article>
       <article><span>Media Sosial</span><strong>{{ details.socialPlatform || '-' }} • {{ details.socialUsername || '-' }}</strong></article>
       <article><span>Ekspektasi Gaji per Bulan</span><strong>{{ profile.expectedSalary | currency:'IDR':'symbol':'1.0-0' }} – {{ details.expectedSalaryMax | currency:'IDR':'symbol':'1.0-0' }}</strong></article>
       <article><span>Fungsi yang Diminati</span><strong>{{ profile.jobInterests.join(', ') || '-' }}</strong></article>

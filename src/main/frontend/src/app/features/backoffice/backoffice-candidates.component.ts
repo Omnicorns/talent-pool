@@ -205,7 +205,6 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
                 <article><span>Email</span><strong>{{ selected.email || '-' }}</strong></article>
                 <article><span>WhatsApp</span><strong>{{ selected.phone || '-' }}</strong></article>
                 <article><span>Birth Date</span><strong>{{ selected.birthDate || '-' }}</strong></article>
-                <article><span>Religion</span><strong>{{ selected.religion || '-' }}</strong></article>
               </div>
             </section>
 

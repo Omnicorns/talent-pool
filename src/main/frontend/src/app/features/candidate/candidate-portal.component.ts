@@ -135,7 +135,7 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
             <section id="additional" class="profile-section">
               <div class="section-title"><h2>Additional Information</h2><button (click)="openDrawer('additional')">✎ Edit</button></div>
               <div class="info-grid">
-                <article><span>Religion</span><strong>{{ profile.religion || '-' }}</strong></article>
+                <article><span>LinkedIn</span><strong>{{ profile.profileDetails?.linkedinUrl || '-' }}</strong></article>
                 <article><span>Media Sosial</span><strong>{{ profile.profileDetails?.socialPlatform || '-' }} • {{ profile.profileDetails?.socialUsername || '-' }}</strong></article>
                 <article><span>Ekspektasi Gaji per Bulan</span><strong>{{ profile.expectedSalary | currency:'IDR':'symbol':'1.0-0' }} – {{ profile.profileDetails?.expectedSalaryMax | currency:'IDR':'symbol':'1.0-0' }}</strong></article>
                 <article><span>Fungsi yang Diminati</span><strong>{{ profile.jobInterests.join(', ') || '-' }}</strong></article>
@@ -298,6 +298,7 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
               <label>Nama Lengkap<input [(ngModel)]="profile.fullName"></label>
               <label>Email<input [ngModel]="profile.email" disabled></label>
               <label>WhatsApp<input [(ngModel)]="profile.phone"></label>
+              <label>Agama<input [(ngModel)]="profile.religion"></label>
               <label>Preferred Locations<input [ngModel]="profile.preferredLocations.join(', ')" (ngModelChange)="profile.preferredLocations = splitList($event)"></label>
               <label>Related Positions<input [ngModel]="profile.relatedJobPositions.join(', ')" (ngModelChange)="profile.relatedJobPositions = splitList($event)"></label>
             </div>
@@ -326,7 +327,7 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
 
             <div class="drawer-form" *ngIf="drawerSection === 'additional'">
               <label>Languages<input [(ngModel)]="profile.languanges"></label>
-              <label>Religion<input [(ngModel)]="profile.religion"></label>
+              <label>LinkedIn<input [ngModel]="profile.profileDetails?.linkedinUrl || ''" (ngModelChange)="setLinkedInUrl($event)" type="url" placeholder="https://www.linkedin.com/in/..."></label>
               <label>Job Interests<input [ngModel]="profile.jobInterests.join(', ')" (ngModelChange)="profile.jobInterests = splitList($event)"></label>
               <label>Preferred Locations<input [ngModel]="profile.preferredLocations.join(', ')" (ngModelChange)="profile.preferredLocations = splitList($event)"></label>
               <label>Related Industries<input [ngModel]="profile.relatedIndustries.join(', ')" (ngModelChange)="profile.relatedIndustries = splitList($event)"></label>
@@ -581,6 +582,14 @@ export class CandidatePortalComponent implements OnInit {
         : structuredClone(this.profile.educations[index]);
     }
     this.drawerOpen = true;
+  }
+
+  setLinkedInUrl(value: string): void {
+    this.profile.profileDetails ||= {
+      gender: '', postalCode: '', region: '', linkedinUrl: '', socialPlatform: '', socialUsername: '',
+      expectedSalaryMax: null, noExperience: false, languageSkills: [], trainingCertifications: [],
+    };
+    this.profile.profileDetails.linkedinUrl = value;
   }
 
   openEducationDrawer(section: 'education' | 'training', item: EducationItem): void {
