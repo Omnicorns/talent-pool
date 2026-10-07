@@ -3,6 +3,7 @@ package com.example.talentpool.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -60,7 +61,7 @@ public class GlobalExceptionHandler {
     private ResponseEntity<ApiError> build(
             HttpStatus status, String message, HttpServletRequest request, Map<String, String> validationErrors
     ) {
-        return ResponseEntity.status(status).body(new ApiError(
+        return ResponseEntity.status(status).contentType(MediaType.APPLICATION_JSON).body(new ApiError(
                 Instant.now(), status.value(), status.getReasonPhrase(), message,
                 request.getRequestURI(), validationErrors
         ));
