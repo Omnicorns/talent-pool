@@ -9,13 +9,15 @@ import { TalentAuthService } from '../../core/service/api/talent-auth.service';
 import { TalentPortalService } from '../../core/service/api/talent-portal.service';
 import { FMT } from '../../shared/labels';
 import { IconComponent } from '../../shared/icon.component';
+import { ChoiceFieldComponent } from '../../shared/choice-field.component';
+import { TALENT_OPTIONS } from '../../shared/talent-options';
 
 type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'training' | 'additional';
 
 @Component({
   selector: 'app-candidate-portal',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, CareerHeaderComponent, TalentProfileDetailsComponent, IconComponent],
+  imports: [CommonModule, FormsModule, RouterLink, CareerHeaderComponent, TalentProfileDetailsComponent, IconComponent, ChoiceFieldComponent],
   template: `
     <div class="site" *ngIf="profile; else loadingTpl">
       <app-career-header active="portal" [profilePictureUrl]="profilePictureUrl"></app-career-header>
@@ -50,34 +52,6 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
 
           <div class="profile-layout">
             <div class="profile-main">
-              <section id="my-applications" class="profile-card profile-section">
-                <div class="section-title"><h2>Lamaran saya</h2><a class="btn btn-secondary btn-sm" routerLink="/" fragment="open-positions">Cari lowongan</a></div>
-                <div class="app-list" *ngIf="applications.length; else noApplications">
-                  <article class="app" *ngFor="let app of applications">
-                    <div>
-                      <h3>{{ app.jobTitle }}</h3>
-                      <p class="when">Dilamar {{ fmt.fullDate(app.appliedAt) }}</p>
-                    </div>
-                    <div class="app-actions">
-                      <button type="button" class="btn btn-ghost btn-sm" (click)="openApplicationHistory(app)"><app-icon name="history" [size]="16"></app-icon> Riwayat</button>
-                      <button *ngIf="app.status === 'ACTIVE'" type="button" class="btn btn-danger btn-sm" (click)="withdrawApplication(app)">Tarik lamaran</button>
-                    </div>
-                    <div class="stage-track" *ngIf="app.status !== 'REJECTED' && app.status !== 'WITHDRAWN'; else ended" [attr.aria-label]="'Tahap saat ini: ' + applicationStages[applicationStageIndex(app.stage)].label">
-                      <div *ngFor="let stage of applicationStages; let i = index"
-                        [class.done]="applicationStageIndex(app.stage) > i || app.status === 'HIRED'"
-                        [class.current]="applicationStageIndex(app.stage) === i && app.status !== 'HIRED'">
-                        <i></i><span>{{ stage.label }}</span>
-                      </div>
-                    </div>
-                    <ng-template #ended>
-                      <p class="app-ended"><app-icon name="info" [size]="16"></app-icon>{{ app.status === 'REJECTED' ? 'Lamaran tidak dilanjutkan ke tahap berikutnya.' : 'Anda telah menarik lamaran ini.' }}</p>
-                    </ng-template>
-                  </article>
-                </div>
-                <ng-template #noApplications>
-                  <div class="empty"><strong>Belum ada lamaran</strong>Lihat lowongan yang sedang dibuka dan lamar dengan profil ini.</div>
-                </ng-template>
-              </section>
               <section class="profile-card">
                 <nav class="profile-tabs" aria-label="Bagian profil">
                   <button type="button" *ngFor="let tab of tabs" [class.active]="activeSection === tab.id"
@@ -179,6 +153,36 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
                 </section>
               </section>
 
+              <section id="my-applications" class="profile-card profile-section">
+                <div class="section-title"><h2>Lamaran saya</h2><a class="btn btn-secondary btn-sm" routerLink="/" fragment="open-positions">Cari lowongan</a></div>
+                <div class="app-list" *ngIf="applications.length; else noApplications">
+                  <article class="app" *ngFor="let app of applications">
+                    <div>
+                      <h3>{{ app.jobTitle }}</h3>
+                      <p class="when">Dilamar {{ fmt.fullDate(app.appliedAt) }}</p>
+                    </div>
+                    <div class="app-actions">
+                      <button type="button" class="btn btn-ghost btn-sm" (click)="openApplicationHistory(app)"><app-icon name="history" [size]="16"></app-icon> Riwayat</button>
+                      <button *ngIf="app.status === 'ACTIVE'" type="button" class="btn btn-danger btn-sm" (click)="withdrawApplication(app)">Tarik lamaran</button>
+                    </div>
+                    <div class="stage-track" *ngIf="app.status !== 'REJECTED' && app.status !== 'WITHDRAWN'; else ended"
+                      [style.gridTemplateColumns]="'repeat(' + visibleStages(app).length + ', minmax(0, 1fr))'"
+                      [attr.aria-label]="'Tahap saat ini: ' + applicationStages[applicationStageIndex(app.stage)].label">
+                      <div *ngFor="let stage of visibleStages(app); let i = index"
+                        [class.done]="applicationStageIndex(app.stage) > i || app.status === 'HIRED'"
+                        [class.current]="applicationStageIndex(app.stage) === i && app.status !== 'HIRED'">
+                        <i></i><span>{{ stage.label }}</span>
+                      </div>
+                    </div>
+                    <ng-template #ended>
+                      <p class="app-ended"><app-icon name="info" [size]="16"></app-icon>{{ app.status === 'REJECTED' ? 'Lamaran tidak dilanjutkan ke tahap berikutnya.' : 'Anda telah menarik lamaran ini.' }}</p>
+                    </ng-template>
+                  </article>
+                </div>
+                <ng-template #noApplications>
+                  <div class="empty"><strong>Belum ada lamaran</strong>Lihat lowongan yang sedang dibuka dan lamar dengan profil ini.</div>
+                </ng-template>
+              </section>
             </div>
 
             <aside class="profile-side">
@@ -273,9 +277,24 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
               <label class="field">Nama lengkap<input [(ngModel)]="profile.fullName"></label>
               <label class="field">Email<input [ngModel]="profile.email" disabled><small>Email dipakai untuk masuk dan tidak dapat diubah.</small></label>
               <label class="field">Nomor WhatsApp<input type="tel" [(ngModel)]="profile.phone"></label>
-              <label class="field">Agama<input [(ngModel)]="profile.religion"></label>
-              <label class="field">Lokasi kerja yang diminati<input [ngModel]="profile.preferredLocations.join(', ')" (ngModelChange)="profile.preferredLocations = splitList($event)"><small>Pisahkan dengan koma, maksimal 3.</small></label>
-              <label class="field">Posisi yang diminati<input [ngModel]="profile.relatedJobPositions.join(', ')" (ngModelChange)="profile.relatedJobPositions = splitList($event)"><small>Pisahkan dengan koma, maksimal 3.</small></label>
+              <label class="field">Jenis kelamin<app-choice-field [options]="options.genders" [allowOther]="false" label="Jenis kelamin" [value]="profile.profileDetails?.gender" (valueChange)="setDetail('gender', $event)"></app-choice-field></label>
+              <label class="field">Agama<app-choice-field [options]="options.religions" [allowOther]="false" label="Agama" [(value)]="profile.religion"></app-choice-field></label>
+              <label class="field">Alamat KTP<textarea rows="3" [(ngModel)]="profile.citizenIdAddress" placeholder="Nama jalan, nomor rumah, RT/RW"></textarea></label>
+              <div class="form-grid">
+                <label class="field">Kode pos
+                  <input [ngModel]="profile.profileDetails?.postalCode" (ngModelChange)="postalCodeChanged($event)" inputmode="numeric" maxlength="5" placeholder="5 digit">
+                  <small [class.field-error]="!!postalError">{{ postalLoading ? 'Mencari wilayah…' : postalError }}</small>
+                </label>
+                <label class="field">Kelurahan, kecamatan, kota
+                  <select [ngModel]="profile.profileDetails?.region" (ngModelChange)="setDetail('region', $event)" [disabled]="postalLoading">
+                    <option value="">{{ postalRegions.length ? 'Pilih wilayah' : 'Isi kode pos terlebih dahulu' }}</option>
+                    <option *ngFor="let region of postalRegions" [value]="region">{{ region }}</option>
+                  </select>
+                </label>
+              </div>
+              <label class="check"><input type="checkbox" [(ngModel)]="profile.sameAsCitizenIdAddress"> Alamat domisili sama dengan alamat KTP</label>
+              <label class="field" *ngIf="!profile.sameAsCitizenIdAddress">Alamat domisili<textarea rows="3" [(ngModel)]="profile.residentialAddress"></textarea></label>
+              <label class="field">Tahu Sarinah dari<app-choice-field [options]="options.sources" label="Sumber" [(value)]="profile.source"></app-choice-field></label>
             </div>
 
             <div class="form-stack" *ngIf="drawerSection === 'about'">
@@ -310,6 +329,7 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
               <label class="field">Ekspektasi gaji minimum per bulan<input type="number" [(ngModel)]="profile.expectedSalary"></label>
               <label class="field">Fungsi yang diminati<input [ngModel]="profile.jobInterests.join(', ')" (ngModelChange)="profile.jobInterests = splitList($event)"><small>Pisahkan dengan koma, maksimal 3.</small></label>
               <label class="field">Lokasi kerja yang diminati<input [ngModel]="profile.preferredLocations.join(', ')" (ngModelChange)="profile.preferredLocations = splitList($event)"><small>Pisahkan dengan koma, maksimal 3.</small></label>
+              <label class="field">Posisi yang diminati<input [ngModel]="profile.relatedJobPositions.join(', ')" (ngModelChange)="profile.relatedJobPositions = splitList($event)"><small>Pisahkan dengan koma, maksimal 3.</small></label>
               <label class="field">Industri<input [ngModel]="profile.relatedIndustries.join(', ')" (ngModelChange)="profile.relatedIndustries = splitList($event)"><small>Pisahkan dengan koma, maksimal 3.</small></label>
               <label class="field">Tools<input [ngModel]="profile.tools.join(', ')" (ngModelChange)="profile.tools = splitList($event, 20)"><small>Pisahkan dengan koma.</small></label>
               <label class="field">Bahasa<input [(ngModel)]="profile.languanges"></label>
@@ -344,6 +364,10 @@ export class CandidatePortalComponent implements OnInit {
   profilePicturePreview: string | null = null;
   saving = false;
   readonly fmt = FMT;
+  readonly options = TALENT_OPTIONS;
+  postalRegions: string[] = [];
+  postalLoading = false;
+  postalError = '';
   readonly tabs = [
     { id: 'about', label: 'Tentang' },
     { id: 'experiences', label: 'Pengalaman' },
@@ -513,6 +537,12 @@ export class CandidatePortalComponent implements OnInit {
     return index < 0 ? 0 : index;
   }
 
+  /** Pelamar hanya melihat Dikirim dan Screening; tahap berikutnya baru tampil setelah masuk Interview. */
+  visibleStages(app: JobApplication) {
+    const reachedInterview = app.status === 'HIRED' || this.applicationStageIndex(app.stage) >= 2;
+    return reachedInterview ? this.applicationStages : this.applicationStages.slice(0, 2);
+  }
+
   withdrawApplication(app: JobApplication): void {
     if (!window.confirm(`Tarik lamaran untuk "${app.jobTitle}"?`)) return;
 
@@ -637,15 +667,53 @@ export class CandidatePortalComponent implements OnInit {
         ? { type, clientKey: type === 'FORMAL' ? crypto.randomUUID() : null, institution: '', level: '', major: '', startYear: null, endYear: null, description: '', ipk: null }
         : structuredClone(this.profile.educations[index]);
     }
+    this.postalRegions = [];
+    this.postalError = '';
+    const code = this.profile.profileDetails?.postalCode || '';
+    if (section === 'profile' && /^\d{5}$/.test(code)) this.loadPostalRegions(code, false);
     this.drawerOpen = true;
   }
 
-  setLinkedInUrl(value: string): void {
-    this.profile.profileDetails ||= {
+  private ensureDetails() {
+    return this.profile.profileDetails ||= {
       gender: '', postalCode: '', region: '', linkedinUrl: '', socialPlatform: '', socialUsername: '',
       expectedSalaryMax: null, noExperience: false, languageSkills: [], trainingCertifications: [],
     };
-    this.profile.profileDetails.linkedinUrl = value;
+  }
+
+  setLinkedInUrl(value: string): void { this.ensureDetails().linkedinUrl = value; }
+
+  setDetail(field: 'gender' | 'region', value: string): void { this.ensureDetails()[field] = value; }
+
+  postalCodeChanged(code: string): void {
+    const details = this.ensureDetails();
+    details.postalCode = code;
+    details.region = '';
+    this.postalRegions = [];
+    this.postalError = '';
+    if (/^\d{5}$/.test(code)) this.loadPostalRegions(code, true);
+    else this.postalLoading = false;
+  }
+
+  private loadPostalRegions(code: string, changed: boolean): void {
+    const details = this.ensureDetails();
+    const previous = details.region;
+    this.postalLoading = true;
+    this.portal.postalCodes(code).subscribe({
+      next: (regions) => {
+        if (details.postalCode !== code) return;
+        this.postalLoading = false;
+        this.postalRegions = regions;
+        this.postalError = regions.length ? '' : 'Kode pos tidak ditemukan. Periksa kembali kode pos KTP Anda.';
+        if (!changed && previous && regions.includes(previous)) details.region = previous;
+        if (regions.length === 1) details.region = regions[0];
+      },
+      error: () => {
+        if (details.postalCode !== code) return;
+        this.postalLoading = false;
+        this.postalError = 'Wilayah gagal dimuat. Ketik kembali kode pos untuk mencoba lagi.';
+      },
+    });
   }
 
   openEducationDrawer(section: 'education' | 'training', item: EducationItem): void {

@@ -384,7 +384,7 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 .profile-head-actions { display: flex; gap: 10px; align-self: start; }
 .profile-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; margin-top: 24px; align-items: start; }
 .profile-main, .profile-side { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; min-width: 0; }
-.profile-tabs { position: sticky; top: var(--header-h); z-index: 5; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; padding: 0 14px; background: var(--white); border-bottom: 1px solid var(--line); border-radius: var(--r-lg) var(--r-lg) 0 0; }
+.profile-tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; padding: 0 14px; background: var(--white); border-bottom: 1px solid var(--line); border-radius: var(--r-lg) var(--r-lg) 0 0; }
 .profile-tabs::-webkit-scrollbar { display: none; }
 .profile-tabs button { flex: none; padding: 16px 10px 14px; border: 0; border-bottom: 2px solid transparent; background: none; font-size: 14px; font-weight: 600; color: var(--muted); white-space: nowrap; }
 .profile-tabs button:hover { color: var(--ink); }
