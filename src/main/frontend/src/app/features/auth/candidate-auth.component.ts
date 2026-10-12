@@ -96,7 +96,7 @@ import { IconComponent } from '../../shared/icon.component';
           <div class="modal-body">
             <p>
               Dengan menyetujui syarat dan ketentuan ini, Anda memberikan izin kepada
-              <strong>PT Aviasi Pariwisata Indonesia (Persero)</strong> untuk memproses data pribadi Anda
+              <strong>PT Sarinah (Persero)</strong> untuk memproses data pribadi Anda
               yang telah dikirimkan sehubungan dengan proses rekrutmen. Berikut adalah ketentuan penggunaannya:
             </p>
 
@@ -162,7 +162,7 @@ import { IconComponent } from '../../shared/icon.component';
               pengumuman di situs web kami mengenai perubahan tersebut.
             </p>
             <p>
-              PT Aviasi Pariwisata Indonesia (Persero) berkomitmen mematuhi ketentuan
+              PT Sarinah (Persero) berkomitmen mematuhi ketentuan
               <strong>Undang-Undang Nomor 27 Tahun 2022 tentang Perlindungan Data Pribadi</strong>.
             </p>
           </div>
