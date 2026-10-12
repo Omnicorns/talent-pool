@@ -13,6 +13,7 @@ public class SpaController {
             "/register",
             "/forgot-password",
             "/reset-password",
+            "/verify-email",
             "/onboarding",
             "/portal",
             "/backoffice",
