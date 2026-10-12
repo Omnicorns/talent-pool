@@ -8,6 +8,7 @@ import com.example.talentpool.dto.TalentChangePasswordRequest;
 import com.example.talentpool.dto.TalentLoginRequest;
 import com.example.talentpool.dto.TalentMeResponse;
 import com.example.talentpool.dto.TalentRegisterRequest;
+import com.example.talentpool.exception.EmailNotVerifiedException;
 import com.example.talentpool.exception.BadRequestException;
 import com.example.talentpool.repository.CandidateRepository;
 import com.example.talentpool.repository.TalentAccountRepository;
@@ -35,6 +36,7 @@ public class TalentAuthService {
     private final JwtEncoder jwtEncoder;
     private final long expirationMinutes;
     private final TalentProfileValidator profileValidator;
+    private final boolean emailVerificationRequired;
 
     public TalentAuthService(
             TalentAccountRepository accountRepository,
@@ -42,7 +44,8 @@ public class TalentAuthService {
             PasswordEncoder passwordEncoder,
             JwtEncoder jwtEncoder,
             @Value("${app.jwt.expiration-minutes:480}") long expirationMinutes,
-            TalentProfileValidator profileValidator
+            TalentProfileValidator profileValidator,
+            @Value("${app.email-verification.required:true}") boolean emailVerificationRequired
     ) {
         this.accountRepository = accountRepository;
         this.candidateRepository = candidateRepository;
@@ -50,10 +53,11 @@ public class TalentAuthService {
         this.jwtEncoder = jwtEncoder;
         this.expirationMinutes = expirationMinutes;
         this.profileValidator=profileValidator;
+        this.emailVerificationRequired = emailVerificationRequired;
     }
 
     @Transactional
-    public TalentAuthResponse register(TalentRegisterRequest request) {
+    public RegisteredAccount register(TalentRegisterRequest request) {
         String email = normalizeEmail(request.email());
 
         if (accountRepository.existsByEmailIgnoreCase(email)) {
@@ -80,9 +84,14 @@ public class TalentAuthService {
         account.setPasswordHash(passwordEncoder.encode(request.password()));
         account.setEnabled(true);
         account.setOnboardingCompleted(false);
-        accountRepository.save(account);
+        if (!emailVerificationRequired) account.setEmailVerifiedAt(Instant.now());
+        account = accountRepository.save(account);
 
-        return issueToken(account);
+        return new RegisteredAccount(account.getId(), account.getEmail(), emailVerificationRequired ? null : issueToken(account));
+    }
+
+    /** Hasil pendaftaran; {@code auth} terisi hanya bila verifikasi email dimatikan. */
+    public record RegisteredAccount(UUID accountId, String email, TalentAuthResponse auth) {
     }
 
     @Transactional
@@ -92,6 +101,10 @@ public class TalentAuthService {
 
         if (!account.isEnabled() || !passwordEncoder.matches(request.password(), account.getPasswordHash())) {
             throw new BadRequestException("Email atau password tidak valid");
+        }
+        // Dicek setelah password valid agar status verifikasi tidak bisa dipakai menebak email terdaftar.
+        if (emailVerificationRequired && !account.isEmailVerified()) {
+            throw new EmailNotVerifiedException("Email Anda belum diverifikasi. Buka link verifikasi di email atau kirim ulang.");
         }
 
         return issueToken(account);

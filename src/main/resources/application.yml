@@ -54,6 +54,11 @@ app:
     # Aktifkan dari environment deployment setelah MAIL_PASSWORD disimpan sebagai secret.
     enabled: ${APP_MAIL_ENABLED:false}
     from: ${APP_MAIL_FROM:talentpool@sarinah.co.id}
+  email-verification:
+    # false = akun baru langsung aktif tanpa email (mis. lingkungan lokal tanpa SMTP).
+    required: ${EMAIL_VERIFICATION_REQUIRED:true}
+    expiration-hours: ${EMAIL_VERIFICATION_EXPIRATION_HOURS:24}
+    resend-cooldown-seconds: ${EMAIL_VERIFICATION_RESEND_COOLDOWN_SECONDS:60}
   password-reset:
     expiration-minutes: ${PASSWORD_RESET_EXPIRATION_MINUTES:30}
     expose-reset-url: ${PASSWORD_RESET_EXPOSE_URL:false}

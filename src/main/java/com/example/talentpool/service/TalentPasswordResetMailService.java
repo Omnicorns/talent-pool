@@ -56,4 +56,32 @@ public class TalentPasswordResetMailService {
         }
         return true;
     }
+
+    public void sendVerificationLink(String email, String fullName, String verifyUrl, long expirationHours) {
+        if (!enabled) {
+            throw new MailDeliveryException("Pengiriman email verifikasi sedang dinonaktifkan.");
+        }
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(from);
+        message.setTo(email);
+        message.setSubject("Verifikasi Email Sarinah Talent Pool");
+        message.setText(
+                "Halo " + fullName + ",\n\n" +
+                "Terima kasih telah mendaftar di Sarinah Talent Pool.\n\n" +
+                "Klik link berikut untuk memverifikasi email Anda dan mengaktifkan akun:\n" +
+                verifyUrl + "\n\n" +
+                "Link ini berlaku selama " + expirationHours + " jam dan hanya dapat digunakan satu kali.\n\n" +
+                "Jika Anda tidak merasa mendaftar, abaikan email ini.\n\n" +
+                "Sarinah Talent Management"
+        );
+        try {
+            mailSender.send(message);
+        } catch (MailException ex) {
+            log.error("Gagal mengirim email verifikasi melalui SMTP", ex);
+            throw new MailDeliveryException(
+                    "Email verifikasi gagal dikirim. Periksa konfigurasi SMTP lalu coba lagi.", ex
+            );
+        }
+    }
 }

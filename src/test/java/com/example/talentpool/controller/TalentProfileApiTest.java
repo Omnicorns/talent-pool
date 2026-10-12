@@ -14,7 +14,7 @@ import java.util.Map;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-@SpringBootTest(properties={"spring.datasource.url=jdbc:h2:mem:talent-api;DB_CLOSE_DELAY=-1","spring.datasource.driver-class-name=org.h2.Driver","spring.datasource.username=sa","spring.datasource.password=","spring.flyway.enabled=false","spring.jpa.hibernate.ddl-auto=create-drop","app.jwt.secret=talent-api-integration-test-secret-at-least-32-characters"})
+@SpringBootTest(properties={"spring.datasource.url=jdbc:h2:mem:talent-api;DB_CLOSE_DELAY=-1","spring.datasource.driver-class-name=org.h2.Driver","spring.datasource.username=sa","spring.datasource.password=","spring.flyway.enabled=false","spring.jpa.hibernate.ddl-auto=create-drop","app.jwt.secret=talent-api-integration-test-secret-at-least-32-characters","app.email-verification.required=false"})
 @AutoConfigureMockMvc
 class TalentProfileApiTest {
     @TempDir static Path root;
@@ -23,7 +23,7 @@ class TalentProfileApiTest {
     @Autowired ObjectMapper mapper;
     String register(String email) throws Exception {
         var response=mvc.perform(post("/api/talent/auth/register").contentType("application/json").content(mapper.writeValueAsString(Map.of("fullName","Test Kandidat","email",email,"phone","081234567890","password","TestSecret123!","termsAccepted",true)))).andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
-        return mapper.readTree(response).get("accessToken").asText();
+        return mapper.readTree(response).get("auth").get("accessToken").asText();
     }
     @Test void multipartProfileDocumentsCompletionAndOwnership() throws Exception {
         String token=register("api-test@example.com");

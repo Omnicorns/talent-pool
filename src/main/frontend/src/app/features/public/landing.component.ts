@@ -6,11 +6,13 @@ import { CareerFooterComponent } from '../../shared/career-footer.component';
 import { IconComponent } from '../../shared/icon.component';
 import { OpenPositionsComponent } from './open-positions.component';
 import { TalentAuthService } from '../../core/service/api/talent-auth.service';
+import { LifeSliderComponent } from './life-slider.component';
+import { LIFE_HEADING, LIFE_PROGRAMS, LIFE_SLIDE_SECONDS } from './life-at-sarinah.config';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, RouterLink, CareerHeaderComponent, CareerFooterComponent, OpenPositionsComponent, IconComponent],
+  imports: [CommonModule, RouterLink, CareerHeaderComponent, CareerFooterComponent, OpenPositionsComponent, IconComponent, LifeSliderComponent],
   template: `
     <div class="site">
       <app-career-header active="home"></app-career-header>
@@ -46,17 +48,23 @@ import { TalentAuthService } from '../../core/service/api/talent-auth.service';
           </div>
         </section>
 
-        <section id="life" class="section">
-          <div class="container">
-            <div class="section-head">
-              <h2>Life at Sarinah</h2>
-              <p>Berkarya, bertumbuh, dan merayakan kebersamaan bersama keluarga besar Sarinah.</p>
+        <section id="life" class="life" aria-labelledby="life-title">
+          <div class="life-banner">
+            <div class="container">
+              <p class="eyebrow">{{ life.eyebrow }}</p>
+              <h2 id="life-title">{{ life.title }}</h2>
+              <p class="life-tagline">{{ life.tagline }}</p>
+              <p class="life-lead">{{ life.lead }}</p>
             </div>
-            <div class="life-grid">
-              <figure class="life-item" *ngFor="let program of lifePrograms">
-                <div class="life-photo"><img [src]="program.image" [alt]="program.title" loading="lazy" width="436" height="146"></div>
-                <figcaption><h3>{{ program.title }}</h3><p>{{ program.description }}</p></figcaption>
-              </figure>
+          </div>
+          <div class="container">
+            <div class="life-panel">
+              <ul class="life-grid">
+                <li class="life-card" *ngFor="let program of lifePrograms">
+                  <app-life-slider [images]="program.images" [alt]="program.title" [seconds]="program.seconds ?? slideSeconds"></app-life-slider>
+                  <div class="life-caption"><h3>{{ program.title }}</h3><p>{{ program.description }}</p></div>
+                </li>
+              </ul>
             </div>
           </div>
         </section>
@@ -95,14 +103,9 @@ export class LandingComponent {
     { icon: 'shield', title: 'Keamanan data', text: 'Data Anda dikelola sesuai UU Perlindungan Data Pribadi dan hanya digunakan untuk rekrutmen.' },
   ];
 
-  readonly lifePrograms = [
-    { image: 'assets/images/life/life-1.jpg', title: 'Kebersamaan Sarinah', description: 'Bergerak bersama dalam kegiatan yang mempererat keluarga Sarinah.' },
-    { image: 'assets/images/life/life-2.jpg', title: 'Semangat kolaborasi', description: 'Berbagi ide dan energi positif untuk keberhasilan bersama.' },
-    { image: 'assets/images/life/life-3.jpg', title: 'Kegiatan tim', description: 'Membangun hubungan antarrekan melalui pengalaman bersama.' },
-    { image: 'assets/images/life/life-4.jpg', title: 'Perayaan bersama', description: 'Merayakan pencapaian dan momen istimewa bersama tim.' },
-    { image: 'assets/images/life/life-5.jpg', title: 'Belajar bersama', description: 'Berbagi pengalaman dan saling mendukung untuk terus bertumbuh.' },
-    { image: 'assets/images/life/life-6.jpg', title: 'Keluarga besar Sarinah', description: 'Menghargai keberagaman dalam suasana kerja yang inklusif.' },
-  ];
+  readonly life = LIFE_HEADING;
+  readonly lifePrograms = LIFE_PROGRAMS;
+  readonly slideSeconds = LIFE_SLIDE_SECONDS;
 
   readonly faqs = [
     { q: 'Apa itu Talent Pool?', a: 'Talent Pool adalah basis data profil kandidat Sarinah. Profil Anda akan dipertimbangkan saat ada kebutuhan posisi yang relevan, meskipun Anda belum melamar lowongan tertentu.' },
