@@ -43,6 +43,10 @@ public class Education {
 
 
 
+    @Column(name="client_key", length=80)
+    private String clientKey;
+    public String getClientKey() { return clientKey; }
+    public void setClientKey(String value) { clientKey = value; }
     public UUID getId() { return id; }
     public Candidate getCandidate() { return candidate; }
     public void setCandidate(Candidate candidate) { this.candidate = candidate; }

@@ -62,8 +62,37 @@ public class DashboardService {
                 interviewRepository.countByStatusAndScheduledAtBetween(InterviewStatus.SCHEDULED, startOfDay, endOfDay),
                 getJobInterests(),
                 getPreferredLocations(),
+                getCandidateStatuses(),
+                getApplicationStages(),
+                getJobListingStatuses(),
                 candidateRepository.findTop5ByOrderByCreatedAtDesc().stream().map(candidateMapper::toListItem).toList(),
                 interviewService.upcoming()
+        );
+    }
+
+    private List<DashboardInsight> getCandidateStatuses() {
+        return candidateRepository.countGroupedByStatus().stream()
+                .map(row -> new DashboardInsight(
+                        row[0] == null ? "UNKNOWN" : String.valueOf(row[0]),
+                        ((Number) row[1]).longValue()
+                ))
+                .toList();
+    }
+
+    private List<DashboardInsight> getApplicationStages() {
+        return applicationRepository.countGroupedByStage().stream()
+                .map(row -> new DashboardInsight(
+                        row[0] == null ? "UNKNOWN" : String.valueOf(row[0]),
+                        ((Number) row[1]).longValue()
+                ))
+                .toList();
+    }
+
+    private List<DashboardInsight> getJobListingStatuses() {
+        return List.of(
+                new DashboardInsight("PUBLISHED", jobListingRepository.countByStatus(JobListingStatus.PUBLISHED)),
+                new DashboardInsight("DRAFT", jobListingRepository.countByStatus(JobListingStatus.DRAFT)),
+                new DashboardInsight("CLOSED", jobListingRepository.countByStatus(JobListingStatus.CLOSED))
         );
     }
 

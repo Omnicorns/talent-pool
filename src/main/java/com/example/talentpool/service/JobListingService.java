@@ -68,6 +68,11 @@ public class JobListingService {
         return repository.findAll(JobListingSpecifications.filter(q, status), pageable).map(this::toResponse);
     }
 
+    @Transactional
+    public Page<JobListingResponse> searchPublicOpen(String q, Pageable pageable) {
+        return repository.findAll(JobListingSpecifications.publicOpen(q), pageable).map(this::toResponse);
+    }
+
     public JobListingSummaryResponse summary() {
         return new JobListingSummaryResponse(
                 repository.count(),

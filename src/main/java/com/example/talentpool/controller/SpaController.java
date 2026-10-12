@@ -1,16 +1,26 @@
 package com.example.talentpool.controller;
 
-
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class SpaController {
+
     @GetMapping({
+            "/open-positions",
+            "/jobs/**",
+            "/sign-in",
+            "/register",
+            "/forgot-password",
+            "/reset-password",
+            "/onboarding",
+            "/portal",
             "/backoffice",
-            "/backoffice/**"
+            "/backoffice/**",
+            "/talent",
+            "/talent/"
     })
-    public String forwardBackoffice() {
+    public String forwardSpaRoutes() {
         return "forward:/index.html";
     }
 }

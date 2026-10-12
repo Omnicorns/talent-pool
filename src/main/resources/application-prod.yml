@@ -1,0 +1,37 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+  mail:
+    host: ${MAIL_HOST:mail.sarinah.com}
+    port: ${MAIL_PORT:465}
+    username: ${MAIL_USERNAME:talentpool@sarinah.co.id}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:true}
+          ssl:
+            enable: ${MAIL_SMTP_SSL_ENABLE:true}
+            trust: ${MAIL_SMTP_SSL_TRUST:}
+          starttls:
+            enable: ${MAIL_STARTTLS_ENABLE:false}
+            required: ${MAIL_STARTTLS_REQUIRED:false}
+
+app:
+  storage:
+    root: ${STORAGE_ROOT:/opt/peoplecounter/uploads}
+  mail:
+    enabled: true
+    from: ${APP_MAIL_FROM:talentpool@sarinah.co.id}
+  security:
+    admin-username: ${ADMIN_USERNAME}
+    admin-password: ${ADMIN_PASSWORD}
+    recruiter-username: ${RECRUITER_USERNAME}
+    recruiter-password: ${RECRUITER_PASSWORD}
+  jwt:
+    secret: ${TALENT_JWT_SECRET}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
+

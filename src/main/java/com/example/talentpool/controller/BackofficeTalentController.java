@@ -3,6 +3,9 @@ package com.example.talentpool.controller;
 import com.example.talentpool.domain.CandidateStatus;
 import com.example.talentpool.dto.*;
 import com.example.talentpool.service.CandidateService;
+import com.example.talentpool.service.CandidateViewService;
+import com.example.talentpool.domain.CandidateViewType;
+import org.springframework.security.core.Authentication;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -18,9 +21,13 @@ import java.util.UUID;
 @RequestMapping({"/api/backoffice/talents", "/api/backoffice/candidates"})
 public class BackofficeTalentController {
     private final CandidateService service;
+    private final com.example.talentpool.service.SupportingDocumentService documents;
+    private final CandidateViewService candidateViewService;
 
-    public BackofficeTalentController(CandidateService service) {
+    public BackofficeTalentController(CandidateService service, CandidateViewService candidateViewService, com.example.talentpool.service.SupportingDocumentService documents) {
+        this.documents=documents;
         this.service = service;
+        this.candidateViewService = candidateViewService;
     }
 
     @GetMapping
@@ -35,13 +42,21 @@ public class BackofficeTalentController {
         return PageResponse.from(service.search(q, industry, position, source, status, pageable));
     }
 
+    @GetMapping("/{id}/documents/{key}")
+    public ResponseEntity<?> downloadDocument(@PathVariable UUID id, @PathVariable String key) {
+        var file=documents.load(id,key);
+        return ResponseEntity.ok().contentType(file.mediaType()).cacheControl(CacheControl.noStore())
+            .header(HttpHeaders.CONTENT_DISPOSITION,ContentDisposition.attachment().filename(file.filename(),StandardCharsets.UTF_8).build().toString())
+            .body(file.resource());
+    }
     @GetMapping("/summary")
     public CandidateSummaryResponse summary() {
         return service.summary();
     }
 
     @GetMapping("/{id}")
-    public CandidateResponse detail(@PathVariable UUID id) {
+    public CandidateResponse detail(@PathVariable UUID id, Authentication authentication) {
+        candidateViewService.record(id, CandidateViewType.PROFILE_VIEW, authentication == null ? null : authentication.getName());
         return service.detail(id);
     }
 
@@ -90,13 +105,27 @@ public class BackofficeTalentController {
     }
 
     @GetMapping("/{id}/cv")
-    public ResponseEntity<?> downloadCv(@PathVariable UUID id) {
+    public ResponseEntity<?> downloadCv(@PathVariable UUID id, Authentication authentication) {
+        candidateViewService.record(id, CandidateViewType.CV_VIEW, authentication == null ? null : authentication.getName());
         var file = service.loadCv(id);
         ContentDisposition disposition = ContentDisposition.attachment()
                 .filename(file.filename(), StandardCharsets.UTF_8)
                 .build();
         return ResponseEntity.ok()
                 .contentType(file.mediaType())
+                .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
+                .body(file.resource());
+    }
+
+    @GetMapping("/{id}/picture")
+    public ResponseEntity<?> profilePicture(@PathVariable UUID id) {
+        var file = service.loadProfilePicture(id);
+        ContentDisposition disposition = ContentDisposition.inline()
+                .filename(file.filename(), StandardCharsets.UTF_8)
+                .build();
+        return ResponseEntity.ok()
+                .contentType(file.mediaType())
+                .cacheControl(CacheControl.noStore())
                 .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
                 .body(file.resource());
     }

@@ -34,6 +34,10 @@ public class WorkExperience {
     @Column(columnDefinition = "text")
     private String description;
 
+    @Column(name="details", columnDefinition="text")
+    private String details;
+    public String getDetails() { return details; }
+    public void setDetails(String value) { details = value; }
     public UUID getId() { return id; }
     public Candidate getCandidate() { return candidate; }
     public void setCandidate(Candidate candidate) { this.candidate = candidate; }
