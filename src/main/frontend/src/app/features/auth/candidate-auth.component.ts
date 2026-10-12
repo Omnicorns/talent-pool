@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -24,9 +24,23 @@ import { IconComponent } from '../../shared/icon.component';
         <div class="auth-card">
           <a routerLink="/" class="back-link"><app-icon name="arrow-left" [size]="16"></app-icon> Kembali ke beranda</a>
 
+          <div class="check-email" *ngIf="pendingEmail; else authForms" role="status">
+            <span class="check-email-icon"><app-icon name="mail" [size]="28"></app-icon></span>
+            <h2>Cek email Anda</h2>
+            <p>{{ pendingMessage }}</p>
+            <p class="muted">Klik link di email tersebut untuk mengaktifkan akun. Link berlaku 24 jam.</p>
+            <button type="button" class="btn btn-secondary btn-block" (click)="resend(pendingEmail)" [disabled]="resending || cooldown > 0">
+              {{ resending ? 'Mengirim…' : cooldown > 0 ? 'Kirim ulang dalam ' + cooldown + ' detik' : 'Kirim ulang email verifikasi' }}
+            </button>
+            <p class="alert alert-success" *ngIf="info" role="status"><app-icon name="check"></app-icon><span>{{ info }}</span></p>
+            <p class="alert alert-error" *ngIf="error" role="alert"><app-icon name="alert"></app-icon><span>{{ error }}</span></p>
+            <button type="button" class="btn btn-ghost btn-block" (click)="backToLogin()">Sudah verifikasi? Masuk</button>
+          </div>
+
+          <ng-template #authForms>
           <div class="segmented" role="tablist" aria-label="Pilih masuk atau daftar">
-            <button type="button" role="tab" [attr.aria-selected]="mode === 'login'" [class.active]="mode === 'login'" (click)="mode = 'login'; error = ''">Masuk</button>
-            <button type="button" role="tab" [attr.aria-selected]="mode === 'register'" [class.active]="mode === 'register'" (click)="mode = 'register'; error = ''">Daftar</button>
+            <button type="button" role="tab" [attr.aria-selected]="mode === 'login'" [class.active]="mode === 'login'" (click)="mode = 'login'; error = ''; unverifiedEmail = ''">Masuk</button>
+            <button type="button" role="tab" [attr.aria-selected]="mode === 'register'" [class.active]="mode === 'register'" (click)="mode = 'register'; error = ''; unverifiedEmail = ''">Daftar</button>
           </div>
 
           <div *ngIf="mode === 'login'">
@@ -80,6 +94,17 @@ import { IconComponent } from '../../shared/icon.component';
           </form>
 
           <div class="alert alert-error" *ngIf="error" role="alert"><app-icon name="alert"></app-icon><span>{{ error }}</span></div>
+          <div class="alert alert-info" *ngIf="unverifiedEmail" role="status">
+            <app-icon name="mail"></app-icon>
+            <div>
+              <p>Belum menerima email? Kami bisa mengirim ulang link verifikasi ke <span style="font-weight: 650">{{ unverifiedEmail }}</span>.</p>
+              <button type="button" class="btn btn-secondary btn-sm" style="margin-top: 8px" (click)="resend(unverifiedEmail)" [disabled]="resending || cooldown > 0">
+                {{ resending ? 'Mengirim…' : cooldown > 0 ? 'Kirim ulang dalam ' + cooldown + ' detik' : 'Kirim ulang email verifikasi' }}
+              </button>
+              <p *ngIf="info" style="margin-top: 8px">{{ info }}</p>
+            </div>
+          </div>
+          </ng-template>
         </div>
       </section>
 
@@ -184,7 +209,7 @@ import { IconComponent } from '../../shared/icon.component';
     </main>
   `,
 })
-export class CandidateAuthComponent {
+export class CandidateAuthComponent implements OnDestroy {
   mode: 'login' | 'register' = location.pathname.endsWith('/register') ? 'register' : 'login';
   fullName = '';
   email = '';
@@ -197,6 +222,15 @@ export class CandidateAuthComponent {
   loading = false;
   error = '';
   returnUrl = '/portal';
+  /** Email yang baru didaftarkan dan menunggu verifikasi. */
+  pendingEmail = '';
+  pendingMessage = '';
+  /** Email yang ditolak login karena belum diverifikasi. */
+  unverifiedEmail = '';
+  info = '';
+  resending = false;
+  cooldown = 0;
+  private cooldownTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(
     private auth: TalentAuthService,
@@ -209,8 +243,14 @@ export class CandidateAuthComponent {
     }
   }
 
+  ngOnDestroy(): void {
+    if (this.cooldownTimer) clearInterval(this.cooldownTimer);
+  }
+
   login(): void {
     this.error = '';
+    this.info = '';
+    this.unverifiedEmail = '';
     this.loading = true;
     this.auth.login(this.email.trim().toLowerCase(), this.password).subscribe({
       next: (session) => {
@@ -222,8 +262,13 @@ export class CandidateAuthComponent {
         this.router.navigateByUrl(this.returnUrl);
       },
       error: (error) => {
-        this.error = error?.error?.message || 'Email atau password tidak sesuai.';
         this.loading = false;
+        if (error?.status === 403 && error?.error?.code === 'EMAIL_NOT_VERIFIED') {
+          this.unverifiedEmail = this.email.trim().toLowerCase();
+          this.error = error.error.message || 'Email Anda belum diverifikasi.';
+          return;
+        }
+        this.error = error?.error?.message || 'Email atau password tidak sesuai.';
       },
     });
   }
@@ -275,10 +320,19 @@ export class CandidateAuthComponent {
       password: this.password,
       termsAccepted: true,
     }).subscribe({
-      next: (session) => {
+      next: (result) => {
         this.loading = false;
         this.termsModalOpen = false;
-        if (session.onboardingCompleted === false) {
+        if (result.verificationRequired) {
+          this.info = '';
+          this.pendingEmail = result.email;
+          this.pendingMessage = result.message;
+          this.password = '';
+          this.error = result.emailSent ? '' : 'Email belum terkirim. Tekan tombol kirim ulang di bawah.';
+          return;
+        }
+        const session = result.auth;
+        if (!session || session.onboardingCompleted === false) {
           this.router.navigate(['/onboarding'], { queryParams: { returnUrl: this.returnUrl } });
           return;
         }
@@ -291,5 +345,43 @@ export class CandidateAuthComponent {
         this.termsConfirmed = false;
       },
     });
+  }
+
+  resend(email: string): void {
+    if (this.resending || this.cooldown > 0) return;
+    this.error = '';
+    this.info = '';
+    this.resending = true;
+    this.auth.resendVerification(email).subscribe({
+      next: (response) => {
+        this.resending = false;
+        this.info = response.message;
+        this.startCooldown(60);
+      },
+      error: (error) => {
+        this.resending = false;
+        this.error = error?.error?.message || 'Email verifikasi belum bisa dikirim. Coba lagi beberapa saat lagi.';
+      },
+    });
+  }
+
+  backToLogin(): void {
+    this.email = this.pendingEmail;
+    this.pendingEmail = '';
+    this.mode = 'login';
+    this.error = '';
+    this.info = '';
+  }
+
+  private startCooldown(seconds: number): void {
+    this.cooldown = seconds;
+    if (this.cooldownTimer) clearInterval(this.cooldownTimer);
+    this.cooldownTimer = setInterval(() => {
+      this.cooldown -= 1;
+      if (this.cooldown <= 0 && this.cooldownTimer) {
+        clearInterval(this.cooldownTimer);
+        this.cooldownTimer = null;
+      }
+    }, 1000);
   }
 }

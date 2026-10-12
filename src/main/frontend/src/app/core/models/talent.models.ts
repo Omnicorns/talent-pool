@@ -112,3 +112,13 @@ export interface JobApplication {
   appliedAt?: string | null;
   updatedAt?: string | null;
 }
+
+export interface TalentRegisterResult {
+  message: string;
+  email: string;
+  /** true bila kandidat harus membuka link di emailnya sebelum bisa masuk. */
+  verificationRequired: boolean;
+  emailSent: boolean;
+  /** Terisi hanya bila verifikasi email dimatikan di server. */
+  auth: TalentSession | null;
+}

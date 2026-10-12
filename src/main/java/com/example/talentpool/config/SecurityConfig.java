@@ -70,7 +70,9 @@ public class SecurityConfig {
                                 "/api/talent/auth/register",
                                 "/api/talent/auth/login",
                                 "/api/talent/auth/forgot-password",
-                                "/api/talent/auth/reset-password"
+                                "/api/talent/auth/reset-password",
+                                "/api/talent/auth/verify-email",
+                                "/api/talent/auth/resend-verification"
                         ).permitAll()
 
                         .requestMatchers("/api/talent/**").hasRole("TALENT")

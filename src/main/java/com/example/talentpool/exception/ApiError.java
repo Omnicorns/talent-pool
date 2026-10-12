@@ -9,6 +9,11 @@ public record ApiError(
         String error,
         String message,
         String path,
-        Map<String, String> validationErrors
+        Map<String, String> validationErrors,
+        String code
 ) {
+    public ApiError(Instant timestamp, int status, String error, String message, String path,
+                    Map<String, String> validationErrors) {
+        this(timestamp, status, error, message, path, validationErrors, null);
+    }
 }

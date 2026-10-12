@@ -52,6 +52,14 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.CONFLICT, "Data kandidat bertabrakan dengan data yang sudah ada", request, null);
     }
 
+    @ExceptionHandler(EmailNotVerifiedException.class)
+    ResponseEntity<ApiError> emailNotVerified(EmailNotVerifiedException ex, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).contentType(MediaType.APPLICATION_JSON).body(new ApiError(
+                Instant.now(), HttpStatus.FORBIDDEN.value(), HttpStatus.FORBIDDEN.getReasonPhrase(), ex.getMessage(),
+                request.getRequestURI(), null, "EMAIL_NOT_VERIFIED"
+        ));
+    }
+
     @ExceptionHandler(MailDeliveryException.class)
     ResponseEntity<ApiError> mailDelivery(MailDeliveryException ex, HttpServletRequest request) {
         return build(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage(), request, null);

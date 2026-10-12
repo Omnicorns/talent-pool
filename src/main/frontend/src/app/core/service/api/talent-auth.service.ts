@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
-import { TalentSession } from '../../models/talent.models';
+import { TalentRegisterResult, TalentSession } from '../../models/talent.models';
 import { API_BASE } from './api-base';
 
 const SESSION_KEY = 'sarinahCandidateSession';
@@ -22,9 +22,17 @@ export class TalentAuthService {
     phone: string;
     password: string;
     termsAccepted: boolean;
-  }): Observable<TalentSession> {
-    return this.http.post<TalentSession>(`${API_BASE}/talent/auth/register`, payload)
-      .pipe(tap((session) => this.saveSession(session)));
+  }): Observable<TalentRegisterResult> {
+    return this.http.post<TalentRegisterResult>(`${API_BASE}/talent/auth/register`, payload)
+      .pipe(tap((result) => { if (result.auth) this.saveSession(result.auth); }));
+  }
+
+  verifyEmail(token: string) {
+    return this.http.post<{ message: string }>(`${API_BASE}/talent/auth/verify-email`, { token });
+  }
+
+  resendVerification(email: string) {
+    return this.http.post<{ message: string }>(`${API_BASE}/talent/auth/resend-verification`, { email });
   }
 
   forgotPassword(email: string) {

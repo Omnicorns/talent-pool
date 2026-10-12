@@ -6,6 +6,7 @@ import { LandingComponent } from './features/public/landing.component';
 import { CandidateAuthComponent } from './features/auth/candidate-auth.component';
 import { ForgotPasswordComponent } from './features/auth/forgot-password.component';
 import { ResetPasswordComponent } from './features/auth/reset-password.component';
+import { VerifyEmailComponent } from './features/auth/verify-email.component';
 import { CandidatePortalComponent } from './features/candidate/candidate-portal.component';
 import { TalentOnboardingComponent } from './features/candidate/talent-onboarding.component';
 import { JobDetailComponent } from './features/public/job-detail.component';
@@ -26,6 +27,7 @@ export const routes: Routes = [
   { path: 'register', component: CandidateAuthComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: 'reset-password', component: ResetPasswordComponent },
+  { path: 'verify-email', component: VerifyEmailComponent },
   { path: 'onboarding', component: TalentOnboardingComponent, canActivate: [candidateAuthGuard] },
   { path: 'portal', component: CandidatePortalComponent, canActivate: [completedOnboardingGuard] },
   { path: 'backoffice/login', component: BackofficeLoginComponent },
