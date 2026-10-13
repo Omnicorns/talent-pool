@@ -307,7 +307,8 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
               <label class="field" *ngIf="drawerSection === 'education'">Jurusan<input [(ngModel)]="editEducation.major"></label>
               <label class="field" *ngIf="drawerSection === 'training'">Nama pelatihan atau sertifikasi<input [(ngModel)]="editEducation.major"></label>
               <label class="field" *ngIf="drawerSection === 'training'">Penyelenggara<input [(ngModel)]="editEducation.institution"></label>
-              <label class="field">{{ drawerSection === 'education' ? 'Jenjang' : 'Jenis' }}<input [(ngModel)]="editEducation.level"></label>
+              <label class="field" *ngIf="drawerSection === 'education'">Jenjang<app-choice-field [options]="educationLevelOptions" [allowOther]="false" label="Jenjang" [(value)]="editEducation.level"></app-choice-field></label>
+              <label class="field" *ngIf="drawerSection === 'training'">Jenis<input [(ngModel)]="editEducation.level"></label>
               <div class="form-grid">
                 <label class="field">Tahun mulai<input type="number" [(ngModel)]="editEducation.startYear"></label>
                 <label class="field">Tahun selesai<input type="number" [(ngModel)]="editEducation.endYear"></label>
@@ -603,6 +604,13 @@ export class CandidatePortalComponent implements OnInit {
     this.portal.applications().subscribe((result) => this.applications = result?.content || []);
     this.portal.activities().subscribe((items) => this.activities = items || []);
     this.portal.interviews().subscribe((items) => this.interviews = items || []);
+  }
+
+  /** Pilihan jenjang; nilai lama yang tidak ada di daftar tetap ditampilkan supaya tidak hilang saat disimpan. */
+  get educationLevelOptions(): string[] {
+    const current = this.editEducation?.level;
+    const levels = this.options.educationLevels;
+    return current && !levels.includes(current) ? [current, ...levels] : levels;
   }
 
   get formalEducations(): EducationItem[] { return (this.profile?.educations || []).filter((item) => item.type === 'FORMAL'); }
