@@ -9,6 +9,9 @@ import { TalentAuthService } from '../../core/service/api/talent-auth.service';
 import { TalentPortalService } from '../../core/service/api/talent-portal.service';
 import { FMT } from '../../shared/labels';
 import { IconComponent } from '../../shared/icon.component';
+import { PostalRegionFieldComponent } from '../../shared/postal-region-field.component';
+import { SocialAccountsFieldComponent } from '../../shared/social-accounts-field.component';
+import { cleanSocial, socialError, socialList } from '../../shared/social-accounts';
 import { ChoiceFieldComponent } from '../../shared/choice-field.component';
 import { TALENT_OPTIONS } from '../../shared/talent-options';
 
@@ -17,7 +20,7 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
 @Component({
   selector: 'app-candidate-portal',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, CareerHeaderComponent, TalentProfileDetailsComponent, IconComponent, ChoiceFieldComponent],
+  imports: [CommonModule, FormsModule, RouterLink, CareerHeaderComponent, TalentProfileDetailsComponent, IconComponent, ChoiceFieldComponent, PostalRegionFieldComponent, SocialAccountsFieldComponent],
   template: `
     <div class="site" *ngIf="profile; else loadingTpl">
       <app-career-header active="portal" [profilePictureUrl]="profilePictureUrl"></app-career-header>
@@ -144,7 +147,7 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
                     <div><dt>Lokasi kerja yang diminati</dt><dd>{{ profile.preferredLocations.join(', ') || '-' }}</dd></div>
                     <div><dt>Kemampuan bahasa</dt><dd>{{ languageSummary }}</dd></div>
                     <div><dt>LinkedIn</dt><dd>{{ profile.profileDetails?.linkedinUrl || '-' }}</dd></div>
-                    <div><dt>Media sosial</dt><dd>{{ joinParts(profile.profileDetails?.socialPlatform, profile.profileDetails?.socialUsername) }}</dd></div>
+                    <div><dt>Media sosial</dt><dd><span class="line" *ngFor="let item of socials">{{ item }}</span><ng-container *ngIf="!socials.length">-</ng-container></dd></div>
                   </dl>
                   <ng-container *ngIf="profile.tools.length">
                     <p class="subhead">Tools yang dikuasai</p>
@@ -156,14 +159,14 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
               <section id="my-applications" class="profile-card profile-section">
                 <div class="section-title"><h2>Lamaran saya</h2><a class="btn btn-secondary btn-sm" routerLink="/" fragment="open-positions">Cari lowongan</a></div>
                 <div class="app-list" *ngIf="applications.length; else noApplications">
-                  <article class="app" *ngFor="let app of applications">
+                  <article class="app" *ngFor="let app of visibleApplications">
                     <div>
                       <h3>{{ app.jobTitle }}</h3>
                       <p class="when">Dilamar {{ fmt.fullDate(app.appliedAt) }}</p>
                     </div>
                     <div class="app-actions">
                       <button type="button" class="btn btn-ghost btn-sm" (click)="openApplicationHistory(app)"><app-icon name="history" [size]="16"></app-icon> Riwayat</button>
-                      <button *ngIf="app.status === 'ACTIVE'" type="button" class="btn btn-danger btn-sm" (click)="withdrawApplication(app)">Tarik lamaran</button>
+                      <button *ngIf="canWithdraw(app)" type="button" class="btn btn-danger btn-sm" (click)="withdrawApplication(app)">Tarik lamaran</button>
                     </div>
                     <div class="stage-track" *ngIf="app.status !== 'REJECTED' && app.status !== 'WITHDRAWN'; else ended"
                       [style.gridTemplateColumns]="'repeat(' + visibleStages(app).length + ', minmax(0, 1fr))'"
@@ -179,9 +182,29 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
                     </ng-template>
                   </article>
                 </div>
+                <button type="button" class="btn btn-ghost btn-sm show-more" *ngIf="applications.length > applicationPreview" (click)="showAllApplications = !showAllApplications"
+                  [attr.aria-expanded]="showAllApplications">
+                  {{ showAllApplications ? 'Tampilkan lebih sedikit' : 'Lihat semua lamaran (' + applications.length + ')' }}
+                  <app-icon [name]="showAllApplications ? 'chevron-up' : 'chevron-down'" [size]="16"></app-icon>
+                </button>
                 <ng-template #noApplications>
                   <div class="empty"><strong>Belum ada lamaran</strong>Lihat lowongan yang sedang dibuka dan lamar dengan profil ini.</div>
                 </ng-template>
+
+                <div class="app-interviews">
+                  <h3 class="subhead">Jadwal interview</h3>
+                  <div *ngIf="interviews.length; else noInterview">
+                    <article class="interview-item" *ngFor="let item of interviews">
+                      <div style="display: flex; justify-content: space-between; gap: 8px; align-items: flex-start">
+                        <strong>{{ item.jobTitle || 'Interview Talent Pool' }}</strong>
+                        <span class="tag" [ngClass]="'tag-' + fmt.tone(item.status)">{{ fmt.label(item.status) }}</span>
+                      </div>
+                      <p><app-icon name="clock" [size]="15"></app-icon>{{ fmt.fullDate(item.scheduledAt) }}, {{ fmt.time(item.scheduledAt) }} · {{ item.durationMinutes }} menit</p>
+                      <p><app-icon [name]="item.mode === 'ONLINE' ? 'video' : item.mode === 'PHONE' ? 'phone' : 'pin'" [size]="15"></app-icon>{{ item.locationOrLink || fmt.label(item.mode) }}</p>
+                    </article>
+                  </div>
+                  <ng-template #noInterview><p class="muted" style="font-size: 14px">Belum ada jadwal interview.</p></ng-template>
+                </div>
               </section>
             </div>
 
@@ -190,22 +213,6 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
                 <h2>Data pribadi <button class="btn btn-ghost btn-sm" (click)="openDrawer('profile')" aria-label="Ubah data pribadi"><app-icon name="edit" [size]="16"></app-icon></button></h2>
                 <app-talent-profile-details [profile]="profile" [showAdditionalInformation]="false" [showEducationInformation]="false"></app-talent-profile-details>
               </section>
-
-              <section class="side-card">
-                <h2>Jadwal interview</h2>
-                <div *ngIf="interviews.length; else noInterview">
-                  <article class="interview-item" *ngFor="let item of interviews">
-                    <div style="display: flex; justify-content: space-between; gap: 8px; align-items: flex-start">
-                      <strong>{{ item.jobTitle || 'Interview Talent Pool' }}</strong>
-                      <span class="tag" [ngClass]="'tag-' + fmt.tone(item.status)">{{ fmt.label(item.status) }}</span>
-                    </div>
-                    <p><app-icon name="clock" [size]="15"></app-icon>{{ fmt.fullDate(item.scheduledAt) }}, {{ fmt.time(item.scheduledAt) }} · {{ item.durationMinutes }} menit</p>
-                    <p><app-icon [name]="item.mode === 'ONLINE' ? 'video' : item.mode === 'PHONE' ? 'phone' : 'pin'" [size]="15"></app-icon>{{ item.locationOrLink || fmt.label(item.mode) }}</p>
-                  </article>
-                </div>
-                <ng-template #noInterview><p class="muted" style="font-size: 14px">Belum ada jadwal interview.</p></ng-template>
-              </section>
-
             </aside>
           </div>
         </div>
@@ -248,6 +255,7 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
           </header>
 
           <div class="drawer-body">
+            <p class="alert alert-error" *ngIf="drawerError" role="alert" style="margin-bottom: 16px"><app-icon name="alert"></app-icon><span>{{ drawerError }}</span></p>
             <div class="form-stack" *ngIf="drawerSection === 'profile'">
               <div class="photo-edit">
                 <span class="avatar avatar-lg">
@@ -270,20 +278,14 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
               <label class="field">Jenis kelamin<app-choice-field [options]="options.genders" [allowOther]="false" label="Jenis kelamin" [value]="profile.profileDetails?.gender" (valueChange)="setDetail('gender', $event)"></app-choice-field></label>
               <label class="field">Agama<app-choice-field [options]="options.religions" [allowOther]="false" label="Agama" [(value)]="profile.religion"></app-choice-field></label>
               <label class="field">Alamat KTP<textarea rows="3" [(ngModel)]="profile.citizenIdAddress" placeholder="Nama jalan, nomor rumah, RT/RW"></textarea></label>
-              <div class="form-grid">
-                <label class="field">Kode pos
-                  <input [ngModel]="profile.profileDetails?.postalCode" (ngModelChange)="postalCodeChanged($event)" inputmode="numeric" maxlength="5" placeholder="5 digit">
-                  <small [class.field-error]="!!postalError">{{ postalLoading ? 'Mencari wilayah…' : postalError }}</small>
-                </label>
-                <label class="field">Kelurahan, kecamatan, kota
-                  <select [ngModel]="profile.profileDetails?.region" (ngModelChange)="setDetail('region', $event)" [disabled]="postalLoading">
-                    <option value="">{{ postalRegions.length ? 'Pilih wilayah' : 'Isi kode pos terlebih dahulu' }}</option>
-                    <option *ngFor="let region of postalRegions" [value]="region">{{ region }}</option>
-                  </select>
-                </label>
-              </div>
+              <app-postal-region-field codeLabel="Kode pos KTP" regionLabel="Kelurahan, kecamatan, kota"
+                [postalCode]="profile.profileDetails?.postalCode" [region]="profile.profileDetails?.region"
+                (postalCodeChange)="setDetail('postalCode', $event)" (regionChange)="setDetail('region', $event)"></app-postal-region-field>
               <label class="check"><input type="checkbox" [(ngModel)]="profile.sameAsCitizenIdAddress"> Alamat domisili sama dengan alamat KTP</label>
               <label class="field" *ngIf="!profile.sameAsCitizenIdAddress">Alamat domisili<textarea rows="3" [(ngModel)]="profile.residentialAddress"></textarea></label>
+              <app-postal-region-field *ngIf="!profile.sameAsCitizenIdAddress" codeLabel="Kode pos domisili" regionLabel="Kelurahan, kecamatan, kota domisili"
+                [postalCode]="profile.profileDetails?.residentialPostalCode" [region]="profile.profileDetails?.residentialRegion"
+                (postalCodeChange)="setDetail('residentialPostalCode', $event)" (regionChange)="setDetail('residentialRegion', $event)"></app-postal-region-field>
               <label class="field">Tahu Sarinah dari<app-choice-field [options]="options.sources" label="Sumber" [(value)]="profile.source"></app-choice-field></label>
             </div>
 
@@ -308,7 +310,7 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
               <label class="field" *ngIf="drawerSection === 'training'">Nama pelatihan atau sertifikasi<input [(ngModel)]="editEducation.major"></label>
               <label class="field" *ngIf="drawerSection === 'training'">Penyelenggara<input [(ngModel)]="editEducation.institution"></label>
               <label class="field" *ngIf="drawerSection === 'education'">Jenjang<app-choice-field [options]="educationLevelOptions" [allowOther]="false" label="Jenjang" [(value)]="editEducation.level"></app-choice-field></label>
-              <label class="field" *ngIf="drawerSection === 'training'">Jenis<input [(ngModel)]="editEducation.level"></label>
+              <label class="field" *ngIf="drawerSection === 'training'">Jenis<app-choice-field [options]="trainingKindOptions" [allowOther]="false" label="Jenis" [(value)]="editEducation.level"></app-choice-field></label>
               <div class="form-grid">
                 <label class="field">Tahun mulai<input type="number" [(ngModel)]="editEducation.startYear"></label>
                 <label class="field">Tahun selesai<input type="number" [(ngModel)]="editEducation.endYear"></label>
@@ -325,6 +327,7 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
               <label class="field">Tools<input [ngModel]="profile.tools.join(', ')" (ngModelChange)="profile.tools = splitList($event, 20)"><small>Pisahkan dengan koma.</small></label>
               <label class="field">Bahasa<input [(ngModel)]="profile.languanges"></label>
               <label class="field">LinkedIn<input [ngModel]="profile.profileDetails?.linkedinUrl || ''" (ngModelChange)="setLinkedInUrl($event)" type="url" placeholder="https://www.linkedin.com/in/…"></label>
+              <fieldset class="field-group"><legend>Media sosial</legend><app-social-accounts-field [details]="socialDetails"></app-social-accounts-field></fieldset>
             </div>
           </div>
 
@@ -355,10 +358,11 @@ export class CandidatePortalComponent implements OnInit {
   profilePicturePreview: string | null = null;
   saving = false;
   readonly fmt = FMT;
+  drawerError = '';
+  showAllApplications = false;
+  readonly applicationPreview = 2;
+  readonly trainingKinds = ['Pelatihan', 'Sertifikasi'];
   readonly options = TALENT_OPTIONS;
-  postalRegions: string[] = [];
-  postalLoading = false;
-  postalError = '';
   readonly tabs = [
     { id: 'about', label: 'Tentang' },
     { id: 'experiences', label: 'Pengalaman' },
@@ -528,10 +532,23 @@ export class CandidatePortalComponent implements OnInit {
     return index < 0 ? 0 : index;
   }
 
-  /** Pelamar hanya melihat Dikirim dan Screening; tahap berikutnya baru tampil setelah masuk Interview. */
+  /** Tahap tampil satu per satu: hanya sampai tahap yang sudah dicapai lamaran. */
   visibleStages(app: JobApplication) {
-    const reachedInterview = app.status === 'HIRED' || this.applicationStageIndex(app.stage) >= 2;
-    return reachedInterview ? this.applicationStages : this.applicationStages.slice(0, 2);
+    const reached = app.status === 'HIRED' ? this.applicationStages.length : this.applicationStageIndex(app.stage) + 1;
+    return this.applicationStages.slice(0, reached);
+  }
+
+  canWithdraw(app: JobApplication): boolean {
+    return app.status === 'ACTIVE' && app.stage === 'NEW_CANDIDATE';
+  }
+
+  get visibleApplications(): JobApplication[] {
+    return this.showAllApplications ? this.applications : this.applications.slice(0, this.applicationPreview);
+  }
+
+  get trainingKindOptions(): string[] {
+    const current = this.editEducation?.level;
+    return current && !this.trainingKinds.includes(current) ? [current, ...this.trainingKinds] : this.trainingKinds;
   }
 
   withdrawApplication(app: JobApplication): void {
@@ -665,10 +682,6 @@ export class CandidatePortalComponent implements OnInit {
         ? { type, clientKey: type === 'FORMAL' ? crypto.randomUUID() : null, institution: '', level: '', major: '', startYear: null, endYear: null, description: '', ipk: null }
         : structuredClone(this.profile.educations[index]);
     }
-    this.postalRegions = [];
-    this.postalError = '';
-    const code = this.profile.profileDetails?.postalCode || '';
-    if (section === 'profile' && /^\d{5}$/.test(code)) this.loadPostalRegions(code, false);
     this.drawerOpen = true;
   }
 
@@ -681,38 +694,10 @@ export class CandidatePortalComponent implements OnInit {
 
   setLinkedInUrl(value: string): void { this.ensureDetails().linkedinUrl = value; }
 
-  setDetail(field: 'gender' | 'region', value: string): void { this.ensureDetails()[field] = value; }
+  setDetail(field: 'gender' | 'region' | 'postalCode' | 'residentialPostalCode' | 'residentialRegion', value: string): void { this.ensureDetails()[field] = value; }
 
-  postalCodeChanged(code: string): void {
-    const details = this.ensureDetails();
-    details.postalCode = code;
-    details.region = '';
-    this.postalRegions = [];
-    this.postalError = '';
-    if (/^\d{5}$/.test(code)) this.loadPostalRegions(code, true);
-    else this.postalLoading = false;
-  }
-
-  private loadPostalRegions(code: string, changed: boolean): void {
-    const details = this.ensureDetails();
-    const previous = details.region;
-    this.postalLoading = true;
-    this.portal.postalCodes(code).subscribe({
-      next: (regions) => {
-        if (details.postalCode !== code) return;
-        this.postalLoading = false;
-        this.postalRegions = regions;
-        this.postalError = regions.length ? '' : 'Kode pos tidak ditemukan. Periksa kembali kode pos KTP Anda.';
-        if (!changed && previous && regions.includes(previous)) details.region = previous;
-        if (regions.length === 1) details.region = regions[0];
-      },
-      error: () => {
-        if (details.postalCode !== code) return;
-        this.postalLoading = false;
-        this.postalError = 'Wilayah gagal dimuat. Ketik kembali kode pos untuk mencoba lagi.';
-      },
-    });
-  }
+  get socialDetails() { return this.ensureDetails(); }
+  get socials(): string[] { return socialList(this.profile?.profileDetails); }
 
   openEducationDrawer(section: 'education' | 'training', item: EducationItem): void {
     const index = this.profile.educations.indexOf(item);
@@ -728,7 +713,27 @@ export class CandidatePortalComponent implements OnInit {
     if ((event.target as HTMLElement).classList.contains('drawer-backdrop')) this.cancelDrawer();
   }
 
+  private validateDrawer(): string {
+    const p = this.profile;
+    if (this.drawerSection === 'profile') {
+      const d = p.profileDetails;
+      if (!p.sameAsCitizenIdAddress) {
+        if (!(p.residentialAddress || '').trim()) return 'Alamat domisili wajib diisi.';
+        if (!/^\d{5}$/.test(d?.residentialPostalCode || '') || !(d?.residentialRegion || '').trim()) return 'Lengkapi kode pos dan pilihan wilayah domisili.';
+      }
+    }
+    if (this.drawerSection === 'additional') {
+      const d = this.ensureDetails();
+      cleanSocial(d);
+      if (!(d.socialPlatform || '').trim() || !(d.socialUsername || '').trim()) return 'Media sosial dan username wajib diisi.';
+      return socialError(d);
+    }
+    return '';
+  }
+
   saveDrawer(): void {
+    this.drawerError = this.validateDrawer();
+    if (this.drawerError) return;
     if (this.drawerSection === 'experience' && this.editExperience) {
       if (this.drawerIndex == null) this.profile.workExperiences = [...this.profile.workExperiences, this.editExperience];
       else this.profile.workExperiences[this.drawerIndex] = this.editExperience;
@@ -748,11 +753,15 @@ export class CandidatePortalComponent implements OnInit {
         this.closeDrawer();
         if (photoChanged) this.loadProfilePicture();
       },
-      error: () => this.saving = false,
+      error: (error) => {
+        this.saving = false;
+        this.drawerError = error?.error?.message || 'Perubahan belum tersimpan. Periksa data Anda, lalu coba lagi.';
+      },
     });
   }
 
   private closeDrawer(): void {
+    this.drawerError = '';
     this.drawerOpen = false;
     this.drawerSection = null;
     this.drawerIndex = null;

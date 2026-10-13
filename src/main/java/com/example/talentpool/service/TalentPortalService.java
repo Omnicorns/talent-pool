@@ -157,6 +157,10 @@ public class TalentPortalService {
             throw new BadRequestException("Lamaran dengan status " + application.getStatus() + " tidak dapat ditarik");
         }
 
+        if (application.getStage() != com.example.talentpool.domain.HiringStage.NEW_CANDIDATE) {
+            throw new BadRequestException("Lamaran hanya dapat ditarik selama masih berstatus Dikirim");
+        }
+
         application.setStatus(ApplicationStatus.WITHDRAWN);
         JobApplication saved = applicationRepository.save(application);
         applicationService.recordHistory(saved, "WITHDRAWN", "Lamaran ditarik oleh kandidat");

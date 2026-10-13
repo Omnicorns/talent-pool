@@ -6,6 +6,7 @@ import { CandidateProfile, TalentProfileDetails } from '../core/models/talent.mo
 import { API_BASE } from '../core/service/api/api-base';
 import { IconComponent } from './icon.component';
 import { salaryRange } from './labels';
+import { socialList } from './social-accounts';
 
 @Component({
   selector: 'app-talent-profile-details',
@@ -18,7 +19,7 @@ import { salaryRange } from './labels';
       <div><dt>Agama</dt><dd>{{ profile.religion || '-' }}</dd></div>
       <div><dt>Alamat KTP</dt><dd>{{ profile.citizenIdAddress || '-' }}</dd></div>
       <div><dt>Wilayah dan kode pos</dt><dd>{{ joinParts(details.region, details.postalCode) }}</dd></div>
-      <div><dt>Alamat domisili</dt><dd>{{ profile.sameAsCitizenIdAddress ? 'Sama dengan alamat KTP' : (profile.residentialAddress || '-') }}</dd></div>
+      <div><dt>Alamat domisili</dt><dd>{{ profile.sameAsCitizenIdAddress ? 'Sama dengan alamat KTP' : joinParts(profile.residentialAddress, details.residentialRegion, details.residentialPostalCode) }}</dd></div>
       <div><dt>Tahu Sarinah dari</dt><dd>{{ profile.source || '-' }}</dd></div>
     </dl>
 
@@ -30,7 +31,7 @@ import { salaryRange } from './labels';
         <div><dt>Lokasi yang diminati</dt><dd>{{ profile.preferredLocations.join(', ') || '-' }}</dd></div>
         <div><dt>Kemampuan bahasa</dt><dd>{{ languages(details) }}</dd></div>
         <div><dt>LinkedIn</dt><dd>{{ details.linkedinUrl || '-' }}</dd></div>
-        <div><dt>Media sosial</dt><dd>{{ joinParts(details.socialPlatform, details.socialUsername) }}</dd></div>
+        <div><dt>Media sosial</dt><dd><span class="line" *ngFor="let item of socials(details)">{{ item }}</span><ng-container *ngIf="!socials(details).length">-</ng-container></dd></div>
       </dl>
     </ng-container>
 
@@ -58,6 +59,7 @@ export class TalentProfileDetailsComponent {
   error = '';
   downloading = false;
   readonly salaryRange = salaryRange;
+  readonly socials = socialList;
 
   constructor(private http: HttpClient, private backofficeAuth: BackofficeAuthService) {}
 

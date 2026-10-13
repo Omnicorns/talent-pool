@@ -60,12 +60,11 @@
           </div>
           <label class="check"><input type="checkbox" [(ngModel)]="profile.sameAsCitizenIdAddress"> Alamat domisili sama dengan alamat KTP</label>
           <label class="field" *ngIf="!profile.sameAsCitizenIdAddress">Alamat domisili *<textarea [(ngModel)]="profile.residentialAddress" rows="3" required></textarea></label>
+          <app-postal-region-field *ngIf="!profile.sameAsCitizenIdAddress" codeLabel="Kode pos domisili *" regionLabel="Kelurahan, kecamatan, kota domisili *"
+            [(postalCode)]="details.residentialPostalCode" [(region)]="details.residentialRegion"></app-postal-region-field>
 
           <h3>Media sosial</h3>
-          <div class="form-grid">
-            <label class="field">Platform *<app-choice-field [options]="options.socialPlatforms" label="Platform" [(value)]="details.socialPlatform"></app-choice-field></label>
-            <label class="field">Username *<input [(ngModel)]="details.socialUsername" maxlength="100" placeholder="@username" required></label>
-          </div>
+          <app-social-accounts-field [details]="details"></app-social-accounts-field>
         </ng-container>
 
         <!-- 2. Pendidikan -->

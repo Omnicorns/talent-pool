@@ -16,14 +16,31 @@ public record TalentProfileDetails(
     @PositiveOrZero BigDecimal expectedSalaryMax,
     boolean noExperience,
     @Size(max=20) List<@Valid LanguageSkill> languageSkills,
-    @Size(max=50) List<@Valid TrainingCertification> trainingCertifications
+    @Size(max=50) List<@Valid TrainingCertification> trainingCertifications,
+    @Pattern(regexp="^$|[0-9]{5}") String residentialPostalCode,
+    @Size(max=500) String residentialRegion,
+    /** Media sosial tambahan (opsional, maksimal 2). Media sosial wajib tetap di socialPlatform/socialUsername. */
+    @Size(max=2) List<@Valid SocialAccount> socialAccounts
 ) {
+    public TalentProfileDetails {
+        socialAccounts = socialAccounts == null ? List.of() : socialAccounts;
+    }
+
     public TalentProfileDetails(String gender, String postalCode, String region, String linkedinUrl,
             String socialPlatform, String socialUsername, BigDecimal expectedSalaryMax, boolean noExperience,
             List<LanguageSkill> languageSkills) {
         this(gender, postalCode, region, linkedinUrl, socialPlatform, socialUsername, expectedSalaryMax,
-                noExperience, languageSkills, List.of());
+                noExperience, languageSkills, List.of(), null, null, List.of());
     }
+
+    public TalentProfileDetails(String gender, String postalCode, String region, String linkedinUrl,
+            String socialPlatform, String socialUsername, BigDecimal expectedSalaryMax, boolean noExperience,
+            List<LanguageSkill> languageSkills, List<TrainingCertification> trainingCertifications) {
+        this(gender, postalCode, region, linkedinUrl, socialPlatform, socialUsername, expectedSalaryMax,
+                noExperience, languageSkills, trainingCertifications, null, null, List.of());
+    }
+
+    public record SocialAccount(@NotBlank @Size(max=50) String platform, @NotBlank @Size(max=100) String username) {}
 
     public record LanguageSkill(@NotBlank @Size(max=80) @Pattern(regexp="[a-zA-Z0-9-]{1,80}") String key,
         @NotBlank @Size(max=100) String name, @NotBlank @Size(max=50) String proficiency) {}

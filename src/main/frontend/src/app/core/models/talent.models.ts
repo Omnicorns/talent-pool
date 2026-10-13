@@ -13,6 +13,10 @@ export interface TalentProfileDetails {
   socialPlatform: string; socialUsername: string; expectedSalaryMax: number|null;
   noExperience: boolean; languageSkills: Array<{key:string;name:string;proficiency:string}>;
   trainingCertifications: TrainingCertification[];
+  residentialPostalCode?: string | null;
+  residentialRegion?: string | null;
+  /** Media sosial tambahan (opsional, maksimal 2); yang wajib tetap di socialPlatform/socialUsername. */
+  socialAccounts?: Array<{ platform: string; username: string }>;
 }
 export interface TrainingCertification {
   name: string;
