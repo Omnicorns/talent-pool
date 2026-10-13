@@ -288,7 +288,7 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
             </div>
 
             <div class="form-stack" *ngIf="drawerSection === 'about'">
-              <label class="field">Tentang saya<textarea rows="10" [(ngModel)]="profile.about" maxlength="500"></textarea><small>{{ (profile.about || '').length }} / 500 karakter</small>placeholder="Tulis ringkasan singkat tentang pengalaman dan tujuan karier Anda agar recruiter cepat memahami profil Anda."</label>
+              <label class="field">Tentang saya<textarea rows="10" [(ngModel)]="profile.about" placeholder="Tulis ringkasan singkat tentang pengalaman dan tujuan karier Anda agar recruiter cepat memahami profil Anda." maxlength="500"></textarea><small>{{ (profile.about || '').length }} / 500 karakter</small></label>
             </div>
 
             <div class="form-stack" *ngIf="drawerSection === 'experience' && editExperience">
