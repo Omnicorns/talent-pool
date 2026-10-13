@@ -21,7 +21,14 @@ public class TalentProfileValidator {
         require(Set.of("Laki-laki","Perempuan").contains(Objects.toString(d.gender(),"")) && !blank(c.getReligion()),"Jenis kelamin dan agama wajib diisi.");
         require(!blank(c.getCitizenIdAddress()) && d.postalCode()!=null && d.postalCode().matches("[0-9]{5}") && postalCodes.search(d.postalCode()).contains(d.region()),"Alamat KTP, kode pos, dan wilayah wajib diisi.");
         require(c.isSameAsCitizenIdAddress() || !blank(c.getResidentialAddress()),"Alamat domisili wajib diisi.");
+        require(c.isSameAsCitizenIdAddress() || (d.residentialPostalCode()!=null && d.residentialPostalCode().matches("[0-9]{5}")
+                && postalCodes.search(d.residentialPostalCode()).contains(d.residentialRegion())),"Kode pos dan wilayah domisili wajib diisi.");
         require(!blank(d.socialPlatform()) && !blank(d.socialUsername()),"Media sosial dan username wajib diisi.");
+        Set<String> platforms=new HashSet<>(List.of(d.socialPlatform().trim().toLowerCase()));
+        for(var account:d.socialAccounts()) {
+            require(!blank(account.platform()) && !blank(account.username()),"Media sosial tambahan harus berisi platform dan username.");
+            require(platforms.add(account.platform().trim().toLowerCase()),"Platform media sosial tidak boleh sama.");
+        }
         List<Education> education=c.getEducations().stream().filter(e -> e.getType()==EducationType.FORMAL).toList();
         require(!education.isEmpty(),"Tambahkan pendidikan terakhir.");
         Set<String> keys=new HashSet<>();

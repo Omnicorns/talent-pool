@@ -755,3 +755,14 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 .check-email p { color: var(--ink-2); }
 .check-email .muted { font-size: 14px; }
 .check-email .alert { text-align: left; }
+
+.social-row { display: flex; align-items: flex-start; gap: 6px; }
+.social-row .icon-btn { flex: none; margin-top: 2px; }
+.social-row input { flex: 1; min-width: 0; }
+
+.show-more { margin-top: 12px; }
+.app-interviews { margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--line); }
+.app-interviews .subhead { margin: 0 0 12px; }
+.facts dd .line { display: block; }
+.field-group { border: 0; padding: 0; margin: 0; display: grid; gap: 10px; }
+.field-group legend { padding: 0; margin-bottom: 10px; font-size: 14px; font-weight: 600; color: var(--ink-2); }

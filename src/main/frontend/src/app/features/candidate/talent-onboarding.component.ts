@@ -9,7 +9,10 @@ import { ChoiceFieldComponent } from '../../shared/choice-field.component';
 import { TagSelectComponent } from '../../shared/tag-select.component';
 import { TALENT_OPTIONS } from '../../shared/talent-options';
 import { IconComponent } from '../../shared/icon.component';
-@Component({selector:'app-talent-onboarding',standalone:true,imports:[CommonModule,FormsModule,RouterLink,ChoiceFieldComponent,TagSelectComponent,IconComponent],templateUrl:'./talent-onboarding.component.html'})
+import { PostalRegionFieldComponent } from '../../shared/postal-region-field.component';
+import { SocialAccountsFieldComponent } from '../../shared/social-accounts-field.component';
+import { cleanSocial, socialError } from '../../shared/social-accounts';
+@Component({selector:'app-talent-onboarding',standalone:true,imports:[CommonModule,FormsModule,RouterLink,ChoiceFieldComponent,TagSelectComponent,IconComponent,PostalRegionFieldComponent,SocialAccountsFieldComponent],templateUrl:'./talent-onboarding.component.html'})
 export class TalentOnboardingComponent implements OnInit, OnDestroy {
   profile!:CandidateProfile; details!:TalentProfileDetails; options=TALENT_OPTIONS;
   step=1; saving=false; editing=false; error=''; returnUrl='/portal';
@@ -28,7 +31,7 @@ export class TalentOnboardingComponent implements OnInit, OnDestroy {
     this.portal.profile().subscribe({next:profile=>{
       this.profile={...profile,educations:profile.educations||[],workExperiences:profile.workExperiences||[],portfolios:profile.portfolios||[],relatedIndustries:profile.relatedIndustries||[],relatedJobPositions:profile.relatedJobPositions||[],tools:profile.tools||[],jobInterests:profile.jobInterests||[],preferredLocations:profile.preferredLocations||[]};
       if(this.profile.profilePictureOriginalName)this.loadExistingProfilePicture();
-      this.details={gender:'',postalCode:'',region:'',linkedinUrl:'',socialPlatform:'',socialUsername:'',expectedSalaryMax:null,noExperience:false,languageSkills:[],trainingCertifications:[],...profile.profileDetails};this.details.languageSkills ||= [];this.details.trainingCertifications ||= [];this.profile.profileDetails=this.details;
+      this.details={gender:'',postalCode:'',region:'',linkedinUrl:'',socialPlatform:'',socialUsername:'',expectedSalaryMax:null,noExperience:false,languageSkills:[],trainingCertifications:[],residentialPostalCode:'',residentialRegion:'',socialAccounts:[],...profile.profileDetails};this.details.socialAccounts ||= [];this.details.languageSkills ||= [];this.details.trainingCertifications ||= [];this.profile.profileDetails=this.details;
       if(['Talent Portal','Website'].includes(this.profile.source||'')) this.profile.source='';
       this.formalEducations.forEach(edu=>edu.clientKey ||= crypto.randomUUID());this.profile.workExperiences.forEach(exp=>this.workDetails(exp));
       if(!this.formalEducations.length)this.addEducation();if(!this.details.noExperience && !this.profile.workExperiences.length)this.addExperience();if(!this.details.languageSkills.length)this.addLanguage();
@@ -87,7 +90,9 @@ export class TalentOnboardingComponent implements OnInit, OnDestroy {
       if(!d.gender || !p.religion || this.age===null || this.age>=120)return 'Jenis kelamin, agama, dan tanggal lahir yang valid wajib diisi.';
       if(!this.text(p.citizenIdAddress) || !/^\d{5}$/.test(d.postalCode) || !this.text(d.region) || !this.postalRegions.includes(d.region))return 'Lengkapi alamat KTP, kode pos, dan pilihan wilayah.';
       if(!p.sameAsCitizenIdAddress && !this.text(p.residentialAddress))return 'Alamat domisili wajib diisi.';
+      if(!p.sameAsCitizenIdAddress && (!/^\d{5}$/.test(d.residentialPostalCode||'') || !this.text(d.residentialRegion||'')))return 'Lengkapi kode pos dan pilihan wilayah domisili.';
       if(!this.text(d.socialPlatform) || !this.text(d.socialUsername))return 'Media sosial dan username wajib diisi.';
+      cleanSocial(d);const socialProblem=socialError(d);if(socialProblem)return socialProblem;
       if(d.linkedinUrl && !this.url(d.linkedinUrl))return 'URL LinkedIn harus diawali https:// atau http://.';
     }
     if(step===2){if(!this.formalEducations.length)return 'Tambahkan pendidikan terakhir.';for(const e of this.formalEducations){
