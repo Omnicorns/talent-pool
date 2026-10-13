@@ -206,16 +206,6 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
                 <ng-template #noInterview><p class="muted" style="font-size: 14px">Belum ada jadwal interview.</p></ng-template>
               </section>
 
-              <section class="side-card">
-                <h2>Aktivitas recruiter</h2>
-                <div class="activity" *ngIf="activities.length; else noActivity">
-                  <div *ngFor="let item of activities">
-                    <app-icon [name]="item.type === 'CV_VIEW' ? 'file' : 'eye'" [size]="16"></app-icon>
-                    <div><strong>{{ item.message }}</strong><small>{{ fmt.fullDate(item.viewedAt) }}, {{ fmt.time(item.viewedAt) }}</small></div>
-                  </div>
-                </div>
-                <ng-template #noActivity><p class="muted" style="font-size: 14px">Belum ada recruiter yang melihat profil Anda.</p></ng-template>
-              </section>
             </aside>
           </div>
         </div>
@@ -298,7 +288,7 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
             </div>
 
             <div class="form-stack" *ngIf="drawerSection === 'about'">
-              <label class="field">Tentang saya<textarea rows="10" [(ngModel)]="profile.about" maxlength="4000"></textarea><small>{{ (profile.about || '').length }} / 4000 karakter</small></label>
+              <label class="field">Tentang saya<textarea rows="10" [(ngModel)]="profile.about" maxlength="500"></textarea><small>{{ (profile.about || '').length }} / 500 karakter</small>placeholder="Tulis ringkasan singkat tentang pengalaman dan tujuan karier Anda agar recruiter cepat memahami profil Anda."</label>
             </div>
 
             <div class="form-stack" *ngIf="drawerSection === 'experience' && editExperience">
