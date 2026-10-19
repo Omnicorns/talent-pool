@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { BackofficeOverlayDirective } from '../../shared/backoffice-overlay.directive';
 import { BackofficeLayoutComponent } from '../../shared/backoffice-layout.component';
 import { BackofficeApiService } from '../../core/service/api/backoffice-api.service';
@@ -10,7 +11,7 @@ import { IconComponent } from '../../shared/icon.component';
 @Component({
   selector: 'app-backoffice-job-listings',
   standalone: true,
-  imports: [CommonModule, FormsModule, BackofficeLayoutComponent, BackofficeOverlayDirective, IconComponent],
+  imports: [CommonModule, FormsModule, RouterLink, BackofficeLayoutComponent, BackofficeOverlayDirective, IconComponent],
   template: `
     <app-backoffice-layout active="jobs">
       <div class="bo-head">
@@ -34,7 +35,9 @@ import { IconComponent } from '../../shared/icon.component';
         <article class="job-card" *ngFor="let job of rows">
           <div class="job-card-top">
             <span class="tag" [ngClass]="'tag-' + fmt.tone(job.status)">{{ fmt.label(job.status) }}</span>
-            <small>{{ job.applicationCount || 0 }} pelamar</small>
+            <button type="button" class="applicant-link" (click)="openApplicants(job)" [disabled]="!job.applicationCount" [attr.aria-label]="'Lihat ' + (job.applicationCount || 0) + ' pelamar untuk ' + job.title">
+              <app-icon name="users" [size]="14"></app-icon> {{ job.applicationCount || 0 }} pelamar
+            </button>
           </div>
           <div>
             <h2>{{ job.title }}</h2>
@@ -106,6 +109,36 @@ import { IconComponent } from '../../shared/icon.component';
           </footer>
         </aside>
       </div>
+
+      <div class="drawer-backdrop" *ngIf="applicantsJob" (click)="closeApplicantsOnBackdrop($event)">
+        <aside class="drawer" [boOverlay]="true" (overlayClose)="closeApplicants()" role="dialog" aria-modal="true" aria-labelledby="applicants-title">
+          <header class="drawer-head">
+            <div>
+              <h2 id="applicants-title">Pelamar</h2>
+              <p>{{ applicantsJob.title }} · {{ applicants.length }} orang</p>
+            </div>
+            <button type="button" class="icon-btn" (click)="closeApplicants()" aria-label="Tutup"><app-icon name="x"></app-icon></button>
+          </header>
+          <div class="drawer-body">
+            <p class="muted" *ngIf="applicantsLoading">Memuat pelamar…</p>
+            <div class="alert alert-error" *ngIf="applicantsError" role="alert"><app-icon name="alert"></app-icon><span>{{ applicantsError }}</span></div>
+            <p class="muted" *ngIf="!applicantsLoading && !applicantsError && !applicants.length">Belum ada pelamar.</p>
+            <ul class="applicant-list" *ngIf="applicants.length">
+              <li *ngFor="let a of applicants">
+                <div>
+                  <strong>{{ a.candidateName }}</strong>
+                  <small>Melamar {{ fmt.fullDate(a.appliedAt) }}</small>
+                </div>
+                <span class="tag" [ngClass]="'tag-' + fmt.tone(a.stage)">{{ fmt.label(a.stage) }}</span>
+              </li>
+            </ul>
+          </div>
+          <footer class="drawer-foot">
+            <button class="btn btn-secondary" (click)="closeApplicants()">Tutup</button>
+            <a class="btn btn-primary" routerLink="/backoffice/applications" (click)="closeApplicants()">Kelola di Lamaran</a>
+          </footer>
+        </aside>
+      </div>
     </app-backoffice-layout>
   `,
 })
@@ -165,6 +198,30 @@ export class BackofficeJobListingsComponent implements OnInit {
     this.drawerOpen = false;
     this.editingId = null;
     this.error = '';
+  }
+
+  applicantsJob: any = null;
+  applicants: any[] = [];
+  applicantsLoading = false;
+  applicantsError = '';
+
+  openApplicants(job: any): void {
+    this.applicantsJob = job;
+    this.applicants = [];
+    this.applicantsError = '';
+    this.applicantsLoading = true;
+    this.api.jobApplications(job.id).subscribe({
+      next: (result) => { this.applicants = result?.content || []; this.applicantsLoading = false; },
+      error: () => { this.applicantsLoading = false; this.applicantsError = 'Daftar pelamar belum bisa dimuat. Coba lagi.'; },
+    });
+  }
+
+  closeApplicants(): void {
+    this.applicantsJob = null;
+  }
+
+  closeApplicantsOnBackdrop(event: MouseEvent): void {
+    if ((event.target as HTMLElement).classList.contains('drawer-backdrop')) this.closeApplicants();
   }
 
   closeOnBackdrop(event: MouseEvent): void {

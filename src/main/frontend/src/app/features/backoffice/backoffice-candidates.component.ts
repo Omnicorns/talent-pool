@@ -54,8 +54,8 @@ import { IconComponent } from '../../shared/icon.component';
                 <td style="min-width: 180px"><strong>{{ item.relatedPosition || '-' }}</strong><small>{{ item.industry || '' }}</small></td>
                 <td>{{ fmt.experience(item.experienceMonths) }}</td>
                 <td>
-                  <select class="select-inline" [ngModel]="item.status" (ngModelChange)="changeStatus(item, $event)" [attr.aria-label]="'Status ' + item.fullName">
-                    <option *ngFor="let status of statuses" [value]="status">{{ fmt.label(status) }}</option>
+                  <select class="select-inline" [ngModel]="item.status || ''" (ngModelChange)="changeStatus(item, $event)" [attr.aria-label]="'Status ' + item.fullName">
+                    <option value="" disabled>Belum ditentukan</option><option *ngFor="let status of statuses" [value]="status">{{ fmt.label(status) }}</option>
                   </select>
                 </td>
                 <td>{{ item.source || '-' }}</td>
@@ -83,8 +83,8 @@ import { IconComponent } from '../../shared/icon.component';
               <div><span>Sumber</span>{{ item.source || '-' }}</div>
             </div>
             <div class="card-actions">
-              <select class="select-inline" [ngModel]="item.status" (ngModelChange)="changeStatus(item, $event)" [attr.aria-label]="'Status ' + item.fullName">
-                <option *ngFor="let status of statuses" [value]="status">{{ fmt.label(status) }}</option>
+              <select class="select-inline" [ngModel]="item.status || ''" (ngModelChange)="changeStatus(item, $event)" [attr.aria-label]="'Status ' + item.fullName">
+                <option value="" disabled>Belum ditentukan</option><option *ngFor="let status of statuses" [value]="status">{{ fmt.label(status) }}</option>
               </select>
               <button class="btn btn-secondary btn-sm" (click)="openCandidate(item)">Lihat profil</button>
             </div>
@@ -104,7 +104,7 @@ import { IconComponent } from '../../shared/icon.component';
               <div>
                 <h2>{{ selected.fullName }}</h2>
                 <p>{{ selected.relatedJobPositions?.join(', ') || selected.jobPosition || 'Kandidat Talent Pool' }}</p>
-                <span class="tag" [ngClass]="'tag-' + fmt.tone(selected.status)">{{ fmt.label(selected.status) }}</span>
+                <span class="tag" [ngClass]="'tag-' + fmt.tone(selected.status)">{{ selected.status ? fmt.label(selected.status) : 'Belum ditentukan' }}</span>
               </div>
             </div>
             <ng-template #headLoading><h2>Profil kandidat</h2></ng-template>

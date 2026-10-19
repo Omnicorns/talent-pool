@@ -103,6 +103,11 @@ export class BackofficeApiService {
     return this.http.delete<void>(`${API_BASE}/backoffice/job-listings/${id}`, { headers: this.headers });
   }
 
+  jobApplications(jobId: string) {
+    const params = new HttpParams().set('page', '0').set('size', '100').set('sort', 'updatedAt,desc');
+    return this.http.get<any>(`${API_BASE}/backoffice/job-listings/${jobId}/applications`, { headers: this.headers, params });
+  }
+
   applications() {
     const params = new HttpParams().set('page', '0').set('size', '100').set('sort', 'updatedAt,desc');
     return this.http.get<any>(`${API_BASE}/backoffice/applications`, { headers: this.headers, params });

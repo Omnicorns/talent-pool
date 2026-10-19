@@ -1,7 +1,6 @@
 package com.example.talentpool.service;
 
 import com.example.talentpool.domain.Candidate;
-import com.example.talentpool.domain.CandidateStatus;
 import com.example.talentpool.domain.TalentAccount;
 import com.example.talentpool.dto.TalentAuthResponse;
 import com.example.talentpool.dto.TalentChangePasswordRequest;
@@ -74,7 +73,7 @@ public class TalentAuthService {
         candidate.setEmail(email);
         candidate.setPhone(trimToNull(request.phone()));
         candidate.setSource("Talent Portal");
-        candidate.setStatus(CandidateStatus.POTENTIAL);
+        // Status sengaja dikosongkan; recruiter yang menentukannya setelah menilai kandidat.
         candidate.setTermsAccepted(request.termsAccepted());
         candidate = candidateRepository.saveAndFlush(candidate);
 

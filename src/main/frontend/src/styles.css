@@ -595,6 +595,13 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 .job-card { background: var(--white); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 20px; display: grid; gap: 14px; align-content: start; }
 .job-card-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .job-card-top small { color: var(--muted); font-size: 13px; }
+.applicant-link { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; padding: 4px 8px; margin: -4px -8px; border-radius: 8px; color: var(--brand, #b3202a); font-size: 13px; font-weight: 600; cursor: pointer; }
+.applicant-link:hover:not(:disabled) { background: rgba(0,0,0,.05); text-decoration: underline; }
+.applicant-link:disabled { color: var(--muted); cursor: default; font-weight: 400; }
+.applicant-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.applicant-list li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--line, #e5e5e5); border-radius: 10px; }
+.applicant-list li div { display: grid; gap: 2px; min-width: 0; }
+.applicant-list small { color: var(--muted); font-size: 12.5px; }
 .job-card h2 { font-size: 17px; }
 .job-card .dept { color: var(--muted); font-size: 14px; margin-top: 2px; }
 .job-card .facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }

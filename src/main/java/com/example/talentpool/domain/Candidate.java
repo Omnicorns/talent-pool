@@ -93,8 +93,8 @@ public class Candidate {
     private String source;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
-    private CandidateStatus status = CandidateStatus.POTENTIAL;
+    @Column(length = 30)
+    private CandidateStatus status;
 
     @Column(name = "terms_accepted", nullable = false)
     private boolean termsAccepted;

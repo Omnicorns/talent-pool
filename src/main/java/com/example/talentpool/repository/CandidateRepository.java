@@ -15,7 +15,8 @@ import java.util.UUID;
 public interface CandidateRepository extends JpaRepository<Candidate, UUID>, JpaSpecificationExecutor<Candidate> {
     Optional<Candidate> findByEmailIgnoreCase(String email);
     long countByStatus(CandidateStatus status);
-    long countByStatusNotIn(Collection<CandidateStatus> statuses);
+    @org.springframework.data.jpa.repository.Query("select count(c) from Candidate c where c.status is null or c.status not in :statuses")
+    long countByStatusNotIn(@org.springframework.data.repository.query.Param("statuses") Collection<CandidateStatus> statuses);
     long countByMovedToJobListingTrue();
     List<Candidate> findTop5ByOrderByCreatedAtDesc();
 

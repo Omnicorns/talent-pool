@@ -40,6 +40,9 @@ public class PublicTalentController {
     @GetMapping("/{id}/status")
     public Map<String, Object> status(@PathVariable UUID id) {
         CandidateStatus status = service.publicStatus(id);
-        return Map.of("candidateId", id, "status", status);
+        Map<String, Object> body = new java.util.LinkedHashMap<>();
+        body.put("candidateId", id);
+        body.put("status", status);
+        return body;
     }
 }

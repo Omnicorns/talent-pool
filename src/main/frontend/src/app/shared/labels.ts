@@ -1,7 +1,8 @@
 /** Human-readable Indonesian labels for backend enum values. */
 const LABELS: Record<string, string> = {
   // candidate status
-  AVAILABLE: 'Tersedia', SCREENED: 'Sudah disaring', POTENTIAL: 'Potensial', ARCHIVED: 'Diarsipkan',
+  AVAILABLE: 'Tersedia', SCREENED: 'Sudah disaring', UNKNOWN: 'Belum ditentukan',
+  POTENTIAL: 'Potensial', ARCHIVED: 'Diarsipkan',
   REJECTED: 'Tidak lanjut', SPAM: 'Spam', BLOCKED: 'Diblokir', WITHDRAWN: 'Mengundurkan diri', HIRED: 'Diterima',
   // hiring stage
   NEW_CANDIDATE: 'Baru', SCREENING: 'Screening', INTERVIEW: 'Interview', OFFER: 'Penawaran',

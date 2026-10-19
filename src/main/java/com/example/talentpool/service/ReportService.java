@@ -30,8 +30,9 @@ public class ReportService {
     public RecruitmentReportResponse overview() {
         Map<CandidateStatus, Long> candidateStatus = new EnumMap<>(CandidateStatus.class);
         Arrays.stream(CandidateStatus.values()).forEach(status -> candidateStatus.put(status, 0L));
-        candidateRepository.countGroupedByStatus().forEach(row ->
-                candidateStatus.put((CandidateStatus) row[0], (Long) row[1]));
+        candidateRepository.countGroupedByStatus().stream()
+                .filter(row -> row[0] != null)
+                .forEach(row -> candidateStatus.put((CandidateStatus) row[0], (Long) row[1]));
 
         List<RecruitmentReportResponse.LabelCount> sources = candidateRepository.countGroupedBySource().stream()
                 .map(row -> new RecruitmentReportResponse.LabelCount(
