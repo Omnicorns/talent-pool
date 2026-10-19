@@ -872,3 +872,22 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 .add-list small { color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }
 .source-tag { display: inline-block; margin-top: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 600; background: var(--surface); color: var(--muted); border: 1px solid var(--line); }
 .source-tag.hr { background: #eef3fb; color: #2f5fa8; border-color: #d3e0f3; }
+
+/* Menu akun di ponsel: lebar penuh layar (dengan gutter) agar tidak terpotong di tepi kiri. */
+@media (max-width: 900px) {
+  .site-header .account { position: static; }
+  .menu-pop { position: fixed; left: var(--gutter); right: var(--gutter); top: calc(var(--header-h) + 8px); width: auto; max-width: none; max-height: calc(100vh - var(--header-h) - 24px); overflow-y: auto; }
+}
+
+/* Header tidak boleh melebihi lebar layar pada ponsel sempit (320-400px) saat sudah masuk akun. */
+@media (max-width: 420px) {
+  .site-header .container { gap: 6px; }
+  .site-brand { min-width: 0; flex: 0 1 auto; }
+  .site-brand img { height: 24px; max-width: 100%; }
+  .site-actions { gap: 6px; min-width: 0; }
+  .site-actions .sarinah-mark { height: 20px; }
+  .account-chip { gap: 2px; padding: 2px 4px 2px 2px; }
+  .account-chip .avatar { width: 30px; height: 30px; }
+  .account-chip .icon { width: 14px; }
+  .menu-toggle { margin-right: -6px; width: 36px; height: 36px; }
+}
