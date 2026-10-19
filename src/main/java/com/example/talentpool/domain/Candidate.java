@@ -99,7 +99,7 @@ public class Candidate {
     @Column(name = "terms_accepted", nullable = false)
     private boolean termsAccepted;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean reviewed;
 
     @Column(name = "moved_to_job_listing", nullable = false)
