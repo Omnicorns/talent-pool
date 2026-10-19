@@ -18,6 +18,7 @@ public record JobApplicationResponse(
         Instant appliedAt,
         Instant updatedAt,
         boolean potential,
+        boolean addedByHr,
         CandidateListItemResponse candidate
 ) {
 }

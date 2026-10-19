@@ -42,7 +42,7 @@ class BackofficeReviewTagApiTest {
                 .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString()).get("id").asText();
 
         String applicationId = mapper.readTree(mvc.perform(post("/api/backoffice/job-listings/" + jobId + "/candidates/" + candidateId).with(hc))
-                .andExpect(status().isCreated()).andExpect(jsonPath("$.potential").value(false)).andReturn().getResponse().getContentAsString()).get("id").asText();
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.potential").value(false)).andExpect(jsonPath("$.addedByHr").value(true)).andReturn().getResponse().getContentAsString()).get("id").asText();
 
         mvc.perform(get("/api/backoffice/job-listings/" + jobId + "/applications").with(hc))
                 .andExpect(status().isOk())
