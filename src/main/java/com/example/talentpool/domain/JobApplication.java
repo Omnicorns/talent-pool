@@ -38,7 +38,7 @@ public class JobApplication {
     @Column(columnDefinition = "text")
     private String notes;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean potential;
 
     @CreatedDate
