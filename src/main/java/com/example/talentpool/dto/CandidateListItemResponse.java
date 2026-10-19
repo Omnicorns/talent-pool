@@ -20,6 +20,15 @@ public record CandidateListItemResponse(
         String source,
         boolean movedToJobListing,
         List<String> tools,
-        Instant updatedAt
+        Instant updatedAt,
+        boolean reviewed,
+        boolean hasCv,
+        List<String> jobInterests,
+        List<String> preferredLocations,
+        LastExperience lastExperience
 ) {
+    /** Pengalaman kerja terakhir beserta masa kerjanya. */
+    public record LastExperience(String position, String company, java.time.LocalDate startDate,
+                                 java.time.LocalDate endDate, boolean currentJob, long months) {
+    }
 }

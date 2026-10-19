@@ -23,17 +23,20 @@ public class JobApplicationService {
     private final JobApplicationHistoryRepository historyRepository;
     private final CandidateRepository candidateRepository;
     private final JobListingRepository jobListingRepository;
+    private final CandidateMapper candidateMapper;
 
     public JobApplicationService(
             JobApplicationRepository repository,
             JobApplicationHistoryRepository historyRepository,
             CandidateRepository candidateRepository,
-            JobListingRepository jobListingRepository
+            JobListingRepository jobListingRepository,
+            CandidateMapper candidateMapper
     ) {
         this.repository = repository;
         this.historyRepository = historyRepository;
         this.candidateRepository = candidateRepository;
         this.jobListingRepository = jobListingRepository;
+        this.candidateMapper = candidateMapper;
     }
 
     @Transactional
@@ -90,6 +93,14 @@ public class JobApplicationService {
     }
 
     @Transactional
+    public JobApplicationResponse setPotential(UUID id, boolean potential) {
+        JobApplication application = getEntity(id);
+        application.setPotential(potential);
+        // Tag bersifat internal HC, jadi tidak dicatat di riwayat lamaran yang terlihat kandidat.
+        return toResponse(repository.save(application));
+    }
+
+    @Transactional
     public Page<JobApplicationResponse> list(Pageable pageable) {
         return repository.findAll(pageable).map(this::toResponse);
     }
@@ -127,7 +138,8 @@ public class JobApplicationService {
         return new JobApplicationResponse(
                 application.getId(), application.getCandidate().getId(), application.getCandidate().getFullName(),
                 application.getJobListing().getId(), application.getJobListing().getTitle(), application.getStage(),
-                application.getStatus(), application.getNotes(), application.getAppliedAt(), application.getUpdatedAt()
+                application.getStatus(), application.getNotes(), application.getAppliedAt(), application.getUpdatedAt(),
+                application.isPotential(), candidateMapper.toListItem(application.getCandidate())
         );
     }
 

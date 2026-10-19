@@ -40,7 +40,7 @@ import { IconComponent } from '../../shared/icon.component';
             </button>
           </div>
           <div>
-            <h2>{{ job.title }}</h2>
+            <h2><button type="button" class="job-title-link" (click)="openApplicants(job)">{{ job.title }}</button></h2>
             <p class="dept">{{ job.department || 'Sarinah' }} · {{ job.location || '-' }}</p>
           </div>
           <dl class="facts">
@@ -49,6 +49,7 @@ import { IconComponent } from '../../shared/icon.component';
             <div><dt>Batas lamaran</dt><dd>{{ job.applicationDeadline ? fmt.fullDate(job.applicationDeadline) : '-' }}</dd></div>
           </dl>
           <div class="job-card-actions">
+            <button class="btn btn-ghost btn-sm danger-text" (click)="askDelete(job)" [attr.aria-label]="'Hapus ' + job.title"><app-icon name="trash" [size]="15"></app-icon> Hapus</button>
             <button class="btn btn-secondary btn-sm" (click)="openEdit(job)"><app-icon name="edit" [size]="15"></app-icon> Ubah</button>
             <button class="btn btn-primary btn-sm" *ngIf="job.status === 'DRAFT'" (click)="changeStatus(job, 'PUBLISHED')">Buka lowongan</button>
             <button class="btn btn-secondary btn-sm" *ngIf="job.status === 'PUBLISHED'" (click)="changeStatus(job, 'CLOSED')">Tutup lowongan</button>
@@ -111,33 +112,75 @@ import { IconComponent } from '../../shared/icon.component';
       </div>
 
       <div class="drawer-backdrop" *ngIf="applicantsJob" (click)="closeApplicantsOnBackdrop($event)">
-        <aside class="drawer" [boOverlay]="true" (overlayClose)="closeApplicants()" role="dialog" aria-modal="true" aria-labelledby="applicants-title">
+        <aside class="drawer xwide" [boOverlay]="true" (overlayClose)="closeApplicants()" role="dialog" aria-modal="true" aria-labelledby="applicants-title">
           <header class="drawer-head">
             <div>
-              <h2 id="applicants-title">Pelamar</h2>
-              <p>{{ applicantsJob.title }} · {{ applicants.length }} orang</p>
+              <h2 id="applicants-title">Pelamar {{ applicantsJob.title }}</h2>
+              <p>{{ applicants.length }} pelamar · {{ potentialCount }} ditandai potensial</p>
             </div>
             <button type="button" class="icon-btn" (click)="closeApplicants()" aria-label="Tutup"><app-icon name="x"></app-icon></button>
           </header>
           <div class="drawer-body">
+            <div class="segmented applicant-filter" role="tablist" aria-label="Filter pelamar" *ngIf="applicants.length">
+              <button type="button" role="tab" [class.active]="!onlyPotential" [attr.aria-selected]="!onlyPotential" (click)="onlyPotential = false">Semua ({{ applicants.length }})</button>
+              <button type="button" role="tab" [class.active]="onlyPotential" [attr.aria-selected]="onlyPotential" (click)="onlyPotential = true">Potensial ({{ potentialCount }})</button>
+            </div>
             <p class="muted" *ngIf="applicantsLoading">Memuat pelamar…</p>
             <div class="alert alert-error" *ngIf="applicantsError" role="alert"><app-icon name="alert"></app-icon><span>{{ applicantsError }}</span></div>
             <p class="muted" *ngIf="!applicantsLoading && !applicantsError && !applicants.length">Belum ada pelamar.</p>
-            <ul class="applicant-list" *ngIf="applicants.length">
-              <li *ngFor="let a of applicants">
-                <div>
-                  <strong>{{ a.candidateName }}</strong>
-                  <small>Melamar {{ fmt.fullDate(a.appliedAt) }}</small>
-                </div>
-                <span class="tag" [ngClass]="'tag-' + fmt.tone(a.stage)">{{ fmt.label(a.stage) }}</span>
-              </li>
-            </ul>
+            <p class="muted" *ngIf="applicants.length && onlyPotential && !potentialCount">Belum ada pelamar yang ditandai potensial.</p>
+
+            <div class="table-wrap" *ngIf="visibleApplicants.length">
+              <table class="table applicant-table">
+                <thead><tr><th>Nama kandidat</th><th>Fungsi diminati</th><th>Pengalaman terakhir</th><th>Lokasi diminati</th><th>Review</th><th>Penilaian</th><th><span class="sr-only">CV</span></th></tr></thead>
+                <tbody>
+                  <tr *ngFor="let a of visibleApplicants">
+                    <td style="min-width: 160px"><strong>{{ a.candidateName }}</strong><small>{{ a.candidate?.email }}</small><small>Melamar {{ fmt.fullDate(a.appliedAt) }} · {{ fmt.label(a.stage) }}</small></td>
+                    <td style="min-width: 140px">{{ a.candidate?.jobInterests?.length ? a.candidate.jobInterests.join(', ') : (a.candidate?.relatedPosition || '-') }}</td>
+                    <td style="min-width: 170px">
+                      <ng-container *ngIf="a.candidate?.lastExperience as exp; else noExp">
+                        <strong>{{ exp.position }}</strong><small>{{ exp.company }}</small><small>{{ fmt.lastExperiencePeriod(exp) }}</small>
+                      </ng-container>
+                      <ng-template #noExp>-</ng-template>
+                    </td>
+                    <td style="min-width: 120px">{{ a.candidate?.preferredLocations?.length ? a.candidate.preferredLocations.join(', ') : '-' }}</td>
+                    <td><span class="tag" [ngClass]="a.candidate?.reviewed ? 'tag-positive' : 'tag-neutral'">{{ a.candidate?.reviewed ? 'Sudah direview' : 'Belum review' }}</span></td>
+                    <td>
+                      <button type="button" class="potential-btn" [class.on]="a.potential" [attr.aria-pressed]="a.potential"
+                        (click)="togglePotential(a)" [disabled]="a.saving" [attr.aria-label]="(a.potential ? 'Hapus tag potensial ' : 'Tandai potensial ') + a.candidateName">
+                        <app-icon [name]="a.potential ? 'check' : 'plus'" [size]="14"></app-icon> {{ a.potential ? 'Potensial' : 'Tandai potensial' }}
+                      </button>
+                    </td>
+                    <td class="actions">
+                      <div class="row-actions">
+                        <button class="icon-btn" (click)="api.viewCv(a.candidateId)" [disabled]="!a.candidate?.hasCv" [attr.aria-label]="'Lihat CV ' + a.candidateName" title="Lihat CV"><app-icon name="eye" [size]="16"></app-icon></button>
+                        <button class="icon-btn" (click)="api.downloadCv(a.candidateId, 'CV-' + a.candidateName + '.pdf')" [disabled]="!a.candidate?.hasCv" [attr.aria-label]="'Unduh CV ' + a.candidateName" title="Unduh CV"><app-icon name="download" [size]="16"></app-icon></button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
           <footer class="drawer-foot">
             <button class="btn btn-secondary" (click)="closeApplicants()">Tutup</button>
-            <a class="btn btn-primary" routerLink="/backoffice/applications" (click)="closeApplicants()">Kelola di Lamaran</a>
+            <a class="btn btn-primary" routerLink="/backoffice/applications" (click)="closeApplicants()">Kelola tahap di Lamaran</a>
           </footer>
         </aside>
+      </div>
+
+      <div class="modal-backdrop" *ngIf="deleteTarget" (click)="deleteTarget = null">
+        <section class="modal" role="alertdialog" aria-modal="true" aria-labelledby="delete-title" (click)="$event.stopPropagation()" style="max-width: 440px">
+          <header class="drawer-head"><div><h2 id="delete-title">Hapus lowongan?</h2><p>{{ deleteTarget.title }}</p></div></header>
+          <div class="modal-body">
+            <p>Lowongan yang dihapus tidak bisa dikembalikan. Lowongan yang sudah punya pelamar atau jadwal interview tidak bisa dihapus; tutup saja lowongannya.</p>
+            <div class="alert alert-error" *ngIf="deleteError" role="alert"><app-icon name="alert"></app-icon><span>{{ deleteError }}</span></div>
+          </div>
+          <footer class="modal-foot">
+            <button class="btn btn-secondary" (click)="deleteTarget = null" [disabled]="deleting">Batal</button>
+            <button class="btn btn-danger" (click)="confirmDelete()" [disabled]="deleting">{{ deleting ? 'Menghapus…' : 'Hapus lowongan' }}</button>
+          </footer>
+        </section>
       </div>
     </app-backoffice-layout>
   `,
@@ -154,7 +197,7 @@ export class BackofficeJobListingsComponent implements OnInit {
 
   form: any = this.emptyForm();
 
-  constructor(private api: BackofficeApiService) {}
+  constructor(public api: BackofficeApiService) {}
 
   ngOnInit(): void {
     this.load();
@@ -207,12 +250,49 @@ export class BackofficeJobListingsComponent implements OnInit {
 
   openApplicants(job: any): void {
     this.applicantsJob = job;
+    this.onlyPotential = false;
     this.applicants = [];
     this.applicantsError = '';
     this.applicantsLoading = true;
     this.api.jobApplications(job.id).subscribe({
       next: (result) => { this.applicants = result?.content || []; this.applicantsLoading = false; },
       error: () => { this.applicantsLoading = false; this.applicantsError = 'Daftar pelamar belum bisa dimuat. Coba lagi.'; },
+    });
+  }
+
+  onlyPotential = false;
+  deleteTarget: any = null;
+  deleteError = '';
+  deleting = false;
+
+  get potentialCount(): number {
+    return this.applicants.filter((a) => a.potential).length;
+  }
+
+  get visibleApplicants(): any[] {
+    return this.onlyPotential ? this.applicants.filter((a) => a.potential) : this.applicants;
+  }
+
+  togglePotential(application: any): void {
+    const next = !application.potential;
+    application.saving = true;
+    this.api.updateApplicationPotential(application.id, next).subscribe({
+      next: (updated) => { application.potential = updated.potential; application.saving = false; },
+      error: () => { application.saving = false; this.applicantsError = 'Tag belum tersimpan. Coba lagi.'; },
+    });
+  }
+
+  askDelete(job: any): void {
+    this.deleteTarget = job;
+    this.deleteError = '';
+  }
+
+  confirmDelete(): void {
+    if (!this.deleteTarget) return;
+    this.deleting = true;
+    this.api.deleteJobListing(this.deleteTarget.id).subscribe({
+      next: () => { this.deleting = false; this.deleteTarget = null; this.load(); },
+      error: (error) => { this.deleting = false; this.deleteError = error?.error?.message || 'Lowongan belum bisa dihapus. Coba lagi.'; },
     });
   }
 

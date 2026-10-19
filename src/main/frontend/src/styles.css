@@ -846,3 +846,19 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
   .steps button { font-size: 10px; letter-spacing: -.01em; }
   .steps .lbl { overflow-wrap: normal !important; word-break: normal; }
 }
+.row-actions { display: inline-flex; align-items: center; gap: 4px; }
+.row-actions .icon-btn:disabled { opacity: .35; cursor: default; }
+.card-actions .icon-btn:disabled { opacity: .35; }
+.job-title-link { border: 0; background: none; padding: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.job-title-link:hover { color: var(--red); text-decoration: underline; }
+.danger-text { color: var(--negative); }
+.applicant-filter { max-width: 320px; margin-bottom: 16px; }
+.potential-btn { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border: 1px dashed var(--line-strong); border-radius: 999px; background: var(--white); color: var(--muted); font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.potential-btn:hover:not(:disabled) { border-color: var(--positive); color: var(--positive); }
+.potential-btn.on { border-style: solid; border-color: transparent; background: var(--positive-bg); color: var(--positive); }
+.potential-btn:disabled { opacity: .6; cursor: default; }
+.applicant-table td small { display: block; color: var(--muted); font-size: 12.5px; }
+.drawer.xwide { width: min(1120px, 100vw); max-width: 100vw; }
+.sticky-actions { position: sticky; right: 0; background: var(--white); box-shadow: -8px 0 8px -8px rgba(31, 27, 24, .12); }
+.table tbody tr:hover td.sticky-actions { background: #fcfbfa; }
+.table .select-inline { min-width: 150px; }

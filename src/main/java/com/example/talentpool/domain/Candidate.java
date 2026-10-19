@@ -99,6 +99,9 @@ public class Candidate {
     @Column(name = "terms_accepted", nullable = false)
     private boolean termsAccepted;
 
+    @Column(nullable = false)
+    private boolean reviewed;
+
     @Column(name = "moved_to_job_listing", nullable = false)
     private boolean movedToJobListing;
 
@@ -237,6 +240,8 @@ public class Candidate {
     public void setProfilePictureStoredPath(String profilePictureStoredPath) { this.profilePictureStoredPath = profilePictureStoredPath; }
     public String getSource() { return source; }
     public void setSource(String source) { this.source = source; }
+    public boolean isReviewed() { return reviewed; }
+    public void setReviewed(boolean reviewed) { this.reviewed = reviewed; }
     public CandidateStatus getStatus() { return status; }
     public void setStatus(CandidateStatus status) { this.status = status; }
     public boolean isTermsAccepted() { return termsAccepted; }

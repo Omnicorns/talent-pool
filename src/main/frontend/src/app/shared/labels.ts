@@ -68,4 +68,12 @@ export function experience(months: number | null | undefined): string {
 }
 
 /** Bundle of helpers exposed to templates as `fmt`. */
-export const FMT = { label, tone, monthYear, fullDate, time, rupiah, salaryRange, initials, experience };
+/** Ringkasan pengalaman terakhir: "Jan 2022 – sekarang · 2 th 3 bln". */
+export function lastExperiencePeriod(exp: { startDate?: string | null; endDate?: string | null; currentJob?: boolean; months?: number } | null | undefined): string {
+  if (!exp) return '';
+  const end = exp.currentJob ? 'sekarang' : monthYear(exp.endDate);
+  const length = experience(exp.months);
+  return `${monthYear(exp.startDate)} – ${end}${length !== '-' ? ' · ' + length : ''}`;
+}
+
+export const FMT = { label, tone, lastExperiencePeriod, monthYear, fullDate, time, rupiah, salaryRange, initials, experience };

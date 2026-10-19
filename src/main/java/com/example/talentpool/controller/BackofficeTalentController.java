@@ -96,6 +96,14 @@ public class BackofficeTalentController {
         return service.updateStatus(id, request);
     }
 
+    @PatchMapping("/{id}/review")
+    public CandidateResponse updateReview(
+            @PathVariable UUID id,
+            @RequestBody com.example.talentpool.dto.ReviewUpdateRequest request
+    ) {
+        return service.updateReviewed(id, request.reviewed());
+    }
+
     @PostMapping("/{id}/move-to-job-listing")
     public CandidateResponse moveToJobListing(
             @PathVariable UUID id,

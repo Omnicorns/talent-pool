@@ -36,6 +36,14 @@ public class JobApplicationController {
         return service.updateStage(id, request);
     }
 
+    @PatchMapping("/{id}/potential")
+    public JobApplicationResponse updatePotential(
+            @PathVariable UUID id,
+            @RequestBody com.example.talentpool.dto.PotentialUpdateRequest request
+    ) {
+        return service.setPotential(id, request.potential());
+    }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable UUID id) {

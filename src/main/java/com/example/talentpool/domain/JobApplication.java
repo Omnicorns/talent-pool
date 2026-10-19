@@ -38,6 +38,9 @@ public class JobApplication {
     @Column(columnDefinition = "text")
     private String notes;
 
+    @Column(nullable = false)
+    private boolean potential;
+
     @CreatedDate
     @Column(name = "applied_at", nullable = false, updatable = false)
     private Instant appliedAt;
@@ -55,6 +58,8 @@ public class JobApplication {
     public void setStage(HiringStage stage) { this.stage = stage; }
     public ApplicationStatus getStatus() { return status; }
     public void setStatus(ApplicationStatus status) { this.status = status; }
+    public boolean isPotential() { return potential; }
+    public void setPotential(boolean potential) { this.potential = potential; }
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
     public Instant getAppliedAt() { return appliedAt; }

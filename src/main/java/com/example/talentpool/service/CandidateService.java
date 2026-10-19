@@ -123,6 +123,13 @@ public class CandidateService {
     }
 
     @Transactional
+    public CandidateResponse updateReviewed(UUID id, boolean reviewed) {
+        Candidate candidate = getEntity(id);
+        candidate.setReviewed(reviewed);
+        return mapper.toDetail(repository.save(candidate));
+    }
+
+    @Transactional
     public CandidateResponse moveToJobListing(UUID id, MoveToJobListingRequest request) {
         Candidate candidate = getEntity(id);
         if (candidate.getStatus() == CandidateStatus.HIRED) {
