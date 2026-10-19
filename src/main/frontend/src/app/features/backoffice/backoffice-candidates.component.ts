@@ -38,7 +38,7 @@ import { IconComponent } from '../../shared/icon.component';
         <div class="table-wrap">
           <table class="table">
             <thead>
-              <tr><th>Kandidat</th><th>Posisi</th><th>Pengalaman</th><th>Status</th><th>Sumber</th><th><span class="sr-only">Aksi</span></th></tr>
+              <tr><th>Nama kandidat</th><th>Fungsi yang diminati</th><th>Pengalaman terakhir</th><th>Lokasi kerja diminati</th><th>Status review</th><th>Aksi</th></tr>
             </thead>
             <tbody>
               <tr *ngFor="let item of rows">
@@ -51,15 +51,31 @@ import { IconComponent } from '../../shared/icon.component';
                     <div><strong>{{ item.fullName }}</strong><small>{{ item.email }}</small></div>
                   </div>
                 </td>
-                <td style="min-width: 180px"><strong>{{ item.relatedPosition || '-' }}</strong><small>{{ item.industry || '' }}</small></td>
-                <td>{{ fmt.experience(item.experienceMonths) }}</td>
+                <td style="min-width: 140px">
+                  {{ item.jobInterests?.length ? item.jobInterests.join(', ') : (item.relatedPosition || '-') }}
+                </td>
+                <td style="min-width: 210px">
+                  <ng-container *ngIf="item.lastExperience as exp; else noExp">
+                    <strong>{{ exp.position }}</strong>
+                    <small>{{ exp.company }}</small>
+                    <small>{{ fmt.lastExperiencePeriod(exp) }}</small>
+                  </ng-container>
+                  <ng-template #noExp><span class="muted">-</span></ng-template>
+                </td>
+                <td style="min-width: 150px">{{ item.preferredLocations?.length ? item.preferredLocations.join(', ') : '-' }}</td>
                 <td>
-                  <select class="select-inline" [ngModel]="item.status" (ngModelChange)="changeStatus(item, $event)" [attr.aria-label]="'Status ' + item.fullName">
-                    <option *ngFor="let status of statuses" [value]="status">{{ fmt.label(status) }}</option>
+                  <select class="select-inline" [ngModel]="item.reviewed ? 'yes' : 'no'" (ngModelChange)="changeReview(item, $event === 'yes')" [attr.aria-label]="'Status review ' + item.fullName">
+                    <option value="no">Belum review</option><option value="yes">Sudah direview</option>
                   </select>
                 </td>
-                <td>{{ item.source || '-' }}</td>
-                <td class="actions"><button class="btn btn-secondary btn-sm" (click)="openCandidate(item)">Lihat profil</button></td>
+                <td class="actions sticky-actions">
+                  <div class="row-actions">
+                    <button class="btn btn-secondary btn-sm" (click)="openCandidate(item)">Lihat profil</button>
+                    <button class="icon-btn" (click)="api.viewCv(item.id)" [disabled]="!item.hasCv" [attr.aria-label]="'Lihat CV ' + item.fullName" title="Lihat CV"><app-icon name="eye" [size]="16"></app-icon></button>
+                    <button class="icon-btn" (click)="api.downloadCv(item.id, 'CV-' + item.fullName + '.pdf')" [disabled]="!item.hasCv" [attr.aria-label]="'Unduh CV ' + item.fullName" title="Unduh CV"><app-icon name="download" [size]="16"></app-icon></button>
+                    <button class="icon-btn" (click)="openCandidate(item, true)" [attr.aria-label]="'Tambah ' + item.fullName + ' ke lowongan'" title="Tambah ke lowongan"><app-icon name="plus" [size]="16"></app-icon></button>
+                  </div>
+                </td>
               </tr>
               <tr *ngIf="!rows.length && !loading"><td colspan="6" class="empty-cell">{{ q.trim() ? 'Tidak ada kandidat yang cocok dengan pencarian.' : 'Belum ada kandidat di Talent Pool.' }}</td></tr>
             </tbody>
@@ -78,15 +94,18 @@ import { IconComponent } from '../../shared/icon.component';
               </div>
             </div>
             <div class="card-meta">
-              <div><span>Posisi</span>{{ item.relatedPosition || '-' }}</div>
-              <div><span>Pengalaman</span>{{ fmt.experience(item.experienceMonths) }}</div>
-              <div><span>Sumber</span>{{ item.source || '-' }}</div>
+              <div><span>Fungsi diminati</span>{{ item.jobInterests?.length ? item.jobInterests.join(', ') : (item.relatedPosition || '-') }}</div>
+              <div><span>Pengalaman terakhir</span>{{ item.lastExperience ? item.lastExperience.position + ' · ' + item.lastExperience.company : '-' }}</div>
+              <div><span>Lokasi diminati</span>{{ item.preferredLocations?.length ? item.preferredLocations.join(', ') : '-' }}</div>
             </div>
             <div class="card-actions">
-              <select class="select-inline" [ngModel]="item.status" (ngModelChange)="changeStatus(item, $event)" [attr.aria-label]="'Status ' + item.fullName">
-                <option *ngFor="let status of statuses" [value]="status">{{ fmt.label(status) }}</option>
+              <select class="select-inline" [ngModel]="item.reviewed ? 'yes' : 'no'" (ngModelChange)="changeReview(item, $event === 'yes')" [attr.aria-label]="'Status review ' + item.fullName">
+                <option value="no">Belum review</option><option value="yes">Sudah direview</option>
               </select>
               <button class="btn btn-secondary btn-sm" (click)="openCandidate(item)">Lihat profil</button>
+              <button class="icon-btn" (click)="api.viewCv(item.id)" [disabled]="!item.hasCv" aria-label="Lihat CV"><app-icon name="eye" [size]="16"></app-icon></button>
+              <button class="icon-btn" (click)="api.downloadCv(item.id, 'CV-' + item.fullName + '.pdf')" [disabled]="!item.hasCv" aria-label="Unduh CV"><app-icon name="download" [size]="16"></app-icon></button>
+              <button class="icon-btn" (click)="openCandidate(item, true)" aria-label="Tambah ke lowongan"><app-icon name="plus" [size]="16"></app-icon></button>
             </div>
           </article>
           <p class="empty-cell muted" style="padding: 32px 18px; text-align: center" *ngIf="!rows.length && !loading">Belum ada kandidat.</p>
@@ -104,7 +123,7 @@ import { IconComponent } from '../../shared/icon.component';
               <div>
                 <h2>{{ selected.fullName }}</h2>
                 <p>{{ selected.relatedJobPositions?.join(', ') || selected.jobPosition || 'Kandidat Talent Pool' }}</p>
-                <span class="tag" [ngClass]="'tag-' + fmt.tone(selected.status)">{{ fmt.label(selected.status) }}</span>
+                <span class="tag" [ngClass]="isReviewed(selected.id) ? 'tag-positive' : 'tag-neutral'">{{ isReviewed(selected.id) ? 'Sudah direview' : 'Belum review' }}</span>
               </div>
             </div>
             <ng-template #headLoading><h2>Profil kandidat</h2></ng-template>
@@ -114,6 +133,7 @@ import { IconComponent } from '../../shared/icon.component';
           <div class="drawer-body" *ngIf="selected; else detailLoading">
             <div class="button-row">
               <button class="btn btn-primary" (click)="downloadCv()" [disabled]="!selected.cvOriginalName"><app-icon name="download" [size]="16"></app-icon> {{ selected.cvOriginalName ? 'Unduh CV' : 'CV belum ada' }}</button>
+              <button class="btn btn-secondary" (click)="api.viewCv(selected.id)" [disabled]="!selected.cvOriginalName"><app-icon name="eye" [size]="16"></app-icon> Lihat CV</button>
               <button class="btn btn-secondary" (click)="showInterviewForm = !showInterviewForm" [attr.aria-expanded]="showInterviewForm"><app-icon name="calendar" [size]="16"></app-icon> Jadwalkan interview</button>
               <a class="btn btn-ghost" [href]="'mailto:' + selected.email"><app-icon name="mail" [size]="16"></app-icon> Email</a>
             </div>
@@ -147,7 +167,7 @@ import { IconComponent } from '../../shared/icon.component';
               </div>
             </section>
 
-            <section class="drawer-section">
+            <section class="drawer-section" id="move-section">
               <h3>Masukkan ke lowongan</h3>
               <p class="muted" style="font-size: 14px" *ngIf="selected.movedToJobListing">Kandidat ini sudah pernah dimasukkan ke lowongan.</p>
               <div class="form-grid" *ngIf="jobs.length; else noJobs">
@@ -269,7 +289,7 @@ export class BackofficeCandidatesComponent implements OnInit, OnDestroy {
     notes: '',
   };
 
-  constructor(private api: BackofficeApiService) {}
+  constructor(public api: BackofficeApiService) {}
 
   ngOnInit(): void {
     this.load();
@@ -305,7 +325,17 @@ export class BackofficeCandidatesComponent implements OnInit, OnDestroy {
     });
   }
 
-  openCandidate(item: any): void {
+  isReviewed(id: string): boolean {
+    return !!this.rows.find((row) => row.id === id)?.reviewed;
+  }
+
+  changeReview(item: any, reviewed: boolean): void {
+    const previous = item.reviewed;
+    item.reviewed = reviewed;
+    this.api.updateCandidateReview(item.id, reviewed).subscribe({ error: () => item.reviewed = previous });
+  }
+
+  openCandidate(item: any, focusMove = false): void {
     this.drawerOpen = true;
     this.selected = null;
     this.showInterviewForm = false;
@@ -314,7 +344,10 @@ export class BackofficeCandidatesComponent implements OnInit, OnDestroy {
     this.moveSuccess = '';
     this.moveForm = { jobListingId: '', hiringStage: 'NEW_CANDIDATE' };
     this.api.candidateDetail(item.id).subscribe({
-      next: (detail) => this.selected = detail,
+      next: (detail) => {
+        this.selected = detail;
+        if (focusMove) setTimeout(() => document.getElementById('move-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+      },
       error: () => this.closeDrawer(),
     });
   }

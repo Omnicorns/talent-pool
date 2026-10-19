@@ -16,6 +16,8 @@ public record JobApplicationResponse(
         ApplicationStatus status,
         String notes,
         Instant appliedAt,
-        Instant updatedAt
+        Instant updatedAt,
+        boolean potential,
+        CandidateListItemResponse candidate
 ) {
 }

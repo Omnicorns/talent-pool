@@ -51,7 +51,7 @@ public class DashboardService {
         Instant endOfDay = LocalDate.now(zone).plusDays(1).atStartOfDay(zone).toInstant();
 
         return new DashboardResponse(
-                candidateRepository.count(),
+                candidateRepository.countVisible(),
                 candidateRepository.countByStatusNotIn(EnumSet.of(CandidateStatus.ARCHIVED, CandidateStatus.HIRED)),
                 candidateRepository.countByStatus(CandidateStatus.AVAILABLE),
                 candidateRepository.countByStatus(CandidateStatus.HIRED),
@@ -65,7 +65,7 @@ public class DashboardService {
                 getCandidateStatuses(),
                 getApplicationStages(),
                 getJobListingStatuses(),
-                candidateRepository.findTop5ByOrderByCreatedAtDesc().stream().map(candidateMapper::toListItem).toList(),
+                candidateRepository.findRecentVisible(org.springframework.data.domain.PageRequest.of(0, 5)).stream().map(candidateMapper::toListItem).toList(),
                 interviewService.upcoming()
         );
     }

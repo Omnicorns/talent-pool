@@ -389,8 +389,31 @@ public class CandidateMapper {
                             c.getTools()
                     ),
 
-                    c.getUpdatedAt()
+                    c.getUpdatedAt(),
+                    c.isReviewed(),
+                    c.getCvOriginalName() != null && !c.getCvOriginalName().isBlank(),
+                    List.copyOf(c.getJobInterests()),
+                    List.copyOf(c.getPreferredLocations()),
+                    lastExperience(c)
             );
+        }
+
+        /** Pengalaman terbaru: yang masih berjalan lebih dulu, lalu yang tanggal mulainya paling baru. */
+        private CandidateListItemResponse.LastExperience lastExperience(Candidate c) {
+            return c.getWorkExperiences().stream()
+                    .filter(w -> w.getStartDate() != null)
+                    .max(java.util.Comparator
+                            .comparing((WorkExperience w) -> w.isCurrentJob() || w.getEndDate() == null)
+                            .thenComparing(WorkExperience::getStartDate))
+                    .map(w -> {
+                        boolean ongoing = w.isCurrentJob() || w.getEndDate() == null;
+                        LocalDate end = ongoing ? LocalDate.now() : w.getEndDate();
+                        long months = Math.max(0, ChronoUnit.MONTHS.between(w.getStartDate().withDayOfMonth(1), end.withDayOfMonth(1)));
+                        return new CandidateListItemResponse.LastExperience(
+                                w.getPosition(), w.getCompanyName(), w.getStartDate(),
+                                ongoing ? null : w.getEndDate(), ongoing, months);
+                    })
+                    .orElse(null);
         }
 
 

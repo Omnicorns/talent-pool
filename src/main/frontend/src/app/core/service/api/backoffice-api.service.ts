@@ -34,6 +34,43 @@ export class BackofficeApiService {
     });
   }
 
+  updateCandidateReview(id: string, reviewed: boolean) {
+    return this.http.patch<any>(`${API_BASE}/backoffice/candidates/${id}/review`, { reviewed }, { headers: this.headers });
+  }
+
+  updateApplicationPotential(id: string, potential: boolean) {
+    return this.http.patch<any>(`${API_BASE}/backoffice/applications/${id}/potential`, { potential }, { headers: this.headers });
+  }
+
+  /** Buka CV di tab baru (PDF tampil langsung di browser). */
+  viewCv(id: string): void {
+    const tab = window.open('', '_blank');
+    this.candidateCv(id).subscribe({
+      next: (response) => {
+        const blob = response.body;
+        if (!blob || !tab) { tab?.close(); return; }
+        const type = blob.type || 'application/pdf';
+        tab.location.href = URL.createObjectURL(new Blob([blob], { type }));
+      },
+      error: () => tab?.close(),
+    });
+  }
+
+  downloadCv(id: string, fallbackName = 'cv-kandidat'): void {
+    this.candidateCv(id).subscribe({
+      next: (response) => {
+        const blob = response.body;
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = fallbackName;
+        anchor.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      },
+    });
+  }
+
   candidatePicture(id: string) {
     return this.http.get(`${API_BASE}/backoffice/candidates/${id}/picture`, {
       headers: this.headers,
@@ -101,6 +138,11 @@ export class BackofficeApiService {
 
   deleteJobListing(id: string) {
     return this.http.delete<void>(`${API_BASE}/backoffice/job-listings/${id}`, { headers: this.headers });
+  }
+
+  jobApplications(jobId: string) {
+    const params = new HttpParams().set('page', '0').set('size', '100').set('sort', 'updatedAt,desc');
+    return this.http.get<any>(`${API_BASE}/backoffice/job-listings/${jobId}/applications`, { headers: this.headers, params });
   }
 
   applications() {

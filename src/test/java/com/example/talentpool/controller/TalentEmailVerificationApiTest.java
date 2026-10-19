@@ -21,6 +21,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -45,6 +48,9 @@ class TalentEmailVerificationApiTest {
     static void storage(DynamicPropertyRegistry registry) {
         registry.add("app.storage.root", () -> root.toString());
     }
+
+    @Autowired
+    com.example.talentpool.repository.CandidateRepository candidates;
 
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper mapper;
@@ -108,5 +114,42 @@ class TalentEmailVerificationApiTest {
         mvc.perform(post("/api/talent/auth/resend-verification").contentType("application/json")
                         .content(json(Map.of("email", "tidak-terdaftar@example.com"))))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void failedVerificationEmailRollsBackRegistration() throws Exception {
+        String email = "mail-gagal@example.com";
+        String body = json(Map.of("fullName", "Uji Rollback", "email", email, "phone", "081234567890",
+                "password", "TestSecret123!", "termsAccepted", true));
+
+        doThrow(new com.example.talentpool.exception.MailDeliveryException("SMTP down"))
+                .when(mailService).sendVerificationLink(eq(email), anyString(), anyString(), anyLong());
+        mvc.perform(post("/api/talent/auth/register").contentType("application/json").content(body))
+                .andExpect(status().isServiceUnavailable());
+
+        // Akun tidak tersimpan: login ditolak sebagai kredensial salah (bukan "belum diverifikasi").
+        mvc.perform(post("/api/talent/auth/login").contentType("application/json")
+                        .content(json(Map.of("email", email, "password", "TestSecret123!"))))
+                .andExpect(status().isBadRequest());
+
+        // Setelah SMTP pulih, email yang sama bisa mendaftar lagi (tidak terblokir "sudah terdaftar").
+        doNothing().when(mailService).sendVerificationLink(eq(email), anyString(), anyString(), anyLong());
+        mvc.perform(post("/api/talent/auth/register").contentType("application/json").content(body))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void unverifiedCandidateIsHiddenFromBackofficeUntilVerified() throws Exception {
+        String email = "belum-verif@example.com";
+        mvc.perform(post("/api/talent/auth/register").contentType("application/json").content(json(Map.of(
+                        "fullName", "Belum Verif", "email", email, "phone", "081234567890",
+                        "password", "TestSecret123!", "termsAccepted", true)))).andExpect(status().isCreated());
+
+        var spec = com.example.talentpool.service.CandidateSpecifications.filter(email, null, null, null, null);
+        org.junit.jupiter.api.Assertions.assertTrue(candidates.findAll(spec).isEmpty());
+
+        mvc.perform(post("/api/talent/auth/verify-email").contentType("application/json")
+                .content(json(Map.of("token", lastToken(email))))).andExpect(status().isOk());
+        org.junit.jupiter.api.Assertions.assertEquals(1, candidates.findAll(spec).size());
     }
 }

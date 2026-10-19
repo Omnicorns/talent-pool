@@ -26,7 +26,7 @@ import { LIFE_HEADING, LIFE_PROGRAMS, LIFE_SLIDE_SECONDS } from './life-at-sarin
             <h1 id="hero-title">Be Part of Indonesia’s Creative Retail Legacy</h1>
             <p>Discover opportunities to grow, create impact, and champion local excellence.</p>
             <div class="hero-actions">
-              <a routerLink="/" fragment="open-positions" class="btn btn-primary btn-lg">Explore opportunities</a>
+              <a routerLink="/" fragment="open-positions" class="btn btn-primary btn-lg">Jelajahi Talent Pool <app-icon name="arrow-up-right" [size]="16"></app-icon></a>
               <a [routerLink]="talentPoolLink" class="btn btn-secondary btn-lg">Gabung Talent Pool</a>
             </div>
           </div>

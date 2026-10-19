@@ -4,10 +4,8 @@ import com.example.talentpool.dto.TalentAuthResponse;
 import com.example.talentpool.dto.TalentRegisterResponse;
 import com.example.talentpool.dto.TalentResendVerificationRequest;
 import com.example.talentpool.dto.TalentVerifyEmailRequest;
-import com.example.talentpool.exception.MailDeliveryException;
 import com.example.talentpool.service.TalentEmailVerificationService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.example.talentpool.service.TalentRegistrationService;
 import com.example.talentpool.dto.TalentChangePasswordRequest;
 import com.example.talentpool.dto.TalentLoginRequest;
 import com.example.talentpool.dto.TalentMeResponse;
@@ -30,41 +28,34 @@ import java.util.UUID;
 @RequestMapping("/api/talent/auth")
 public class TalentAuthController {
 
-    private static final Logger log = LoggerFactory.getLogger(TalentAuthController.class);
-
     private final TalentAuthService service;
     private final TalentPasswordResetService passwordResetService;
     private final TalentEmailVerificationService emailVerificationService;
+    private final TalentRegistrationService registrationService;
 
     public TalentAuthController(
             TalentAuthService service,
             TalentPasswordResetService passwordResetService,
-            TalentEmailVerificationService emailVerificationService
+            TalentEmailVerificationService emailVerificationService,
+            TalentRegistrationService registrationService
     ) {
         this.service = service;
         this.passwordResetService = passwordResetService;
         this.emailVerificationService = emailVerificationService;
+        this.registrationService = registrationService;
     }
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public TalentRegisterResponse register(@Valid @RequestBody TalentRegisterRequest request) {
-        var registered = service.register(request);
+        // Akun dan email verifikasi satu transaksi: bila email gagal terkirim, akun tidak ikut tersimpan (503).
+        var registered = registrationService.register(request);
         if (registered.auth() != null) {
             return new TalentRegisterResponse("Akun berhasil dibuat.", registered.email(), false, false, registered.auth());
         }
-        // Akun sudah tersimpan. Email dikirim di luar transaksi pendaftaran supaya gagal kirim tidak membatalkan akun.
-        boolean sent = true;
-        try {
-            emailVerificationService.sendVerification(registered.accountId());
-        } catch (MailDeliveryException ex) {
-            log.warn("Akun {} dibuat tetapi email verifikasi gagal dikirim", registered.accountId(), ex);
-            sent = false;
-        }
-        String message = sent
-                ? "Akun dibuat. Kami mengirim link verifikasi ke " + registered.email() + ". Periksa Inbox atau folder Spam."
-                : "Akun dibuat, tetapi email verifikasi belum terkirim. Gunakan tombol kirim ulang.";
-        return new TalentRegisterResponse(message, registered.email(), true, sent, null);
+        return new TalentRegisterResponse(
+                "Akun dibuat. Kami mengirim link verifikasi ke " + registered.email() + ". Periksa Inbox atau folder Spam.",
+                registered.email(), true, true, null);
     }
 
     @PostMapping("/verify-email")
