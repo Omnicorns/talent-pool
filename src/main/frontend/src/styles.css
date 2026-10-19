@@ -773,3 +773,76 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 .facts dd .line { display: block; }
 .field-group { border: 0; padding: 0; margin: 0; display: grid; gap: 10px; }
 .field-group legend { padding: 0; margin-bottom: 10px; font-size: 14px; font-weight: 600; color: var(--ink-2); }
+
+/* ---- Input dengan ikon di kiri, dipakai form masuk/daftar ---- */
+.lead-field { position: relative; display: block; }
+.lead-field > .icon, .lead-field > app-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--subtle); pointer-events: none; display: inline-flex; }
+.lead-field > input { padding-left: 44px !important; }
+.switch-mode { text-align: center; font-size: 14px; color: var(--muted); }
+.switch-mode .link { display: inline-flex; align-items: center; gap: 4px; border: 0; background: none; padding: 0; font: inherit; font-weight: 650; color: var(--red); cursor: pointer; }
+.nav-signin { display: none; }
+.interest-box { display: flex; align-items: center; gap: 14px; margin-top: 20px; padding: 16px 18px; border-radius: var(--r-md); background: #fbeeee; }
+.interest-box .interest-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: #fff; color: var(--red); flex: none; }
+.interest-box strong { display: block; color: var(--red); font-size: 15px; }
+.interest-box p { margin: 2px 0 0; font-size: 14px; color: var(--ink-2); }
+
+/* ---- Tampilan ponsel mengikuti desain: header dua logo, hero foto, kartu form menumpuk ---- */
+@media (max-width: 640px) {
+  .site-header .container { gap: 8px; }
+  .site-actions .sarinah-mark { display: block; height: 26px; }
+  .site-actions .desktop-only { display: none; }
+  .site-nav .nav-signin { display: block; padding: 12px 8px; font-weight: 650; color: var(--red); }
+  .menu-toggle { margin-right: -8px; }
+
+  .hero-copy { padding: 120px var(--gutter) 112px; gap: 16px; }
+  .hero h1 { font-size: 34px; max-width: 13ch; }
+  .hero p { font-size: 15px; }
+  .hero-actions { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .hero-actions .btn { flex: none; width: auto; }
+  .hero-actions .btn-lg { padding-left: 22px; padding-right: 22px; min-height: 46px; }
+  .values-card { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 4px; gap: 0; }
+  .value, .value + .value { padding: 16px 14px; border-top: 0; }
+  .value:nth-child(even) { border-left: 1px solid var(--line); }
+  .value:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .value h2 { font-size: 14px; }
+  .value p { font-size: 12.5px; line-height: 1.5; }
+  .value .icon { margin-bottom: 10px; }
+
+  .auth { display: block; background: var(--ink); }
+  .auth-aside { min-height: 280px; padding: 20px var(--gutter) 72px; justify-content: flex-end; }
+  .auth-aside > a { display: none; }
+  .auth-aside h1 { font-size: 26px; max-width: 16ch; }
+  .auth-aside p { font-size: 14px; margin-top: 8px; }
+  .auth-main { position: relative; z-index: 2; margin-top: -48px; padding: 20px var(--gutter) 32px; background: var(--white); border-radius: 24px 24px 0 0; justify-content: flex-start; min-height: 60vh; }
+  .auth-card { gap: 20px; }
+  .auth-card .back-link { display: none; }
+  .auth-card h2 { font-size: 22px; }
+  .segmented { background: var(--surface); border-radius: 12px; }
+  .segmented button { padding: 12px; border-radius: 10px; }
+  .segmented button.active { background: var(--red); color: #fff; box-shadow: none; }
+
+  .onboard-intro h1 { font-size: 26px; }
+  .onboard-intro .progress { display: none; }
+  .steps { position: static; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; padding: 4px 0 14px; }
+  .steps button { flex-direction: column; gap: 6px; padding: 4px 0; text-align: center; font-size: 10.5px; line-height: 1.2; background: none !important; align-items: center; }
+  .steps .num { width: 30px; height: 30px; font-size: 13px; }
+  .steps .lbl { display: block; max-width: 100%; overflow-wrap: anywhere; font-weight: 550; }
+  .steps .active .lbl { color: var(--red); }
+  .onboard-foot .hint { display: none; }
+
+  .profile-head { grid-template-columns: auto minmax(0, 1fr); gap: 16px; padding: 18px; }
+  .profile-head .avatar-lg { width: 88px; height: 88px; border-radius: 16px; font-size: 26px; }
+  .profile-head h1 { font-size: 20px; }
+  .profile-head-actions { grid-column: 1 / -1; }
+  .profile-head-actions .btn { width: 100%; background: #fff; color: var(--red); border-color: var(--red); }
+  .interest-box { margin-top: 16px; }
+}
+@media (max-width: 640px) {
+  .steps button .lbl, .steps button:not(.active) .lbl { display: block !important; }
+  .steps .done .lbl { color: var(--ink-2); }
+  .auth-main { min-height: calc(100vh - 232px); }
+}
+@media (max-width: 640px) {
+  .steps button { font-size: 10px; letter-spacing: -.01em; }
+  .steps .lbl { overflow-wrap: normal !important; word-break: normal; }
+}

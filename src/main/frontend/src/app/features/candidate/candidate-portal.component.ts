@@ -64,6 +64,10 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
                 <section id="about" class="profile-section">
                   <div class="section-title"><h2>Tentang saya</h2><button class="btn btn-ghost btn-sm" (click)="openDrawer('about')"><app-icon name="edit" [size]="16"></app-icon> Ubah</button></div>
                   <p class="about-copy" [class.placeholder]="!profile.about">{{ profile.about || 'Tulis ringkasan singkat tentang pengalaman dan tujuan karier Anda agar recruiter cepat memahami profil Anda.' }}</p>
+                  <div class="interest-box" *ngIf="profile.jobInterests.length">
+                    <span class="interest-icon"><app-icon name="award" [size]="20"></app-icon></span>
+                    <div><strong>Minat Karier</strong><p>{{ profile.jobInterests.join('  •  ') }}</p></div>
+                  </div>
                 </section>
 
                 <section id="experiences" class="profile-section">

@@ -18,7 +18,20 @@ public final class CandidateSpecifications {
                 .and(hasIndustry(industry))
                 .and(hasPosition(position))
                 .and(hasSource(source))
-                .and(hasStatus(status));
+                .and(hasStatus(status))
+                .and(emailVerifiedOrManual());
+    }
+
+    /** Sembunyikan kandidat yang mendaftar lewat portal tetapi belum memverifikasi email. */
+    private static Specification<Candidate> emailVerifiedOrManual() {
+        return (root, query, cb) -> {
+            var sub = query.subquery(Long.class);
+            var account = sub.from(com.example.talentpool.domain.TalentAccount.class);
+            sub.select(cb.literal(1L)).where(
+                    cb.equal(account.get("candidate"), root),
+                    cb.isNull(account.get("emailVerifiedAt")));
+            return cb.not(cb.exists(sub));
+        };
     }
 
     private static Specification<Candidate> textSearch(String q) {

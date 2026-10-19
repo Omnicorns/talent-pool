@@ -10,8 +10,8 @@
 
   <div class="onboard-wrap">
     <div class="onboard-intro">
-      <h1>{{ editing ? 'Ubah profil Talent Pool' : 'Lengkapi profil Talent Pool' }}</h1>
-      <p>Enam langkah singkat. Isian bertanda * wajib diisi.</p>
+      <h1>{{ editing ? 'Ubah Data Talent Pool' : 'Lengkapi Data Talent Pool' }}</h1>
+      <p>Isi data diri Anda dengan lengkap dan benar untuk melanjutkan proses pendaftaran.</p>
       <div class="progress" role="progressbar" [attr.aria-valuenow]="step" aria-valuemin="1" aria-valuemax="6"><span [style.width.%]="progress"></span></div>
     </div>
 
@@ -224,7 +224,7 @@
         <span class="hint">Perubahan disimpan saat Anda menyelesaikan langkah terakhir.</span>
         <div>
           <button type="button" class="btn btn-secondary" *ngIf="step > 1" [disabled]="saving" (click)="previous()">Sebelumnya</button>
-          <button type="button" class="btn btn-primary" *ngIf="step < 6" (click)="next()">Lanjut</button>
+          <button type="button" class="btn btn-primary" *ngIf="step < 6" (click)="next()">Selanjutnya <app-icon name="arrow-up-right" [size]="16"></app-icon></button>
           <button type="button" class="btn btn-primary" *ngIf="step === 6" [disabled]="saving" (click)="finish()">{{ saving ? 'Menyimpan…' : editing ? 'Simpan profil' : 'Selesai' }}</button>
         </div>
       </footer>

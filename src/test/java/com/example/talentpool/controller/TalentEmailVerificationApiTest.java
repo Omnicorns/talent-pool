@@ -49,6 +49,9 @@ class TalentEmailVerificationApiTest {
         registry.add("app.storage.root", () -> root.toString());
     }
 
+    @Autowired
+    com.example.talentpool.repository.CandidateRepository candidates;
+
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper mapper;
     @MockitoBean TalentPasswordResetMailService mailService;
@@ -133,5 +136,20 @@ class TalentEmailVerificationApiTest {
         doNothing().when(mailService).sendVerificationLink(eq(email), anyString(), anyString(), anyLong());
         mvc.perform(post("/api/talent/auth/register").contentType("application/json").content(body))
                 .andExpect(status().isCreated());
+    }
+
+    @Test
+    void unverifiedCandidateIsHiddenFromBackofficeUntilVerified() throws Exception {
+        String email = "belum-verif@example.com";
+        mvc.perform(post("/api/talent/auth/register").contentType("application/json").content(json(Map.of(
+                        "fullName", "Belum Verif", "email", email, "phone", "081234567890",
+                        "password", "TestSecret123!", "termsAccepted", true)))).andExpect(status().isCreated());
+
+        var spec = com.example.talentpool.service.CandidateSpecifications.filter(email, null, null, null, null);
+        org.junit.jupiter.api.Assertions.assertTrue(candidates.findAll(spec).isEmpty());
+
+        mvc.perform(post("/api/talent/auth/verify-email").contentType("application/json")
+                .content(json(Map.of("token", lastToken(email))))).andExpect(status().isOk());
+        org.junit.jupiter.api.Assertions.assertEquals(1, candidates.findAll(spec).size());
     }
 }

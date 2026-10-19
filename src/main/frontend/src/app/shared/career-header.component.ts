@@ -21,10 +21,11 @@ import { initials } from './labels';
           <button type="button" [class.active]="sectionActive === 'life'" (click)="goToSection('life')">Life at Sarinah</button>
           <button type="button" [class.active]="active === 'open' || sectionActive === 'open-positions'" (click)="goToSection('open-positions')">Open Positions</button>
           <button type="button" [class.active]="sectionActive === 'faq'" (click)="goToSection('faq')">FAQ</button>
+          <a *ngIf="!auth.authenticated" class="nav-signin" routerLink="/sign-in" (click)="mobileMenuOpen = false">Masuk</a>
         </nav>
 
         <div class="site-actions">
-          <a *ngIf="!auth.authenticated" class="btn btn-secondary btn-sm" routerLink="/sign-in">Masuk</a>
+          <a *ngIf="!auth.authenticated" class="btn btn-secondary btn-sm desktop-only" routerLink="/sign-in">Masuk</a>
 
           <div class="account" *ngIf="auth.authenticated">
             <button type="button" class="account-chip" [attr.aria-expanded]="accountMenuOpen" aria-haspopup="menu"

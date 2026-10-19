@@ -19,7 +19,7 @@ export class TalentOnboardingComponent implements OnInit, OnDestroy {
   today=new Date().toLocaleDateString('en-CA'); currentYear=new Date().getFullYear();
   cvFile:File|null=null; profilePicture:File|null=null; profilePicturePreviewUrl:string|null=null; portfolioFiles:File[]=[]; supportingUploads:SupportingUpload[]=[];
   portfolioLinks=[{title:'Portfolio',url:''}]; postalRegions:string[]=[]; postalLoading=false; postalError='';
-  steps=['Informasi pribadi','Pendidikan','Pengalaman kerja','Sertifikat','Informasi tambahan','CV & portofolio'];
+  steps=['Data Diri','Pendidikan','Pengalaman Kerja','Sertifikat','Info Tambahan','Dokumen'];
   constructor(private portal:TalentPortalService,private auth:TalentAuthService,private router:Router,private route:ActivatedRoute) {
     const requested=route.snapshot.queryParamMap.get('returnUrl');
     if(requested?.startsWith('/') && !requested.startsWith('//')) this.returnUrl=requested;

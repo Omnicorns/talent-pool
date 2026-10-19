@@ -15,8 +15,8 @@ import { IconComponent } from '../../shared/icon.component';
         <img class="bg" src="assets/images/hero-sarinah.jpg" alt="">
         <a routerLink="/" aria-label="Beranda Sarinah Karier"><img class="logo" src="images/sarinah.png" alt="Sarinah"></a>
         <div>
-          <h1>{{ mode === 'login' ? 'Lanjutkan perjalanan karier Anda.' : 'Mulai perjalanan karier Anda bersama Sarinah.' }}</h1>
-          <p>Kelola profil Talent Pool, lamaran, dan jadwal interview Anda dalam satu akun.</p>
+          <h1>Bergabung dengan Talent Pool Sarinah</h1>
+          <p>Temukan peluang karier terbaik dan jadi bagian dari perjalanan kami.</p>
         </div>
       </section>
 
@@ -54,11 +54,11 @@ import { IconComponent } from '../../shared/icon.component';
 
           <form *ngIf="mode === 'login'" class="form-stack" (ngSubmit)="login()">
             <label class="field">Email
-              <input type="email" [(ngModel)]="email" name="email" autocomplete="email" placeholder="nama@email.com" required>
+              <span class="lead-field"><app-icon name="mail" [size]="18"></app-icon><input type="email" [(ngModel)]="email" name="email" autocomplete="email" placeholder="nama@email.com" required></span>
             </label>
             <label class="field">Password
-              <span class="password-field">
-                <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="password" autocomplete="current-password" minlength="8" required>
+              <span class="password-field lead-field"><app-icon name="shield" [size]="18"></app-icon>
+                <input [type]="showPassword ? 'text' : 'password'" placeholder="Masukkan password" [(ngModel)]="password" name="password" autocomplete="current-password" minlength="8" required>
                 <button type="button" class="icon-btn" (click)="showPassword = !showPassword" [attr.aria-label]="showPassword ? 'Sembunyikan password' : 'Tampilkan password'">
                   <app-icon [name]="showPassword ? 'eye-off' : 'eye'"></app-icon>
                 </button>
@@ -70,19 +70,19 @@ import { IconComponent } from '../../shared/icon.component';
 
           <form *ngIf="mode === 'register'" class="form-stack" (ngSubmit)="requestRegister()">
             <label class="field">Nama lengkap
-              <input [(ngModel)]="fullName" name="fullName" autocomplete="name" required>
+              <span class="lead-field"><app-icon name="users" [size]="18"></app-icon><input [(ngModel)]="fullName" name="fullName" autocomplete="name" placeholder="Masukkan nama lengkap Anda" required></span>
             </label>
             <div class="form-grid">
               <label class="field">Email
-                <input type="email" [(ngModel)]="email" name="registerEmail" autocomplete="email" placeholder="nama@email.com" required>
+                <span class="lead-field"><app-icon name="mail" [size]="18"></app-icon><input type="email" [(ngModel)]="email" name="registerEmail" autocomplete="email" placeholder="nama@email.com" required></span>
               </label>
               <label class="field">Nomor WhatsApp
-                <input type="tel" [(ngModel)]="phone" name="phone" autocomplete="tel" inputmode="numeric" placeholder="08xxxxxxxxxx" required>
+                <span class="lead-field"><app-icon name="phone" [size]="18"></app-icon><input type="tel" [(ngModel)]="phone" name="phone" autocomplete="tel" inputmode="numeric" placeholder="08xxxxxxxxxx" required></span>
               </label>
             </div>
             <label class="field">Password
-              <span class="password-field">
-                <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="registerPassword" autocomplete="new-password" minlength="8" required>
+              <span class="password-field lead-field"><app-icon name="shield" [size]="18"></app-icon>
+                <input [type]="showPassword ? 'text' : 'password'" placeholder="Minimal 8 karakter" [(ngModel)]="password" name="registerPassword" autocomplete="new-password" minlength="8" required>
                 <button type="button" class="icon-btn" (click)="showPassword = !showPassword" [attr.aria-label]="showPassword ? 'Sembunyikan password' : 'Tampilkan password'">
                   <app-icon [name]="showPassword ? 'eye-off' : 'eye'"></app-icon>
                 </button>
@@ -92,6 +92,9 @@ import { IconComponent } from '../../shared/icon.component';
             <label class="check"><input type="checkbox" [(ngModel)]="termsAccepted" name="termsAccepted"> Saya menyetujui penggunaan data saya untuk proses rekrutmen.</label>
             <button class="btn btn-primary btn-lg btn-block" [disabled]="loading">{{ loading ? 'Memproses…' : 'Buat akun' }}</button>
           </form>
+
+          <p class="switch-mode" *ngIf="mode === 'login'">Belum punya akun? <button type="button" class="link" (click)="mode = 'register'; error = ''; unverifiedEmail = ''">Daftar di sini <app-icon name="arrow-up-right" [size]="14"></app-icon></button></p>
+          <p class="switch-mode" *ngIf="mode === 'register'">Sudah punya akun? <button type="button" class="link" (click)="mode = 'login'; error = ''; unverifiedEmail = ''">Masuk <app-icon name="arrow-up-right" [size]="14"></app-icon></button></p>
 
           <div class="alert alert-error" *ngIf="error" role="alert"><app-icon name="alert"></app-icon><span>{{ error }}</span></div>
           <div class="alert alert-info" *ngIf="unverifiedEmail" role="status">

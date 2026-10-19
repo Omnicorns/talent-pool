@@ -173,7 +173,7 @@ public class CandidateService {
     }
 
     public CandidateSummaryResponse summary() {
-        long total = repository.count();
+        long total = repository.countVisible();
         long active = repository.countByStatusNotIn(EnumSet.of(CandidateStatus.ARCHIVED, CandidateStatus.HIRED));
         long ready = repository.countByStatus(CandidateStatus.AVAILABLE);
         long moved = repository.countByMovedToJobListingTrue();
