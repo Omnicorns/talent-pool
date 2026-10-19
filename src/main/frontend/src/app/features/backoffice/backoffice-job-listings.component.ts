@@ -165,7 +165,7 @@ import { IconComponent } from '../../shared/icon.component';
                 <thead><tr><th>Nama kandidat</th><th>Fungsi diminati</th><th>Pengalaman terakhir</th><th>Lokasi diminati</th><th>Review</th><th>Penilaian</th><th><span class="sr-only">CV</span></th></tr></thead>
                 <tbody>
                   <tr *ngFor="let a of visibleApplicants">
-                    <td style="min-width: 160px"><strong>{{ a.candidateName }}</strong><small>{{ a.candidate?.email }}</small><small>Melamar {{ fmt.fullDate(a.appliedAt) }} · {{ fmt.label(a.stage) }}</small></td>
+                    <td style="min-width: 160px"><strong>{{ a.candidateName }}</strong><small>{{ a.candidate?.email }}</small><small>{{ a.addedByHr ? 'Ditambahkan' : 'Melamar' }} {{ fmt.fullDate(a.appliedAt) }} · {{ fmt.label(a.stage) }}</small><span class="source-tag" [class.hr]="a.addedByHr">{{ a.addedByHr ? 'Ditambahkan HC' : 'Dilamar sendiri' }}</span></td>
                     <td style="min-width: 140px">{{ a.candidate?.jobInterests?.length ? a.candidate.jobInterests.join(', ') : (a.candidate?.relatedPosition || '-') }}</td>
                     <td style="min-width: 170px">
                       <ng-container *ngIf="a.candidate?.lastExperience as exp; else noExp">

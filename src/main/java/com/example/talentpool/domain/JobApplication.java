@@ -41,6 +41,10 @@ public class JobApplication {
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean potential;
 
+    /** true bila HC yang memasukkan kandidat ke lowongan; false bila kandidat melamar sendiri. */
+    @Column(name = "added_by_hr", nullable = false, columnDefinition = "boolean default false")
+    private boolean addedByHr;
+
     @CreatedDate
     @Column(name = "applied_at", nullable = false, updatable = false)
     private Instant appliedAt;
@@ -58,6 +62,8 @@ public class JobApplication {
     public void setStage(HiringStage stage) { this.stage = stage; }
     public ApplicationStatus getStatus() { return status; }
     public void setStatus(ApplicationStatus status) { this.status = status; }
+    public boolean isAddedByHr() { return addedByHr; }
+    public void setAddedByHr(boolean addedByHr) { this.addedByHr = addedByHr; }
     public boolean isPotential() { return potential; }
     public void setPotential(boolean potential) { this.potential = potential; }
     public String getNotes() { return notes; }

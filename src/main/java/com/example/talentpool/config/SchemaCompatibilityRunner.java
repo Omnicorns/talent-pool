@@ -28,6 +28,7 @@ public class SchemaCompatibilityRunner implements ApplicationRunner {
         // Pengaman bila Hibernate belum sempat menambah kolom pada tabel yang sudah berisi data.
         execute("ALTER TABLE candidates ADD COLUMN IF NOT EXISTS reviewed boolean NOT NULL DEFAULT false");
         execute("ALTER TABLE job_applications ADD COLUMN IF NOT EXISTS potential boolean NOT NULL DEFAULT false");
+        execute("ALTER TABLE job_applications ADD COLUMN IF NOT EXISTS added_by_hr boolean NOT NULL DEFAULT false");
     }
 
     private void execute(String sql) {

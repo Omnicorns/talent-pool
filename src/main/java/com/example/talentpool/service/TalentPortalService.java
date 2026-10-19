@@ -136,7 +136,8 @@ public class TalentPortalService {
         return applicationService.assign(
                 jobId,
                 candidateId,
-                new JobApplicationUpsertRequest(null, notes)
+                new JobApplicationUpsertRequest(null, notes),
+                false
         );
     }
 

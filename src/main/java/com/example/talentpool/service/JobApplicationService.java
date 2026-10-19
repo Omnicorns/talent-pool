@@ -39,8 +39,14 @@ public class JobApplicationService {
         this.candidateMapper = candidateMapper;
     }
 
+    /** Dipakai alur HC (tambah kandidat, jadwal interview): lamaran baru ditandai ditambahkan HC. */
     @Transactional
     public JobApplicationResponse assign(UUID jobListingId, UUID candidateId, JobApplicationUpsertRequest request) {
+        return assign(jobListingId, candidateId, request, true);
+    }
+
+    @Transactional
+    public JobApplicationResponse assign(UUID jobListingId, UUID candidateId, JobApplicationUpsertRequest request, boolean addedByHr) {
         Candidate candidate = candidateRepository.findById(candidateId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kandidat tidak ditemukan: " + candidateId));
         JobListing job = jobListingRepository.findById(jobListingId)
@@ -52,6 +58,7 @@ public class JobApplicationService {
         JobApplication application = repository.findByCandidateIdAndJobListingId(candidateId, jobListingId)
                 .orElseGet(JobApplication::new);
         boolean newApplication = application.getId() == null;
+        if (newApplication) application.setAddedByHr(addedByHr);
         HiringStage previousStage = application.getStage();
         ApplicationStatus previousStatus = application.getStatus();
         HiringStage stage = request != null && request.stage() != null
@@ -139,7 +146,7 @@ public class JobApplicationService {
                 application.getId(), application.getCandidate().getId(), application.getCandidate().getFullName(),
                 application.getJobListing().getId(), application.getJobListing().getTitle(), application.getStage(),
                 application.getStatus(), application.getNotes(), application.getAppliedAt(), application.getUpdatedAt(),
-                application.isPotential(), candidateMapper.toListItem(application.getCandidate())
+                application.isPotential(), application.isAddedByHr(), candidateMapper.toListItem(application.getCandidate())
         );
     }
 
