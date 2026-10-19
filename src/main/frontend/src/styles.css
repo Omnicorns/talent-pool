@@ -862,3 +862,11 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 .sticky-actions { position: sticky; right: 0; background: var(--white); box-shadow: -8px 0 8px -8px rgba(31, 27, 24, .12); }
 .table tbody tr:hover td.sticky-actions { background: #fcfbfa; }
 .table .select-inline { min-width: 150px; }
+.applicant-toolbar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+.add-panel { border: 1px solid var(--line); border-radius: var(--r-md); padding: 14px; margin-bottom: 16px; background: var(--surface); display: grid; gap: 12px; }
+.add-search { display: flex; gap: 8px; align-items: center; }
+.add-search .bo-search { flex: 1; }
+.add-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; max-height: 280px; overflow-y: auto; }
+.add-list li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 12px; background: var(--white); border: 1px solid var(--line); border-radius: 10px; }
+.add-list li div { display: grid; gap: 2px; min-width: 0; }
+.add-list small { color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }

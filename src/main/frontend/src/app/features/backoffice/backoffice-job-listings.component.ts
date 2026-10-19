@@ -121,6 +121,36 @@ import { IconComponent } from '../../shared/icon.component';
             <button type="button" class="icon-btn" (click)="closeApplicants()" aria-label="Tutup"><app-icon name="x"></app-icon></button>
           </header>
           <div class="drawer-body">
+            <div class="applicant-toolbar">
+              <button type="button" class="btn btn-secondary btn-sm" (click)="toggleAdd()" [attr.aria-expanded]="addOpen"><app-icon name="plus" [size]="15"></app-icon> Tambah kandidat</button>
+            </div>
+
+            <section class="add-panel" *ngIf="addOpen" aria-label="Tambah kandidat dari Talent Pool">
+              <form class="add-search" (ngSubmit)="searchCandidates()" role="search">
+                <label class="bo-search">
+                  <span class="sr-only">Cari kandidat Talent Pool</span>
+                  <app-icon name="search" [size]="16"></app-icon>
+                  <input [(ngModel)]="addQ" name="addQ" placeholder="Cari nama atau email kandidat">
+                </label>
+                <button class="btn btn-secondary btn-sm" type="submit">Cari</button>
+              </form>
+              <div class="alert alert-error" *ngIf="addError" role="alert"><app-icon name="alert"></app-icon><span>{{ addError }}</span></div>
+              <p class="muted" *ngIf="addLoading">Memuat kandidat…</p>
+              <p class="muted" *ngIf="!addLoading && !addResults.length">Tidak ada kandidat yang cocok.</p>
+              <ul class="add-list" *ngIf="addResults.length">
+                <li *ngFor="let c of addResults">
+                  <div>
+                    <strong>{{ c.fullName }}</strong>
+                    <small>{{ c.email }}{{ c.jobInterests?.length ? ' · ' + c.jobInterests.join(', ') : '' }}</small>
+                  </div>
+                  <button type="button" class="btn btn-primary btn-sm" *ngIf="!isApplicant(c.id); else already" (click)="addCandidate(c)" [disabled]="addingId === c.id">
+                    {{ addingId === c.id ? 'Menambah…' : 'Tambah' }}
+                  </button>
+                  <ng-template #already><span class="tag tag-positive">Sudah di lowongan</span></ng-template>
+                </li>
+              </ul>
+            </section>
+
             <div class="segmented applicant-filter" role="tablist" aria-label="Filter pelamar" *ngIf="applicants.length">
               <button type="button" role="tab" [class.active]="!onlyPotential" [attr.aria-selected]="!onlyPotential" (click)="onlyPotential = false">Semua ({{ applicants.length }})</button>
               <button type="button" role="tab" [class.active]="onlyPotential" [attr.aria-selected]="onlyPotential" (click)="onlyPotential = true">Potensial ({{ potentialCount }})</button>
@@ -254,6 +284,8 @@ export class BackofficeJobListingsComponent implements OnInit {
     this.applicants = [];
     this.applicantsError = '';
     this.applicantsLoading = true;
+    this.addOpen = false;
+    this.addError = '';
     this.api.jobApplications(job.id).subscribe({
       next: (result) => { this.applicants = result?.content || []; this.applicantsLoading = false; },
       error: () => { this.applicantsLoading = false; this.applicantsError = 'Daftar pelamar belum bisa dimuat. Coba lagi.'; },
@@ -293,6 +325,53 @@ export class BackofficeJobListingsComponent implements OnInit {
     this.api.deleteJobListing(this.deleteTarget.id).subscribe({
       next: () => { this.deleting = false; this.deleteTarget = null; this.load(); },
       error: (error) => { this.deleting = false; this.deleteError = error?.error?.message || 'Lowongan belum bisa dihapus. Coba lagi.'; },
+    });
+  }
+
+  addOpen = false;
+  addQ = '';
+  addResults: any[] = [];
+  addLoading = false;
+  addError = '';
+  addingId: string | null = null;
+
+  isApplicant(candidateId: string): boolean {
+    return this.applicants.some((a) => a.candidateId === candidateId);
+  }
+
+  toggleAdd(): void {
+    this.addOpen = !this.addOpen;
+    if (this.addOpen && !this.addResults.length) this.searchCandidates();
+  }
+
+  searchCandidates(): void {
+    this.addLoading = true;
+    this.addError = '';
+    this.api.candidates(this.addQ).subscribe({
+      next: (result) => { this.addResults = result?.content || []; this.addLoading = false; },
+      error: () => { this.addLoading = false; this.addError = 'Daftar kandidat belum bisa dimuat. Coba lagi.'; },
+    });
+  }
+
+  addCandidate(candidate: any): void {
+    if (!this.applicantsJob) return;
+    const job = this.applicantsJob;
+    this.addingId = candidate.id;
+    this.addError = '';
+    this.api.moveCandidateToJobListing(candidate.id, job.id, 'NEW_CANDIDATE').subscribe({
+      next: () => {
+        this.addingId = null;
+        this.api.jobApplications(job.id).subscribe({
+          next: (result) => {
+            this.applicants = result?.content || [];
+            job.applicationCount = this.applicants.length;
+          },
+        });
+      },
+      error: (error) => {
+        this.addingId = null;
+        this.addError = error?.error?.message || 'Kandidat belum bisa ditambahkan. Coba lagi.';
+      },
     });
   }
 
