@@ -8,11 +8,14 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
 import { FMT } from '../../shared/labels';
 import { IconComponent } from '../../shared/icon.component';
 import { PaginationComponent } from '../../shared/pagination.component';
+import { ColumnFilterComponent, SortDir } from '../../shared/column-filter.component';
+
+type AppKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review' | 'penilaian';
 
 @Component({
   selector: 'app-backoffice-job-listings',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, BackofficeLayoutComponent, BackofficeOverlayDirective, IconComponent, PaginationComponent],
+  imports: [CommonModule, FormsModule, RouterLink, BackofficeLayoutComponent, BackofficeOverlayDirective, IconComponent, PaginationComponent, ColumnFilterComponent],
   template: `
     <app-backoffice-layout active="jobs">
       <div class="bo-head">
@@ -165,9 +168,14 @@ import { PaginationComponent } from '../../shared/pagination.component';
             <p class="muted" *ngIf="!applicantsLoading && !applicantsError && !applicants.length">Belum ada pelamar.</p>
             <p class="muted" *ngIf="applicants.length && onlyPotential && !potentialCount">Belum ada pelamar yang ditandai potensial.</p>
 
+            <p class="muted" *ngIf="applicants.length && !visibleApplicants.length && (hasApplicantFilters || !onlyPotential)">Tidak ada pelamar yang cocok dengan filter. <button type="button" class="filter-reset" (click)="clearApplicantFilters()">Hapus semua filter</button></p>
+            <p style="text-align: right; margin: 0 0 8px" *ngIf="hasApplicantFilters && visibleApplicants.length"><button type="button" class="filter-reset" (click)="clearApplicantFilters()">Hapus semua filter</button></p>
             <div class="table-wrap" *ngIf="visibleApplicants.length">
               <table class="table applicant-table">
-                <thead><tr><th>Nama kandidat</th><th>Fungsi diminati</th><th>Pengalaman terakhir</th><th>Lokasi diminati</th><th>Review</th><th>Penilaian</th><th><span class="sr-only">CV</span></th></tr></thead>
+                <thead><tr>
+                  <th *ngFor="let col of applicantColumns"><app-column-filter [label]="col.label" [options]="applicantOptions(col.key)" [selected]="applicantFilters[col.key]" [sort]="applicantSort?.key === col.key ? applicantSort!.dir : null" (selectedChange)="setApplicantFilter(col.key, $event)" (sortChange)="setApplicantSort(col.key, $event)"></app-column-filter></th>
+                  <th><span class="sr-only">CV</span></th>
+                </tr></thead>
                 <tbody>
                   <tr *ngFor="let a of visibleApplicants">
                     <td style="min-width: 160px"><strong>{{ a.candidateName }}</strong><small>{{ a.candidate?.email }}</small><small>{{ a.addedByHr ? 'Ditambahkan' : 'Melamar' }} {{ fmt.fullDate(a.appliedAt) }} · {{ fmt.label(a.stage) }}</small><span class="source-tag" [class.hr]="a.addedByHr">{{ a.addedByHr ? 'Ditambahkan HC' : 'Dilamar sendiri' }}</span></td>
@@ -308,6 +316,8 @@ export class BackofficeJobListingsComponent implements OnInit {
   openApplicants(job: any): void {
     this.applicantsJob = job;
     this.onlyPotential = false;
+    this.clearApplicantFilters();
+    this.applicantSort = null;
     this.applicants = [];
     this.applicantsError = '';
     this.applicantsLoading = true;
@@ -328,8 +338,89 @@ export class BackofficeJobListingsComponent implements OnInit {
     return this.applicants.filter((a) => a.potential).length;
   }
 
+  readonly applicantColumns: { key: AppKey; label: string }[] = [
+    { key: 'name', label: 'Nama kandidat' },
+    { key: 'fungsi', label: 'Fungsi diminati' },
+    { key: 'pengalaman', label: 'Pengalaman terakhir' },
+    { key: 'lokasi', label: 'Lokasi diminati' },
+    { key: 'review', label: 'Review' },
+    { key: 'penilaian', label: 'Penilaian' },
+  ];
+  applicantFilters: Record<AppKey, string[] | null> = { name: null, fungsi: null, pengalaman: null, lokasi: null, review: null, penilaian: null };
+  applicantSort: { key: AppKey; dir: SortDir } | null = null;
+  private optionMemo: { sig: string; map: Partial<Record<AppKey, string[]>> } = { sig: '', map: {} };
+  private static readonly BLANK = '(Kosong)';
+
+  get hasApplicantFilters(): boolean {
+    return Object.values(this.applicantFilters).some((f) => f !== null);
+  }
+
+  private applicantValues(a: any, key: AppKey): string[] {
+    const c = a.candidate;
+    let list: string[] = [];
+    switch (key) {
+      case 'name': list = [a.candidateName]; break;
+      case 'fungsi': list = c?.jobInterests?.length ? c.jobInterests : [c?.relatedPosition]; break;
+      case 'pengalaman': list = [c?.lastExperience?.position]; break;
+      case 'lokasi': list = c?.preferredLocations || []; break;
+      case 'review': list = [c?.reviewed ? 'Sudah direview' : 'Belum review']; break;
+      case 'penilaian': list = [a.potential ? 'Potensial' : 'Belum ditandai']; break;
+    }
+    list = list.map((v) => (v || '').trim()).filter(Boolean);
+    return list.length ? list : [BackofficeJobListingsComponent.BLANK];
+  }
+
+  applicantOptions(key: AppKey): string[] {
+    const sig = this.applicants.map((a) => a.id + (a.potential ? 1 : 0) + (a.candidate?.reviewed ? 1 : 0)).join(',');
+    if (this.optionMemo.sig !== sig) this.optionMemo = { sig, map: {} };
+    return this.optionMemo.map[key] ||= (() => {
+      const blank = BackofficeJobListingsComponent.BLANK;
+      const set = new Set<string>();
+      this.applicants.forEach((a) => this.applicantValues(a, key).forEach((v) => set.add(v)));
+      const list = [...set].filter((v) => v !== blank).sort((x, y) => x.localeCompare(y, 'id'));
+      return set.has(blank) ? [...list, blank] : list;
+    })();
+  }
+
+  setApplicantFilter(key: AppKey, selected: string[] | null): void {
+    this.applicantFilters = { ...this.applicantFilters, [key]: selected };
+    this.viewMemo = null;
+  }
+
+  setApplicantSort(key: AppKey, dir: SortDir): void {
+    this.applicantSort = dir ? { key, dir } : null;
+    this.viewMemo = null;
+  }
+
+  clearApplicantFilters(): void {
+    this.applicantFilters = { name: null, fungsi: null, pengalaman: null, lokasi: null, review: null, penilaian: null };
+    this.viewMemo = null;
+  }
+
+  private viewMemo: { sig: string; rows: any[] } | null = null;
+
   get visibleApplicants(): any[] {
-    return this.onlyPotential ? this.applicants.filter((a) => a.potential) : this.applicants;
+    const sig = [this.applicants.map((a) => a.id + (a.potential ? 1 : 0) + (a.candidate?.reviewed ? 1 : 0)).join(','), this.onlyPotential, JSON.stringify(this.applicantFilters), JSON.stringify(this.applicantSort)].join('|');
+    if (this.viewMemo?.sig === sig) return this.viewMemo.rows;
+    const blank = BackofficeJobListingsComponent.BLANK;
+    let rows = (this.onlyPotential ? this.applicants.filter((a) => a.potential) : this.applicants).filter((a) =>
+      this.applicantColumns.every(({ key }) => {
+        const selected = this.applicantFilters[key];
+        return selected === null || this.applicantValues(a, key).some((v) => selected.includes(v));
+      }));
+    if (this.applicantSort) {
+      const { key, dir } = this.applicantSort;
+      const sign = dir === 'asc' ? 1 : -1;
+      const keyOf = (a: any) => [...this.applicantValues(a, key)].sort((x, y) => x.localeCompare(y, 'id'))[0];
+      rows = [...rows].sort((a, b) => {
+        const x = keyOf(a), y = keyOf(b);
+        if (x === blank && y !== blank) return 1;
+        if (y === blank && x !== blank) return -1;
+        return sign * x.localeCompare(y, 'id');
+      });
+    }
+    this.viewMemo = { sig, rows };
+    return rows;
   }
 
   togglePotential(application: any): void {

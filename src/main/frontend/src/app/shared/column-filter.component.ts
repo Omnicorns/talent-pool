@@ -66,8 +66,9 @@ export class ColumnFilterComponent implements OnInit, OnDestroy {
   top = 0;
   left = 0;
   maxHeight = 420;
+  private openedAt = 0;
   private readonly onScroll = (event: Event) => {
-    if (this.open && !(event.target as HTMLElement)?.closest?.('.colfilter-pop')) this.close();
+    if (this.open && Date.now() - this.openedAt > 300 && !(event.target as HTMLElement)?.closest?.('.colfilter-pop')) this.close();
   };
 
   constructor(private host: ElementRef<HTMLElement>) {}
@@ -107,6 +108,7 @@ export class ColumnFilterComponent implements OnInit, OnDestroy {
     this.maxHeight = Math.max(260, window.innerHeight - this.top - 12);
     this.term = '';
     this.draft = new Set(this.selected === null ? this.options : this.selected);
+    this.openedAt = Date.now();
     this.open = true;
   }
 
