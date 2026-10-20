@@ -8,11 +8,14 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
 import { FMT } from '../../shared/labels';
 import { IconComponent } from '../../shared/icon.component';
 import { PaginationComponent } from '../../shared/pagination.component';
+import { ColumnFilterComponent, SortDir } from '../../shared/column-filter.component';
+
+type ColKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review';
 
 @Component({
   selector: 'app-backoffice-candidates',
   standalone: true,
-  imports: [CommonModule, FormsModule, BackofficeLayoutComponent, TalentProfileDetailsComponent, BackofficeOverlayDirective, IconComponent, PaginationComponent],
+  imports: [CommonModule, FormsModule, BackofficeLayoutComponent, TalentProfileDetailsComponent, BackofficeOverlayDirective, IconComponent, PaginationComponent, ColumnFilterComponent],
   template: `
     <app-backoffice-layout active="candidates">
       <div class="bo-head">
@@ -33,13 +36,17 @@ import { PaginationComponent } from '../../shared/pagination.component';
       <section class="table-card responsive">
         <div class="table-meta">
           <span><strong>{{ total }}</strong> kandidat<ng-container *ngIf="q.trim()"> untuk “{{ q.trim() }}”</ng-container></span>
+          <button type="button" class="filter-reset" *ngIf="hasFilters" (click)="clearFilters()">Hapus semua filter</button>
           <span *ngIf="loading">Memuat…</span>
         </div>
 
         <div class="table-wrap">
           <table class="table">
             <thead>
-              <tr><th>Nama kandidat</th><th>Fungsi yang diminati</th><th>Pengalaman terakhir</th><th>Lokasi kerja diminati</th><th>Status review</th><th>Aksi</th></tr>
+              <tr>
+                <th *ngFor="let col of columns"><app-column-filter [label]="col.label" [options]="options(col.key)" [selected]="filters[col.key]" [sort]="sort?.key === col.key ? sort!.dir : null" (selectedChange)="setFilter(col.key, $event)" (sortChange)="setSort(col.key, $event)"></app-column-filter></th>
+                <th>Aksi</th>
+              </tr>
             </thead>
             <tbody>
               <tr *ngFor="let item of rows">
@@ -72,13 +79,10 @@ import { PaginationComponent } from '../../shared/pagination.component';
                 <td class="actions sticky-actions">
                   <div class="row-actions">
                     <button class="btn btn-secondary btn-sm" (click)="openCandidate(item)">Lihat profil</button>
-                    <button class="icon-btn" (click)="api.viewCv(item.id)" [disabled]="!item.hasCv" [attr.aria-label]="'Lihat CV ' + item.fullName" title="Lihat CV"><app-icon name="eye" [size]="16"></app-icon></button>
-                    <button class="icon-btn" (click)="api.downloadCv(item.id, 'CV-' + item.fullName + '.pdf')" [disabled]="!item.hasCv" [attr.aria-label]="'Unduh CV ' + item.fullName" title="Unduh CV"><app-icon name="download" [size]="16"></app-icon></button>
-                    <button class="icon-btn" (click)="openCandidate(item, true)" [attr.aria-label]="'Tambah ' + item.fullName + ' ke lowongan'" title="Tambah ke lowongan"><app-icon name="plus" [size]="16"></app-icon></button>
                   </div>
                 </td>
               </tr>
-              <tr *ngIf="!rows.length && !loading"><td colspan="6" class="empty-cell">{{ q.trim() ? 'Tidak ada kandidat yang cocok dengan pencarian.' : 'Belum ada kandidat di Talent Pool.' }}</td></tr>
+              <tr *ngIf="!rows.length && !loading"><td colspan="6" class="empty-cell">{{ q.trim() || hasFilters ? 'Tidak ada kandidat yang cocok dengan pencarian atau filter.' : 'Belum ada kandidat di Talent Pool.' }}</td></tr>
             </tbody>
           </table>
         </div>
@@ -104,9 +108,6 @@ import { PaginationComponent } from '../../shared/pagination.component';
                 <option value="no">Belum review</option><option value="yes">Sudah direview</option>
               </select>
               <button class="btn btn-secondary btn-sm" (click)="openCandidate(item)">Lihat profil</button>
-              <button class="icon-btn" (click)="api.viewCv(item.id)" [disabled]="!item.hasCv" aria-label="Lihat CV"><app-icon name="eye" [size]="16"></app-icon></button>
-              <button class="icon-btn" (click)="api.downloadCv(item.id, 'CV-' + item.fullName + '.pdf')" [disabled]="!item.hasCv" aria-label="Unduh CV"><app-icon name="download" [size]="16"></app-icon></button>
-              <button class="icon-btn" (click)="openCandidate(item, true)" aria-label="Tambah ke lowongan"><app-icon name="plus" [size]="16"></app-icon></button>
             </div>
           </article>
           <p class="empty-cell muted" style="padding: 32px 18px; text-align: center" *ngIf="!rows.length && !loading">Belum ada kandidat.</p>
@@ -178,14 +179,6 @@ import { PaginationComponent } from '../../shared/pagination.component';
                   <select [(ngModel)]="moveForm.jobListingId">
                     <option value="">Pilih lowongan yang dibuka</option>
                     <option *ngFor="let job of jobs" [value]="job.id">{{ job.title }}</option>
-                  </select>
-                </label>
-                <label class="field">Mulai dari tahap
-                  <select [(ngModel)]="moveForm.hiringStage">
-                    <option value="NEW_CANDIDATE">Baru</option>
-                    <option value="SCREENING">Screening</option>
-                    <option value="INTERVIEW">Interview</option>
-                    <option value="OFFER">Penawaran</option>
                   </select>
                 </label>
               </div>
@@ -306,6 +299,92 @@ export class BackofficeCandidatesComponent implements OnInit, OnDestroy {
   page = 0;
   size = 10;
   total = 0;
+  all: any[] = [];
+
+  readonly columns: { key: ColKey; label: string }[] = [
+    { key: 'name', label: 'Nama kandidat' },
+    { key: 'fungsi', label: 'Fungsi yang diminati' },
+    { key: 'pengalaman', label: 'Pengalaman terakhir' },
+    { key: 'lokasi', label: 'Lokasi kerja diminati' },
+    { key: 'review', label: 'Status review' },
+  ];
+  filters: Record<ColKey, string[] | null> = { name: null, fungsi: null, pengalaman: null, lokasi: null, review: null };
+  sort: { key: ColKey; dir: SortDir } | null = null;
+  private optionCache: Partial<Record<ColKey, string[]>> = {};
+  private static readonly EMPTY = '(Kosong)';
+
+  get hasFilters(): boolean {
+    return Object.values(this.filters).some((f) => f !== null);
+  }
+
+  private values(item: any, key: ColKey): string[] {
+    const blank = BackofficeCandidatesComponent.EMPTY;
+    let list: string[] = [];
+    switch (key) {
+      case 'name': list = [item.fullName]; break;
+      case 'fungsi': list = item.jobInterests?.length ? item.jobInterests : [item.relatedPosition]; break;
+      case 'pengalaman': list = [item.lastExperience?.position]; break;
+      case 'lokasi': list = item.preferredLocations || []; break;
+      case 'review': list = [item.reviewed ? 'Sudah direview' : 'Belum review']; break;
+    }
+    list = list.map((v) => (v || '').trim()).filter(Boolean);
+    return list.length ? list : [blank];
+  }
+
+  options(key: ColKey): string[] {
+    return this.optionCache[key] ||= this.computeOptions(key);
+  }
+
+  private computeOptions(key: ColKey): string[] {
+    const set = new Set<string>();
+    this.all.forEach((item) => this.values(item, key).forEach((v) => set.add(v)));
+    const blank = BackofficeCandidatesComponent.EMPTY;
+    const list = [...set].filter((v) => v !== blank).sort((a, b) => a.localeCompare(b, 'id'));
+    return set.has(blank) ? [...list, blank] : list;
+  }
+
+  setFilter(key: ColKey, selected: string[] | null): void {
+    this.filters = { ...this.filters, [key]: selected };
+    this.page = 0;
+    this.recompute();
+  }
+
+  setSort(key: ColKey, dir: SortDir): void {
+    this.sort = dir ? { key, dir } : null;
+    this.page = 0;
+    this.recompute();
+  }
+
+  clearFilters(): void {
+    this.filters = { name: null, fungsi: null, pengalaman: null, lokasi: null, review: null };
+    this.page = 0;
+    this.recompute();
+  }
+
+  private recompute(): void {
+    const blank = BackofficeCandidatesComponent.EMPTY;
+    let view = this.all.filter((item) =>
+      this.columns.every(({ key }) => {
+        const selected = this.filters[key];
+        return selected === null || this.values(item, key).some((v) => selected.includes(v));
+      }));
+    if (this.sort) {
+      const { key, dir } = this.sort;
+      const sign = dir === 'asc' ? 1 : -1;
+      const keyOf = (item: any) => [...this.values(item, key)].sort((a, b) => a.localeCompare(b, 'id'))[0];
+      view = [...view].sort((a, b) => {
+        const x = keyOf(a), y = keyOf(b);
+        if (x === blank && y !== blank) return 1;
+        if (y === blank && x !== blank) return -1;
+        return sign * x.localeCompare(y, 'id');
+      });
+    }
+    this.total = view.length;
+    const lastPage = Math.max(0, Math.ceil(view.length / this.size) - 1);
+    if (this.page > lastPage) this.page = lastPage;
+    this.rows = view.slice(this.page * this.size, (this.page + 1) * this.size);
+    this.rows.forEach((item) => { if (!this.pictureUrls[item.id]) this.loadPicture(item.id); });
+  }
 
   search(): void {
     this.page = 0;
@@ -314,25 +393,24 @@ export class BackofficeCandidatesComponent implements OnInit, OnDestroy {
 
   goToPage(page: number): void {
     this.page = page;
-    this.load();
+    this.recompute();
   }
 
   changeSize(size: number): void {
     this.size = size;
     this.page = 0;
-    this.load();
+    this.recompute();
   }
 
   load(): void {
     this.loading = true;
-    this.api.candidates(this.q, this.page, this.size).subscribe({
+    // Filter, urutan, dan paginasi dilakukan di browser, jadi seluruh kandidat (maks. 2000) dimuat sekali.
+    this.api.candidates(this.q, 0, 2000).subscribe({
       next: (result) => {
-        this.total = result?.totalElements ?? 0;
-        if (!(result?.content || []).length && this.page > 0) { this.page = Math.max(0, (result?.totalPages ?? 1) - 1); this.load(); return; }
-        Object.values(this.pictureUrls).forEach((url) => URL.revokeObjectURL(url));
-        this.pictureUrls = {};
-        this.rows = result?.content || [];
-        this.rows.forEach((item) => this.loadPicture(item.id));
+        this.all = result?.content || [];
+        this.optionCache = {};
+        this.filters = { name: null, fungsi: null, pengalaman: null, lokasi: null, review: null };
+        this.recompute();
         this.loading = false;
       },
       error: () => this.loading = false,
@@ -351,12 +429,13 @@ export class BackofficeCandidatesComponent implements OnInit, OnDestroy {
   }
 
   isReviewed(id: string): boolean {
-    return !!this.rows.find((row) => row.id === id)?.reviewed;
+    return !!this.all.find((row) => row.id === id)?.reviewed;
   }
 
   changeReview(item: any, reviewed: boolean): void {
     const previous = item.reviewed;
     item.reviewed = reviewed;
+    delete this.optionCache.review;
     this.api.updateCandidateReview(item.id, reviewed).subscribe({ error: () => item.reviewed = previous });
   }
 
@@ -444,7 +523,7 @@ export class BackofficeCandidatesComponent implements OnInit, OnDestroy {
     this.api.moveCandidateToJobListing(this.selected.id, this.moveForm.jobListingId, this.moveForm.hiringStage).subscribe({
       next: (updated) => {
         this.selected = updated;
-        const row = this.rows.find((item) => item.id === updated.id);
+        const row = this.all.find((item) => item.id === updated.id);
         if (row) row.movedToJobListing = updated.movedToJobListing;
         this.moving = false;
         this.moveSuccess = 'Kandidat dimasukkan ke lowongan.';
