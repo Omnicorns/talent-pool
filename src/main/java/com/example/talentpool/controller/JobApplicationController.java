@@ -23,9 +23,15 @@ public class JobApplicationController {
 
     @GetMapping
     public PageResponse<JobApplicationResponse> list(
+            @RequestParam(required = false) com.example.talentpool.domain.HiringStage stage,
             @PageableDefault(size = 20, sort = "updatedAt") Pageable pageable
     ) {
-        return PageResponse.from(service.list(pageable));
+        return PageResponse.from(service.list(stage, pageable));
+    }
+
+    @GetMapping("/stage-counts")
+    public java.util.Map<String, Long> stageCounts() {
+        return service.stageCounts();
     }
 
     @PatchMapping("/{id}/stage")

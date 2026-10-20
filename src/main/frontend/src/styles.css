@@ -861,7 +861,7 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 .drawer.xwide { width: min(1120px, 100vw); max-width: 100vw; }
 .sticky-actions { position: sticky; right: 0; background: var(--white); box-shadow: -8px 0 8px -8px rgba(31, 27, 24, .12); }
 .table tbody tr:hover td.sticky-actions { background: #fcfbfa; }
-.table .select-inline { min-width: 150px; }
+.table .select-inline { min-width: 140px; }
 .applicant-toolbar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
 .add-panel { border: 1px solid var(--line); border-radius: var(--r-md); padding: 14px; margin-bottom: 16px; background: var(--surface); display: grid; gap: 12px; }
 .add-search { display: flex; gap: 8px; align-items: center; }
@@ -891,3 +891,25 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
   .account-chip .icon { width: 14px; }
   .menu-toggle { margin-right: -6px; width: 36px; height: 36px; }
 }
+
+/* Pagination daftar back office */
+.pager { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px 20px; padding: 14px 20px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+.pager-info { margin: 0; }
+.pager-info strong { color: var(--ink); }
+.pager-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 20px; }
+.pager-size { display: inline-flex; align-items: center; gap: 8px; }
+.pager-size .select-inline { min-width: 72px; }
+.pager-pages { display: inline-flex; align-items: center; gap: 4px; }
+.pager-btn { min-width: 34px; height: 34px; padding: 0 8px; display: inline-grid; place-items: center; border: 1px solid var(--line); border-radius: 8px; background: var(--white); color: var(--ink-2); font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.pager-btn:hover:not(:disabled):not(.active) { border-color: var(--line-strong); background: var(--surface); }
+.pager-btn.active { background: var(--red); border-color: var(--red); color: #fff; cursor: default; }
+.pager-btn:disabled { opacity: .4; cursor: default; }
+.pager-gap { padding: 0 4px; color: var(--subtle); }
+.page-footer { margin-top: 16px; background: var(--white); border: 1px solid var(--line); border-radius: var(--r-lg); }
+.page-footer .pager { border-top: 0; }
+@media (max-width: 640px) { .pager { padding: 12px 14px; justify-content: center; text-align: center; } .pager-controls { justify-content: center; } }
+.table .select-inline { min-width: 132px; }
+.table td.actions, .table th:last-child { padding-left: 8px; padding-right: 12px; }
+.table th { padding-left: 14px; padding-right: 14px; }
+.table td { padding-left: 14px; padding-right: 14px; }
+.table td.actions, .table th:last-child { padding-left: 8px; padding-right: 12px; }
