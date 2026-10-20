@@ -162,4 +162,34 @@ export class BackofficeApiService {
       { headers: this.headers }
     );
   }
+
+  siteContents() {
+    return this.http.get<any[]>(`${API_BASE}/backoffice/site/contents`, { headers: this.headers });
+  }
+
+  siteContent(key: string) {
+    return this.http.get<any>(`${API_BASE}/backoffice/site/contents/${key}`, { headers: this.headers });
+  }
+
+  saveSiteContent(key: string, value: unknown) {
+    return this.http.put<any>(`${API_BASE}/backoffice/site/contents/${key}`, { value }, { headers: this.headers });
+  }
+
+  siteBanners() {
+    return this.http.get<any[]>(`${API_BASE}/backoffice/site/banners`, { headers: this.headers });
+  }
+
+  saveSiteBanner(id: string | null, form: FormData) {
+    return id
+      ? this.http.put<any>(`${API_BASE}/backoffice/site/banners/${id}`, form, { headers: this.headers })
+      : this.http.post<any>(`${API_BASE}/backoffice/site/banners`, form, { headers: this.headers });
+  }
+
+  deleteSiteBanner(id: string) {
+    return this.http.delete<void>(`${API_BASE}/backoffice/site/banners/${id}`, { headers: this.headers });
+  }
+
+  siteBannerImage(id: string) {
+    return this.http.get(`${API_BASE}/backoffice/site/banners/${id}/image`, { headers: this.headers, responseType: 'blob' });
+  }
 }

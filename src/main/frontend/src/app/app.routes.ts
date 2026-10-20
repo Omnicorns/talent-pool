@@ -18,6 +18,9 @@ import { BackofficeJobListingsComponent } from './features/backoffice/backoffice
 import { BackofficeApplicationsComponent } from './features/backoffice/backoffice-applications.component';
 import { BackofficeInterviewsComponent } from './features/backoffice/backoffice-interviews.component';
 
+import { BackofficeBannersComponent } from './features/backoffice/backoffice-banners.component';
+import { BackofficeSiteContentComponent } from './features/backoffice/backoffice-site-content.component';
+
 export const routes: Routes = [
   { path: '', component: LandingComponent },
   { path: 'open-positions', redirectTo: () => inject(Router).createUrlTree(['/'], { fragment: 'open-positions' }) },
@@ -54,6 +57,16 @@ export const routes: Routes = [
   {
     path: 'backoffice/interviews',
     component: BackofficeInterviewsComponent,
+    canActivate: [backofficeAuthGuard],
+  },
+  {
+    path: 'backoffice/site/banners',
+    component: BackofficeBannersComponent,
+    canActivate: [backofficeAuthGuard],
+  },
+  {
+    path: 'backoffice/site/content',
+    component: BackofficeSiteContentComponent,
     canActivate: [backofficeAuthGuard],
   },
   { path: '**', redirectTo: '' },

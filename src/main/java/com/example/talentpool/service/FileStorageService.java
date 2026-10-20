@@ -42,6 +42,12 @@ public class FileStorageService {
         return store(file, Path.of("candidates", candidateId.toString(), "profile"), IMAGE_EXTENSIONS);
     }
 
+    public StoredFile storeSiteBanner(MultipartFile file) {
+        if (file != null && file.getSize() > 5L * 1024 * 1024)
+            throw new BadRequestException("Ukuran gambar maksimal 5 MB");
+        return store(file, Path.of("site", "banners"), Set.of("jpg", "jpeg", "png", "webp"));
+    }
+
     public StoredFile storePortfolio(MultipartFile file, UUID candidateId) {
         return store(file, Path.of("candidates", candidateId.toString(), "portfolio"), PORTFOLIO_EXTENSIONS);
     }
