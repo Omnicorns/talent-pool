@@ -913,3 +913,24 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 .table th { padding-left: 14px; padding-right: 14px; }
 .table td { padding-left: 14px; padding-right: 14px; }
 .table td.actions, .table th:last-child { padding-left: 8px; padding-right: 12px; }
+
+/* Filter kolom ala Excel */
+.colfilter-btn { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px; margin: -4px -6px; border: 0; border-radius: 6px; background: none; font: inherit; font-weight: inherit; color: inherit; cursor: pointer; text-align: left; }
+.colfilter-btn:hover { background: rgba(31, 27, 24, .06); }
+.colfilter-btn .icon { color: var(--subtle); }
+.colfilter-btn.active, .colfilter-btn.active .icon { color: var(--red); }
+.colfilter-pop { position: fixed; z-index: 90; width: 280px; display: flex; flex-direction: column; gap: 4px; padding: 8px; background: var(--white); border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: var(--shadow-pop); font-weight: 400; color: var(--ink); text-align: left; white-space: normal; }
+.colfilter-pop hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; width: 100%; }
+.colfilter-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border: 0; border-radius: 8px; background: none; font: inherit; font-size: 14px; color: var(--ink); text-align: left; cursor: pointer; }
+.colfilter-item:hover { background: var(--surface); }
+.colfilter-item.on { color: var(--red); font-weight: 600; }
+.colfilter-search { width: 100%; }
+.colfilter-list { overflow-y: auto; max-height: 240px; margin: 4px 0; padding: 4px 4px 4px 2px; border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 2px; align-content: start; }
+.colfilter-list .check { display: flex; align-items: center; gap: 8px; padding: 5px 6px; font-size: 14px; border-radius: 6px; cursor: pointer; }
+.colfilter-list .check:hover { background: var(--surface); }
+.colfilter-list .check span { overflow-wrap: anywhere; }
+.colfilter-empty { padding: 8px; font-size: 13px; margin: 0; }
+.colfilter-foot { display: flex; align-items: center; gap: 6px; padding-top: 6px; }
+.colfilter-foot .spacer { flex: 1; }
+.filter-reset { border: 0; background: none; padding: 0; font: inherit; font-weight: 650; color: var(--red); cursor: pointer; }
+.filter-reset:hover { text-decoration: underline; }
