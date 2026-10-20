@@ -7,11 +7,12 @@ import { BackofficeLayoutComponent } from '../../shared/backoffice-layout.compon
 import { BackofficeApiService } from '../../core/service/api/backoffice-api.service';
 import { FMT } from '../../shared/labels';
 import { IconComponent } from '../../shared/icon.component';
+import { PaginationComponent } from '../../shared/pagination.component';
 
 @Component({
   selector: 'app-backoffice-candidates',
   standalone: true,
-  imports: [CommonModule, FormsModule, BackofficeLayoutComponent, TalentProfileDetailsComponent, BackofficeOverlayDirective, IconComponent],
+  imports: [CommonModule, FormsModule, BackofficeLayoutComponent, TalentProfileDetailsComponent, BackofficeOverlayDirective, IconComponent, PaginationComponent],
   template: `
     <app-backoffice-layout active="candidates">
       <div class="bo-head">
@@ -19,7 +20,7 @@ import { IconComponent } from '../../shared/icon.component';
           <h1>Kandidat</h1>
           <p>Semua profil di Talent Pool, termasuk yang belum melamar lowongan.</p>
         </div>
-        <form class="bo-actions" (ngSubmit)="load()" role="search">
+        <form class="bo-actions" (ngSubmit)="search()" role="search">
           <label class="bo-search">
             <span class="sr-only">Cari kandidat</span>
             <app-icon name="search" [size]="16"></app-icon>
@@ -31,7 +32,7 @@ import { IconComponent } from '../../shared/icon.component';
 
       <section class="table-card responsive">
         <div class="table-meta">
-          <span><strong>{{ rows.length }}</strong> kandidat<ng-container *ngIf="q.trim()"> untuk “{{ q.trim() }}”</ng-container></span>
+          <span><strong>{{ total }}</strong> kandidat<ng-container *ngIf="q.trim()"> untuk “{{ q.trim() }}”</ng-container></span>
           <span *ngIf="loading">Memuat…</span>
         </div>
 
@@ -51,10 +52,10 @@ import { IconComponent } from '../../shared/icon.component';
                     <div><strong>{{ item.fullName }}</strong><small>{{ item.email }}</small></div>
                   </div>
                 </td>
-                <td style="min-width: 140px">
+                <td style="min-width: 100px">
                   {{ item.jobInterests?.length ? item.jobInterests.join(', ') : (item.relatedPosition || '-') }}
                 </td>
-                <td style="min-width: 210px">
+                <td style="min-width: 160px">
                   <ng-container *ngIf="item.lastExperience as exp; else noExp">
                     <strong>{{ exp.position }}</strong>
                     <small>{{ exp.company }}</small>
@@ -62,7 +63,7 @@ import { IconComponent } from '../../shared/icon.component';
                   </ng-container>
                   <ng-template #noExp><span class="muted">-</span></ng-template>
                 </td>
-                <td style="min-width: 150px">{{ item.preferredLocations?.length ? item.preferredLocations.join(', ') : '-' }}</td>
+                <td style="min-width: 100px">{{ item.preferredLocations?.length ? item.preferredLocations.join(', ') : '-' }}</td>
                 <td>
                   <select class="select-inline" [ngModel]="item.reviewed ? 'yes' : 'no'" (ngModelChange)="changeReview(item, $event === 'yes')" [attr.aria-label]="'Status review ' + item.fullName">
                     <option value="no">Belum review</option><option value="yes">Sudah direview</option>
@@ -110,6 +111,8 @@ import { IconComponent } from '../../shared/icon.component';
           </article>
           <p class="empty-cell muted" style="padding: 32px 18px; text-align: center" *ngIf="!rows.length && !loading">Belum ada kandidat.</p>
         </div>
+
+        <app-pagination [page]="page" [size]="size" [total]="total" (pageChange)="goToPage($event)" (sizeChange)="changeSize($event)"></app-pagination>
       </section>
 
       <div class="drawer-backdrop bo-candidate-backdrop" *ngIf="drawerOpen" (click)="closeOnBackdrop($event)">
@@ -293,17 +296,39 @@ export class BackofficeCandidatesComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.load();
-    this.api.jobListings('').subscribe({ next: (result) => this.jobs = (result?.content || []).filter((job: any) => job.status === 'PUBLISHED') });
+    this.api.jobListings('', 0, 200).subscribe({ next: (result) => this.jobs = (result?.content || []).filter((job: any) => job.status === 'PUBLISHED') });
   }
 
   ngOnDestroy(): void {
     Object.values(this.pictureUrls).forEach((url) => URL.revokeObjectURL(url));
   }
 
+  page = 0;
+  size = 10;
+  total = 0;
+
+  search(): void {
+    this.page = 0;
+    this.load();
+  }
+
+  goToPage(page: number): void {
+    this.page = page;
+    this.load();
+  }
+
+  changeSize(size: number): void {
+    this.size = size;
+    this.page = 0;
+    this.load();
+  }
+
   load(): void {
     this.loading = true;
-    this.api.candidates(this.q).subscribe({
+    this.api.candidates(this.q, this.page, this.size).subscribe({
       next: (result) => {
+        this.total = result?.totalElements ?? 0;
+        if (!(result?.content || []).length && this.page > 0) { this.page = Math.max(0, (result?.totalPages ?? 1) - 1); this.load(); return; }
         Object.values(this.pictureUrls).forEach((url) => URL.revokeObjectURL(url));
         this.pictureUrls = {};
         this.rows = result?.content || [];

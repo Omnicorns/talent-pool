@@ -7,11 +7,12 @@ import { BackofficeLayoutComponent } from '../../shared/backoffice-layout.compon
 import { BackofficeApiService } from '../../core/service/api/backoffice-api.service';
 import { FMT } from '../../shared/labels';
 import { IconComponent } from '../../shared/icon.component';
+import { PaginationComponent } from '../../shared/pagination.component';
 
 @Component({
   selector: 'app-backoffice-interviews',
   standalone: true,
-  imports: [CommonModule, FormsModule, BackofficeLayoutComponent, BackofficeOverlayDirective, IconComponent],
+  imports: [CommonModule, FormsModule, BackofficeLayoutComponent, BackofficeOverlayDirective, IconComponent, PaginationComponent],
   template: `
     <app-backoffice-layout active="interviews">
       <div class="bo-head">
@@ -25,7 +26,7 @@ import { IconComponent } from '../../shared/icon.component';
       </div>
 
       <div class="chips" role="tablist" aria-label="Filter interview">
-        <button type="button" role="tab" class="btn btn-sm" *ngFor="let f of filters" [class.btn-primary]="filter === f.id" [class.btn-secondary]="filter !== f.id" [attr.aria-selected]="filter === f.id" (click)="filter = f.id">{{ f.label }} ({{ countFor(f.id) }})</button>
+        <button type="button" role="tab" class="btn btn-sm" *ngFor="let f of filters" [class.btn-primary]="filter === f.id" [class.btn-secondary]="filter !== f.id" [attr.aria-selected]="filter === f.id" (click)="setFilter(f.id)">{{ f.label }} ({{ countFor(f.id) }})</button>
       </div>
 
       <section class="table-card responsive">
@@ -36,7 +37,7 @@ import { IconComponent } from '../../shared/icon.component';
               <tr><th>Jadwal</th><th>Kandidat</th><th>Cara dan tempat</th><th>Pewawancara</th><th>Status</th><th>Hasil</th><th><span class="sr-only">Aksi</span></th></tr>
             </thead>
             <tbody>
-              <tr *ngFor="let item of visible">
+              <tr *ngFor="let item of paged">
                 <td><strong>{{ fmt.fullDate(item.scheduledAt) }}</strong><small>{{ fmt.time(item.scheduledAt) }} · {{ item.durationMinutes }} menit</small></td>
                 <td><strong>{{ item.candidateName }}</strong><small>{{ item.jobTitle || 'Talent Pool' }}</small></td>
                 <td style="max-width: 240px"><strong>{{ fmt.label(item.mode) }}</strong><small style="overflow-wrap: anywhere">{{ item.locationOrLink || '-' }}</small></td>
@@ -62,7 +63,7 @@ import { IconComponent } from '../../shared/icon.component';
         </div>
 
         <div class="cards">
-          <article *ngFor="let item of visible">
+          <article *ngFor="let item of paged">
             <div class="card-head">
               <div><strong>{{ item.candidateName }}</strong><small>{{ item.jobTitle || 'Talent Pool' }}</small></div>
               <span class="tag" [ngClass]="'tag-' + fmt.tone(item.status)">{{ fmt.label(item.status) }}</span>
@@ -88,6 +89,8 @@ import { IconComponent } from '../../shared/icon.component';
           </article>
           <p class="muted" style="padding: 32px 18px; text-align: center" *ngIf="!visible.length && !loading">Tidak ada interview.</p>
         </div>
+
+        <app-pagination [page]="page" [size]="size" [total]="visible.length" (pageChange)="page = $event" (sizeChange)="size = $event; page = 0"></app-pagination>
       </section>
 
       <div class="drawer-backdrop" *ngIf="drawerOpen" (click)="closeOnBackdrop($event)">
@@ -176,8 +179,8 @@ export class BackofficeInterviewsComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
-    this.api.candidates('').subscribe({ next: (result) => this.candidates = result?.content || [] });
-    this.api.jobListings('').subscribe({ next: (result) => this.jobs = result?.content || [] });
+    this.api.candidates('', 0, 200).subscribe({ next: (result) => this.candidates = result?.content || [] });
+    this.api.jobListings('', 0, 200).subscribe({ next: (result) => this.jobs = result?.content || [] });
 
     const candidateId = this.route.snapshot.queryParamMap.get('candidateId');
     const jobId = this.route.snapshot.queryParamMap.get('jobId');
@@ -194,6 +197,22 @@ export class BackofficeInterviewsComponent implements OnInit {
 
   get visible(): any[] {
     return this.rows.filter((item) => this.matches(item, this.filter));
+  }
+
+  page = 0;
+  size = 10;
+
+  /** Halaman saat ini dari daftar yang sudah difilter (paginasi sisi klien; maksimal 500 interview terbaru dimuat). */
+  get paged(): any[] {
+    const rows = this.visible;
+    const lastPage = Math.max(0, Math.ceil(rows.length / this.size) - 1);
+    if (this.page > lastPage) this.page = lastPage;
+    return rows.slice(this.page * this.size, (this.page + 1) * this.size);
+  }
+
+  setFilter(id: string): void {
+    this.filter = id;
+    this.page = 0;
   }
 
   countFor(filter: string): number {

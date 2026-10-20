@@ -16,8 +16,8 @@ export class BackofficeApiService {
     return this.http.get<any>(`${API_BASE}/backoffice/dashboard`, { headers: this.headers });
   }
 
-  candidates(q = '') {
-    let params = new HttpParams().set('page', '0').set('size', '50').set('sort', 'updatedAt,desc');
+  candidates(q = '', page = 0, size = 50) {
+    let params = new HttpParams().set('page', String(page)).set('size', String(size)).set('sort', 'updatedAt,desc');
     if (q.trim()) params = params.set('q', q.trim());
     return this.http.get<any>(`${API_BASE}/backoffice/candidates`, { headers: this.headers, params });
   }
@@ -86,7 +86,7 @@ export class BackofficeApiService {
   }
 
   interviews() {
-    const params = new HttpParams().set('page', '0').set('size', '50').set('sort', 'scheduledAt,asc');
+    const params = new HttpParams().set('page', '0').set('size', '500').set('sort', 'scheduledAt,asc');
     return this.http.get<any>(`${API_BASE}/backoffice/interviews`, { headers: this.headers, params });
   }
 
@@ -114,8 +114,8 @@ export class BackofficeApiService {
     return this.http.patch<any>(`${API_BASE}/backoffice/candidates/${id}/status`, { status }, { headers: this.headers });
   }
 
-  jobListings(q = '') {
-    let params = new HttpParams().set('page', '0').set('size', '50').set('sort', 'updatedAt,desc');
+  jobListings(q = '', page = 0, size = 50) {
+    let params = new HttpParams().set('page', String(page)).set('size', String(size)).set('sort', 'updatedAt,desc');
     if (q.trim()) params = params.set('q', q.trim());
     return this.http.get<any>(`${API_BASE}/backoffice/job-listings`, { headers: this.headers, params });
   }
@@ -141,13 +141,18 @@ export class BackofficeApiService {
   }
 
   jobApplications(jobId: string) {
-    const params = new HttpParams().set('page', '0').set('size', '100').set('sort', 'updatedAt,desc');
+    const params = new HttpParams().set('page', '0').set('size', '200').set('sort', 'updatedAt,desc');
     return this.http.get<any>(`${API_BASE}/backoffice/job-listings/${jobId}/applications`, { headers: this.headers, params });
   }
 
-  applications() {
-    const params = new HttpParams().set('page', '0').set('size', '100').set('sort', 'updatedAt,desc');
+  applications(page = 0, size = 10, stage = '') {
+    let params = new HttpParams().set('page', String(page)).set('size', String(size)).set('sort', 'updatedAt,desc');
+    if (stage) params = params.set('stage', stage);
     return this.http.get<any>(`${API_BASE}/backoffice/applications`, { headers: this.headers, params });
+  }
+
+  applicationStageCounts() {
+    return this.http.get<Record<string, number>>(`${API_BASE}/backoffice/applications/stage-counts`, { headers: this.headers });
   }
 
   updateApplicationStage(id: string, stage: string, status?: string | null) {

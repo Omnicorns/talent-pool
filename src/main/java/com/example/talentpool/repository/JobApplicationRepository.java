@@ -16,6 +16,7 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
     Optional<JobApplication> findFirstByCandidateIdOrderByUpdatedAtDesc(UUID candidateId);
     Optional<JobApplication> findByIdAndCandidateId(UUID id, UUID candidateId);
     Page<JobApplication> findByCandidateId(UUID candidateId, Pageable pageable);
+    Page<JobApplication> findByStage(HiringStage stage, Pageable pageable);
     Page<JobApplication> findByJobListingId(UUID jobListingId, Pageable pageable);
     long countByJobListingId(UUID jobListingId);
     long countByStage(HiringStage stage);

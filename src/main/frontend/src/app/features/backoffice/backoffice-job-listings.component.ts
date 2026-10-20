@@ -7,11 +7,12 @@ import { BackofficeLayoutComponent } from '../../shared/backoffice-layout.compon
 import { BackofficeApiService } from '../../core/service/api/backoffice-api.service';
 import { FMT } from '../../shared/labels';
 import { IconComponent } from '../../shared/icon.component';
+import { PaginationComponent } from '../../shared/pagination.component';
 
 @Component({
   selector: 'app-backoffice-job-listings',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, BackofficeLayoutComponent, BackofficeOverlayDirective, IconComponent],
+  imports: [CommonModule, FormsModule, RouterLink, BackofficeLayoutComponent, BackofficeOverlayDirective, IconComponent, PaginationComponent],
   template: `
     <app-backoffice-layout active="jobs">
       <div class="bo-head">
@@ -20,7 +21,7 @@ import { IconComponent } from '../../shared/icon.component';
           <p>Buat lowongan, buka untuk pelamar, dan tutup saat posisi sudah terisi.</p>
         </div>
         <div class="bo-actions">
-          <form (ngSubmit)="load()" role="search" class="bo-search">
+          <form (ngSubmit)="search()" role="search" class="bo-search">
             <span class="sr-only">Cari lowongan</span>
             <app-icon name="search" [size]="16"></app-icon>
             <input [(ngModel)]="q" name="q" placeholder="Cari posisi atau departemen">
@@ -62,6 +63,10 @@ import { IconComponent } from '../../shared/icon.component';
       <div class="empty" *ngIf="!rows.length && !loading">
         <strong>{{ q.trim() ? 'Tidak ada lowongan yang cocok' : 'Belum ada lowongan' }}</strong>
         {{ q.trim() ? 'Coba kata kunci lain.' : 'Buat lowongan pertama untuk mulai menerima pelamar.' }}
+      </div>
+
+      <div class="page-footer" *ngIf="total > 0">
+        <app-pagination [page]="page" [size]="size" [total]="total" [sizes]="[8, 16, 40]" (pageChange)="goToPage($event)" (sizeChange)="changeSize($event)"></app-pagination>
       </div>
 
       <div class="drawer-backdrop" *ngIf="drawerOpen" (click)="closeOnBackdrop($event)">
@@ -233,10 +238,32 @@ export class BackofficeJobListingsComponent implements OnInit {
     this.load();
   }
 
+  page = 0;
+  size = 8;
+  total = 0;
+
+  search(): void {
+    this.page = 0;
+    this.load();
+  }
+
+  goToPage(page: number): void {
+    this.page = page;
+    this.load();
+  }
+
+  changeSize(size: number): void {
+    this.size = size;
+    this.page = 0;
+    this.load();
+  }
+
   load(): void {
     this.loading = true;
-    this.api.jobListings(this.q).subscribe({
+    this.api.jobListings(this.q, this.page, this.size).subscribe({
       next: (result) => {
+        this.total = result?.totalElements ?? 0;
+        if (!(result?.content || []).length && this.page > 0) { this.page = Math.max(0, (result?.totalPages ?? 1) - 1); this.load(); return; }
         this.rows = result?.content || [];
         this.loading = false;
       },

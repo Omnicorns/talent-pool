@@ -113,6 +113,23 @@ public class JobApplicationService {
     }
 
     @Transactional
+    public Page<JobApplicationResponse> list(HiringStage stage, Pageable pageable) {
+        if (stage == null) return list(pageable);
+        return repository.findByStage(stage, pageable).map(this::toResponse);
+    }
+
+    /** Jumlah lamaran per tahap untuk chip filter; tahap tanpa lamaran bernilai 0. */
+    @Transactional
+    public java.util.Map<String, Long> stageCounts() {
+        java.util.Map<String, Long> counts = new java.util.LinkedHashMap<>();
+        for (HiringStage stage : HiringStage.values()) counts.put(stage.name(), 0L);
+        repository.countGroupedByStage().forEach(row -> {
+            if (row[0] != null) counts.put(String.valueOf(row[0]), ((Number) row[1]).longValue());
+        });
+        return counts;
+    }
+
+    @Transactional
     public Page<JobApplicationResponse> listByJob(UUID jobListingId, Pageable pageable) {
         if (!jobListingRepository.existsById(jobListingId)) {
             throw new ResourceNotFoundException("Job listing tidak ditemukan: " + jobListingId);
