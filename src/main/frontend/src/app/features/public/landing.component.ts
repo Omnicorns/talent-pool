@@ -7,7 +7,8 @@ import { IconComponent } from '../../shared/icon.component';
 import { OpenPositionsComponent } from './open-positions.component';
 import { TalentAuthService } from '../../core/service/api/talent-auth.service';
 import { LifeSliderComponent } from './life-slider.component';
-import { LIFE_HEADING, LIFE_PROGRAMS, LIFE_SLIDE_SECONDS } from './life-at-sarinah.config';
+import { LIFE_SLIDE_SECONDS } from './life-at-sarinah.config';
+import { LandingData, SiteContentService } from '../../core/service/api/site-content.service';
 
 @Component({
   selector: 'app-landing',
@@ -17,29 +18,29 @@ import { LIFE_HEADING, LIFE_PROGRAMS, LIFE_SLIDE_SECONDS } from './life-at-sarin
     <div class="site">
       <app-career-header active="home"></app-career-header>
 
-      <main>
+      <main *ngIf="site">
         <section class="hero" aria-labelledby="hero-title">
           <svg class="hero-motif" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
             <g fill="currentColor"><path *ngFor="let angle of petals" d="M50 50C36 36 36 13 50 4c14 9 14 32 0 46Z" [attr.transform]="'rotate(' + angle + ' 50 50)'"></path></g>
           </svg>
           <div class="hero-copy">
-            <h1 id="hero-title">Be Part of Indonesia’s Creative Retail Legacy</h1>
-            <p>Discover opportunities to grow, create impact, and champion local excellence.</p>
+            <h1 id="hero-title">{{ site.hero.title }}</h1>
+            <p>{{ site.hero.subtitle }}</p>
             <div class="hero-actions">
-              <a routerLink="/" fragment="open-positions" class="btn btn-primary btn-lg">Jelajahi Talent Pool <app-icon name="arrow-up-right" [size]="16"></app-icon></a>
-              <a [routerLink]="talentPoolLink" class="btn btn-secondary btn-lg">Gabung Talent Pool</a>
+              <a routerLink="/" fragment="open-positions" class="btn btn-primary btn-lg">{{ site.hero.primaryCta }} <app-icon name="arrow-up-right" [size]="16"></app-icon></a>
+              <a [routerLink]="talentPoolLink" class="btn btn-secondary btn-lg">{{ site.hero.secondaryCta }}</a>
             </div>
           </div>
           <div class="hero-media">
-            <img src="assets/images/hero-sarinah.jpg" width="611" height="462"
-              alt="Dua karyawan Sarinah berbusana tenun dan batik bekerja bersama di depan laptop" fetchpriority="high">
+            <img [src]="site.heroImages[0]" width="611" height="462"
+              [alt]="heroAlt" fetchpriority="high">
           </div>
         </section>
 
         <section class="values" aria-label="Alasan bergabung dengan Sarinah">
           <div class="container">
             <div class="values-card">
-              <article class="value" *ngFor="let item of values">
+              <article class="value" *ngFor="let item of site.values">
                 <app-icon [name]="item.icon" [size]="28" [stroke]="1.6"></app-icon>
                 <h2>{{ item.title }}</h2>
                 <p>{{ item.text }}</p>
@@ -51,17 +52,17 @@ import { LIFE_HEADING, LIFE_PROGRAMS, LIFE_SLIDE_SECONDS } from './life-at-sarin
         <section id="life" class="life" aria-labelledby="life-title">
           <div class="life-banner">
             <div class="container">
-              <p class="eyebrow">{{ life.eyebrow }}</p>
-              <h2 id="life-title">{{ life.title }}</h2>
-              <p class="life-tagline">{{ life.tagline }}</p>
-              <p class="life-lead">{{ life.lead }}</p>
+              <p class="eyebrow">{{ site.lifeHeading.eyebrow }}</p>
+              <h2 id="life-title">{{ site.lifeHeading.title }}</h2>
+              <p class="life-tagline">{{ site.lifeHeading.tagline }}</p>
+              <p class="life-lead">{{ site.lifeHeading.lead }}</p>
             </div>
           </div>
           <div class="container">
             <div class="life-panel">
               <ul class="life-grid">
-                <li class="life-card" *ngFor="let program of lifePrograms">
-                  <app-life-slider [images]="program.images" [alt]="program.title" [seconds]="program.seconds ?? slideSeconds"></app-life-slider>
+                <li class="life-card" *ngFor="let program of site.programs">
+                  <app-life-slider [images]="program.images" [alt]="program.title" [seconds]="slideSeconds"></app-life-slider>
                   <div class="life-caption"><h3>{{ program.title }}</h3><p>{{ program.description }}</p></div>
                 </li>
               </ul>
@@ -81,7 +82,7 @@ import { LIFE_HEADING, LIFE_PROGRAMS, LIFE_SLIDE_SECONDS } from './life-at-sarin
               <h2>Pertanyaan yang sering diajukan</h2>
             </div>
             <div class="faq">
-              <details *ngFor="let item of faqs; let first = first" [open]="first">
+              <details *ngFor="let item of site.faqs; let first = first" [open]="first">
                 <summary>{{ item.q }} <app-icon name="chevron-down" [size]="20"></app-icon></summary>
                 <p>{{ item.a }}</p>
               </details>
@@ -89,32 +90,23 @@ import { LIFE_HEADING, LIFE_PROGRAMS, LIFE_SLIDE_SECONDS } from './life-at-sarin
           </div>
         </section>
       </main>
-      <app-career-footer></app-career-footer>
+      <app-career-footer *ngIf="site"></app-career-footer>
     </div>
   `,
 })
 export class LandingComponent {
   readonly petals = [0, 45, 90, 135, 180, 225, 270, 315];
 
-  readonly values = [
-    { icon: 'users', title: 'Bergabung dalam Talent Pool', text: 'Kesempatan untuk menjadi bagian dari jaringan talenta Sarinah.' },
-    { icon: 'sprout', title: 'Peluang berkembang', text: 'Dapatkan kesempatan karier yang sesuai dengan kompetensi dan minat Anda.' },
-    { icon: 'building', title: 'Berkontribusi untuk Indonesia', text: 'Bersama Sarinah, hadirkan nilai dan inspirasi bagi masyarakat Indonesia.' },
-    { icon: 'shield', title: 'Keamanan data', text: 'Data Anda dikelola sesuai UU Perlindungan Data Pribadi dan hanya digunakan untuk rekrutmen.' },
-  ];
-
-  readonly life = LIFE_HEADING;
-  readonly lifePrograms = LIFE_PROGRAMS;
+  site: LandingData | null = null;
   readonly slideSeconds = LIFE_SLIDE_SECONDS;
 
-  readonly faqs = [
-    { q: 'Apa itu Talent Pool?', a: 'Talent Pool adalah basis data profil kandidat Sarinah. Profil Anda akan dipertimbangkan saat ada kebutuhan posisi yang relevan, meskipun Anda belum melamar lowongan tertentu.' },
-    { q: 'Apakah saya harus melamar posisi tertentu?', a: 'Tidak. Anda dapat bergabung ke Talent Pool terlebih dahulu, lalu melamar lowongan yang sedang dibuka kapan saja dari akun yang sama.' },
-    { q: 'Bagaimana proses setelah saya mendaftar?', a: 'Tim Human Capital meninjau profil dan CV Anda. Jika ada posisi yang sesuai, kami menghubungi Anda melalui email atau WhatsApp untuk tahap berikutnya.' },
-    { q: 'Bagaimana saya memantau status lamaran?', a: 'Masuk ke akun Anda, lalu buka Profil saya. Status setiap lamaran tampil di bagian Lamaran saya, lengkap dengan riwayat prosesnya.' },
-  ];
+  constructor(private auth: TalentAuthService, content: SiteContentService) {
+    content.landing().subscribe((site) => this.site = site);
+  }
 
-  constructor(private auth: TalentAuthService) {}
+  get heroAlt(): string {
+    return this.site?.heroImages[0].startsWith('assets/') ? 'Dua karyawan Sarinah berbusana tenun dan batik bekerja bersama di depan laptop' : 'Sarinah';
+  }
 
   get talentPoolLink(): string {
     if (!this.auth.authenticated) return '/register';

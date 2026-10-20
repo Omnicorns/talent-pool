@@ -5,7 +5,7 @@ import { BackofficeAuthService } from '../core/service/api/backoffice-auth.servi
 import { BackofficeOverlayDirective } from './backoffice-overlay.directive';
 import { IconComponent } from './icon.component';
 
-type Section = 'dashboard' | 'candidates' | 'jobs' | 'applications' | 'interviews';
+type Section = 'dashboard' | 'candidates' | 'jobs' | 'applications' | 'interviews' | 'banners' | 'site';
 
 @Component({
   selector: 'app-backoffice-layout',
@@ -34,10 +34,13 @@ type Section = 'dashboard' | 'candidates' | 'jobs' | 'applications' | 'interview
         </div>
 
         <nav class="bo-nav" aria-label="Navigasi back office">
-          <a *ngFor="let item of nav" [routerLink]="item.link" [class.active]="active === item.id"
+          <ng-container *ngFor="let item of nav">
+          <p class="bo-nav-heading" *ngIf="item.heading">{{ item.heading }}</p>
+          <a [routerLink]="item.link" [class.active]="active === item.id"
             [attr.aria-current]="active === item.id ? 'page' : null" (click)="mobileMenuOpen = false">
             <app-icon [name]="item.icon"></app-icon>{{ item.label }}
           </a>
+          </ng-container>
         </nav>
 
         <div class="bo-sidebar-foot">
@@ -57,12 +60,14 @@ export class BackofficeLayoutComponent {
   mobileMenuOpen = false;
   isMobile = window.innerWidth <= 1024;
 
-  readonly nav: Array<{ id: Section; label: string; icon: string; link: string }> = [
+  readonly nav: Array<{ id: Section; label: string; icon: string; link: string; heading?: string }> = [
     { id: 'dashboard', label: 'Ringkasan', icon: 'dashboard', link: '/backoffice/dashboard' },
     { id: 'candidates', label: 'Kandidat', icon: 'users', link: '/backoffice/candidates' },
     { id: 'jobs', label: 'Lowongan', icon: 'briefcase', link: '/backoffice/job-listings' },
     { id: 'applications', label: 'Lamaran', icon: 'clipboard', link: '/backoffice/applications' },
     { id: 'interviews', label: 'Interview', icon: 'calendar', link: '/backoffice/interviews' },
+    { id: 'banners', label: 'Banner', icon: 'image', link: '/backoffice/site/banners', heading: 'Landing page' },
+    { id: 'site', label: 'Konten', icon: 'content', link: '/backoffice/site/content' },
   ];
 
   @HostListener('window:resize')
