@@ -6,14 +6,14 @@ import { CareerFooterComponent } from '../../shared/career-footer.component';
 import { IconComponent } from '../../shared/icon.component';
 import { OpenPositionsComponent } from './open-positions.component';
 import { TalentAuthService } from '../../core/service/api/talent-auth.service';
-import { LifeSliderComponent } from './life-slider.component';
+import { LifeCarouselComponent } from './life-carousel.component';
 import { LIFE_SLIDE_SECONDS } from './life-at-sarinah.config';
 import { LandingData, SiteContentService } from '../../core/service/api/site-content.service';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, RouterLink, CareerHeaderComponent, CareerFooterComponent, OpenPositionsComponent, IconComponent, LifeSliderComponent],
+  imports: [CommonModule, RouterLink, CareerHeaderComponent, CareerFooterComponent, OpenPositionsComponent, IconComponent, LifeCarouselComponent],
   template: `
     <div class="site">
       <app-career-header active="home"></app-career-header>
@@ -59,13 +59,8 @@ import { LandingData, SiteContentService } from '../../core/service/api/site-con
             </div>
           </div>
           <div class="container">
-            <div class="life-panel">
-              <ul class="life-grid">
-                <li class="life-card" *ngFor="let program of site.programs">
-                  <app-life-slider [images]="program.images" [alt]="program.title" [seconds]="slideSeconds"></app-life-slider>
-                  <div class="life-caption"><h3>{{ program.title }}</h3><p>{{ program.description }}</p></div>
-                </li>
-              </ul>
+            <div class="life-panel life-panel-carousel">
+              <app-life-carousel [programs]="site.programs" [seconds]="slideSeconds"></app-life-carousel>
             </div>
           </div>
         </section>

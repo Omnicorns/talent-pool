@@ -944,3 +944,42 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 .content-item-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .content-item-head strong { font-size: 14px; }
 .content-item-actions { display: flex; gap: 4px; }
+
+/* Life at Sarinah: carousel foto besar + panel info */
+.lc { display: grid; gap: 14px; justify-items: center; }
+.lc-stage { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) 340px; background: var(--ink); border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--shadow-pop); }
+.lc-main { position: relative; aspect-ratio: 16 / 10; background: #2a2521; overflow: hidden; }
+.lc-main img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .6s ease; }
+.lc-main img.on { opacity: 1; }
+.lc-empty { position: absolute; inset: 0; display: grid; place-items: center; font-size: 28px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: rgba(255, 255, 255, .25); }
+.lc-arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 999px; background: rgba(31, 27, 24, .55); color: #fff; cursor: pointer; opacity: .85; transition: background-color .15s, opacity .15s; }
+.lc-arrow:hover, .lc-arrow:focus-visible { background: rgba(31, 27, 24, .85); opacity: 1; }
+.lc-arrow.prev { left: 12px; }
+.lc-arrow.next { right: 12px; }
+.lc-side { display: flex; flex-direction: column; gap: 10px; padding: 26px 24px; color: #fff; background: linear-gradient(180deg, #2b2623, #1f1b18); }
+.lc-count { margin: 0; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: #cfc8c1; }
+.lc-side h3 { color: #fff; font-size: 24px; line-height: 1.2; }
+.lc-desc { margin: 0; font-size: 14.5px; line-height: 1.55; color: #e6dfd8; }
+.lc-thumbs { margin-top: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.lc-thumbs button { padding: 0; border: 2px solid transparent; border-radius: 8px; overflow: hidden; background: none; cursor: pointer; aspect-ratio: 16 / 10; opacity: .7; transition: opacity .15s, border-color .15s; }
+.lc-thumbs button:hover { opacity: 1; }
+.lc-thumbs button.on { opacity: 1; border-color: #fff; }
+.lc-thumbs button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.lc-thumbs img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lc-dots { display: flex; gap: 4px; }
+.lc-dots button { width: 28px; height: 24px; padding: 0; border: 0; background: none; display: grid; place-items: center; cursor: pointer; }
+.lc-dots button::before { content: ""; width: 22px; height: 8px; border-radius: 999px; background: #cfc8c1; transition: background-color .2s; }
+.lc-dots button.on::before { background: var(--red); }
+.lc-dots button:focus-visible { outline: 2px solid var(--red); border-radius: 6px; }
+@media (max-width: 900px) {
+  .lc-stage { grid-template-columns: minmax(0, 1fr); }
+  .lc-side { padding: 18px 18px 20px; }
+  .lc-side h3 { font-size: 20px; }
+  .lc-thumbs { margin-top: 6px; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+  .lc-arrow { width: 38px; height: 38px; }
+  .lc-dots button { width: 22px; }
+  .lc-dots button::before { width: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { .lc-main img { transition: none; } }
+.life-panel-carousel { padding: 24px; background: var(--white); }
+@media (max-width: 900px) { .life-panel-carousel { padding: 12px; } }
