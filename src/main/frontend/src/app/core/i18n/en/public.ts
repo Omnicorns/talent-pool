@@ -98,4 +98,11 @@ export const EN_PUBLIC: Record<string, string> = {
   'Kontrak': 'Contract', 'Magang': 'Internship', 'Sementara': 'Temporary', 'Terjadwal': 'Scheduled',
   'Dijadwal ulang': 'Rescheduled', 'Selesai': 'Completed', 'Dibatalkan': 'Cancelled', 'Menunggu': 'Pending',
   'Lolos': 'Passed', 'Tidak lolos': 'Not passed', 'Ditahan': 'On hold', 'Tatap muka': 'In person', 'Telepon': 'Phone',
+  'Karier & Talent Pool Sarinah': 'Sarinah Careers & Talent Pool', 'Cara bergabung': 'How to join', 'Mulai karier Anda dalam 3 langkah': 'Start your career in 3 steps',
+  'Proses pendaftaran dibuat singkat, dan Anda bisa memantau setiap perkembangannya dari akun Anda.': 'Registration is kept short, and you can follow every update from your account.',
+  'Buat akun': 'Create an account', 'Daftar dengan email aktif, lalu verifikasi akun Anda.': 'Sign up with an active email, then verify your account.',
+  'Isi data diri, pendidikan, pengalaman kerja, dan unggah CV terbaru.': 'Fill in your personal data, education, and work experience, and upload your latest CV.',
+  'Lamar dan pantau': 'Apply and track', 'Lamar lowongan yang sesuai dan pantau statusnya langsung dari portal.': 'Apply to matching jobs and track their status right from the portal.',
+  'Karier': 'Careers', '{#0} posisi dibuka': '{0} open positions', 'Hingga {0}': 'Until {0}', 'Tanpa batas lamaran': 'No application deadline', 'Lihat detail': 'View details',
+  'Belum menemukan jawaban yang Anda cari? Tim Human Capital siap membantu lewat kontak di bagian bawah halaman ini.': 'Can’t find the answer you need? The Human Capital team is ready to help through the contact details at the bottom of this page.',
 };
