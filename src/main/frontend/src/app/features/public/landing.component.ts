@@ -24,7 +24,6 @@ import { LandingData, SiteContentService } from '../../core/service/api/site-con
             <g fill="currentColor"><path *ngFor="let angle of petals" d="M50 50C36 36 36 13 50 4c14 9 14 32 0 46Z" [attr.transform]="'rotate(' + angle + ' 50 50)'"></path></g>
           </svg>
           <div class="hero-copy">
-            <span class="hero-eyebrow">Karier &amp; Talent Pool Sarinah</span>
             <h1 id="hero-title">{{ site.hero.title }}</h1>
             <p>{{ site.hero.subtitle }}</p>
             <div class="hero-actions">
