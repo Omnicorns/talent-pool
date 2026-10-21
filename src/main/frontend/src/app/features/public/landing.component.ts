@@ -24,6 +24,7 @@ import { LandingData, SiteContentService } from '../../core/service/api/site-con
             <g fill="currentColor"><path *ngFor="let angle of petals" d="M50 50C36 36 36 13 50 4c14 9 14 32 0 46Z" [attr.transform]="'rotate(' + angle + ' 50 50)'"></path></g>
           </svg>
           <div class="hero-copy">
+            <span class="hero-eyebrow">Karier &amp; Talent Pool Sarinah</span>
             <h1 id="hero-title">{{ site.hero.title }}</h1>
             <p>{{ site.hero.subtitle }}</p>
             <div class="hero-actions">
@@ -41,11 +42,28 @@ import { LandingData, SiteContentService } from '../../core/service/api/site-con
           <div class="container">
             <div class="values-card">
               <article class="value" *ngFor="let item of site.values">
-                <app-icon [name]="item.icon" [size]="28" [stroke]="1.6"></app-icon>
+                <span class="value-icon"><app-icon [name]="item.icon" [size]="24" [stroke]="1.7"></app-icon></span>
                 <h2>{{ item.title }}</h2>
                 <p>{{ item.text }}</p>
               </article>
             </div>
+          </div>
+        </section>
+
+        <section id="how" class="how" aria-labelledby="how-title">
+          <div class="container">
+            <div class="section-head center">
+              <span class="eyebrow-red">Cara bergabung</span>
+              <h2 id="how-title">Mulai karier Anda dalam 3 langkah</h2>
+              <p>Proses pendaftaran dibuat singkat, dan Anda bisa memantau setiap perkembangannya dari akun Anda.</p>
+            </div>
+            <ol class="steps">
+              <li *ngFor="let step of steps; let i = index">
+                <span class="step-num">{{ i + 1 }}</span>
+                <h3>{{ step.title }}</h3>
+                <p>{{ step.text }}</p>
+              </li>
+            </ol>
           </div>
         </section>
 
@@ -73,14 +91,19 @@ import { LandingData, SiteContentService } from '../../core/service/api/site-con
 
         <section id="faq" class="section">
           <div class="container">
-            <div class="section-head">
-              <h2>Pertanyaan yang sering diajukan</h2>
-            </div>
-            <div class="faq">
-              <details *ngFor="let item of site.faqs; let first = first" [open]="first">
-                <summary>{{ item.q }} <app-icon name="chevron-down" [size]="20"></app-icon></summary>
-                <p>{{ item.a }}</p>
-              </details>
+            <div class="faq-layout">
+              <div class="faq-intro">
+                <span class="eyebrow-red">FAQ</span>
+                <h2>Pertanyaan yang sering diajukan</h2>
+                <p>Belum menemukan jawaban yang Anda cari? Tim Human Capital siap membantu lewat kontak di bagian bawah halaman ini.</p>
+                <a [routerLink]="talentPoolLink" class="btn btn-primary">{{ site.hero.secondaryCta }}</a>
+              </div>
+              <div class="faq">
+                <details *ngFor="let item of site.faqs; let first = first" [open]="first">
+                  <summary>{{ item.q }} <app-icon name="chevron-down" [size]="20"></app-icon></summary>
+                  <p>{{ item.a }}</p>
+                </details>
+              </div>
             </div>
           </div>
         </section>
@@ -90,6 +113,11 @@ import { LandingData, SiteContentService } from '../../core/service/api/site-con
   `,
 })
 export class LandingComponent {
+  readonly steps = [
+    { title: 'Buat akun', text: 'Daftar dengan email aktif, lalu verifikasi akun Anda.' },
+    { title: 'Lengkapi profil', text: 'Isi data diri, pendidikan, pengalaman kerja, dan unggah CV terbaru.' },
+    { title: 'Lamar dan pantau', text: 'Lamar lowongan yang sesuai dan pantau statusnya langsung dari portal.' },
+  ];
   readonly petals = [0, 45, 90, 135, 180, 225, 270, 315];
 
   site: LandingData | null = null;

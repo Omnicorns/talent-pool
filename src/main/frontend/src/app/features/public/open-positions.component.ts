@@ -12,9 +12,13 @@ import { FMT } from '../../shared/labels';
   standalone: true,
   imports: [CommonModule, RouterLink, IconComponent],
   template: `
-    <div class="section-head">
-      <h2 id="positions-title">Open Positions</h2>
-      <p>Temukan posisi yang sesuai dengan pengalaman dan minat Anda.</p>
+    <div class="section-head split">
+      <div>
+        <span class="eyebrow-red">Karier</span>
+        <h2 id="positions-title">Open Positions</h2>
+        <p>Temukan posisi yang sesuai dengan pengalaman dan minat Anda.</p>
+      </div>
+      <span class="count-pill" *ngIf="!loading && !error && jobs.length">{{ jobs.length }} posisi dibuka</span>
     </div>
 
     <p *ngIf="loading" class="muted" role="status">Memuat lowongan…</p>
@@ -26,23 +30,24 @@ import { FMT } from '../../shared/labels';
     </div>
 
     <ng-container *ngIf="!loading && !error">
-      <div class="job-list-head" *ngIf="jobs.length" aria-hidden="true">
-        <span>Posisi</span><span>Lokasi</span><span>Tipe</span><span>Batas lamaran</span><span></span>
-      </div>
-      <div class="job-list" *ngIf="jobs.length; else noJobs">
-        <a class="job-row" *ngFor="let job of jobs" [routerLink]="['/jobs', job.id]">
-          <div>
+      <div class="pos-grid" *ngIf="jobs.length; else noJobs">
+        <a class="pos-card" *ngFor="let job of jobs" [routerLink]="['/jobs', job.id]">
+          <div class="pos-top">
+            <span class="pos-dept">{{ job.department || 'Sarinah' }}</span>
             <h3>{{ job.title }}</h3>
-            <p class="dept">{{ job.department || 'Sarinah' }}</p>
           </div>
-          <span class="meta"><app-icon name="pin" [size]="16"></app-icon>{{ job.location || 'Jakarta' }}</span>
-          <span class="meta"><app-icon name="briefcase" [size]="16"></app-icon>{{ fmt.label(job.employmentType) }}</span>
-          <span class="meta"><app-icon name="calendar" [size]="16"></app-icon>{{ job.applicationDeadline ? fmt.fullDate(job.applicationDeadline) : 'Tanpa batas' }}</span>
-          <app-icon name="chevron-right" [size]="20"></app-icon>
+          <div class="pos-tags">
+            <span><app-icon name="pin" [size]="15"></app-icon>{{ job.location || 'Jakarta' }}</span>
+            <span><app-icon name="briefcase" [size]="15"></app-icon>{{ fmt.label(job.employmentType) }}</span>
+          </div>
+          <div class="pos-foot">
+            <span><app-icon name="calendar" [size]="15"></app-icon>{{ job.applicationDeadline ? 'Hingga ' + fmt.fullDate(job.applicationDeadline) : 'Tanpa batas lamaran' }}</span>
+            <span class="pos-go">Lihat detail <app-icon name="arrow-up-right" [size]="15"></app-icon></span>
+          </div>
         </a>
       </div>
       <ng-template #noJobs>
-        <div class="empty"><strong>Belum ada lowongan yang dibuka</strong>Gabung ke Talent Pool agar kami bisa menghubungi Anda saat ada posisi yang sesuai.</div>
+        <div class="empty empty-jobs"><span class="empty-icon"><app-icon name="briefcase" [size]="24"></app-icon></span><strong>Belum ada lowongan yang dibuka</strong>Gabung ke Talent Pool agar kami bisa menghubungi Anda saat ada posisi yang sesuai.</div>
       </ng-template>
     </ng-container>
 
