@@ -98,7 +98,7 @@ export const EN_PUBLIC: Record<string, string> = {
   'Kontrak': 'Contract', 'Magang': 'Internship', 'Sementara': 'Temporary', 'Terjadwal': 'Scheduled',
   'Dijadwal ulang': 'Rescheduled', 'Selesai': 'Completed', 'Dibatalkan': 'Cancelled', 'Menunggu': 'Pending',
   'Lolos': 'Passed', 'Tidak lolos': 'Not passed', 'Ditahan': 'On hold', 'Tatap muka': 'In person', 'Telepon': 'Phone',
-  'Karier & Talent Pool Sarinah': 'Sarinah Careers & Talent Pool', 'Cara bergabung': 'How to join', 'Mulai karier Anda dalam 3 langkah': 'Start your career in 3 steps',
+  'Cara bergabung': 'How to join', 'Mulai karier Anda dalam 3 langkah': 'Start your career in 3 steps',
   'Proses pendaftaran dibuat singkat, dan Anda bisa memantau setiap perkembangannya dari akun Anda.': 'Registration is kept short, and you can follow every update from your account.',
   'Buat akun': 'Create an account', 'Daftar dengan email aktif, lalu verifikasi akun Anda.': 'Sign up with an active email, then verify your account.',
   'Isi data diri, pendidikan, pengalaman kerja, dan unggah CV terbaru.': 'Fill in your personal data, education, and work experience, and upload your latest CV.',

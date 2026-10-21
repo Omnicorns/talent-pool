@@ -1001,17 +1001,14 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 .count-pill { flex: none; padding: 8px 16px; border-radius: 999px; background: var(--red-tint); color: var(--red-strong); font-size: 14px; font-weight: 700; }
 
 /* Hero */
-.hero { min-height: 640px; background: radial-gradient(70% 90% at 0% 100%, rgba(196, 22, 28, .38), rgba(196, 22, 28, 0) 62%), linear-gradient(135deg, #1f1b18 0%, #2b1f1d 100%); }
+
+.hero { min-height: 640px; background: var(--ink); }
 .hero-copy { gap: 24px; padding-bottom: 150px; }
-.hero-eyebrow { align-self: flex-start; display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; border-radius: 999px; background: rgba(255, 255, 255, .1); border: 1px solid rgba(255, 255, 255, .22); color: #fff; font-size: 13px; font-weight: 600; letter-spacing: .04em; backdrop-filter: blur(6px); }
-.hero-eyebrow::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #ff5a5f; box-shadow: 0 0 0 4px rgba(255, 90, 95, .28); }
 .hero h1 { font-size: clamp(38px, 4.8vw, 66px); max-width: 14ch; }
 .hero p { font-size: 18.5px; max-width: 38ch; color: #eae4de; }
-.hero .btn-primary { box-shadow: 0 10px 24px rgba(196, 22, 28, .45); }
-.hero .btn-primary:hover { transform: translateY(-1px); }
 .hero .btn-secondary { background: rgba(255, 255, 255, .06); backdrop-filter: blur(6px); }
-.hero-media { border-bottom-left-radius: 140px; overflow: hidden; margin-bottom: 72px; box-shadow: -24px 24px 60px rgba(0, 0, 0, .35); }
-.hero-media::after { background: linear-gradient(90deg, #1f1b18 0%, rgba(31, 27, 24, .55) 14%, rgba(31, 27, 24, 0) 42%), linear-gradient(0deg, rgba(196, 22, 28, .18), rgba(196, 22, 28, 0) 40%); }
+.hero-media { border-bottom-left-radius: 120px; overflow: hidden; margin-bottom: 72px; }
+.hero-media::after { background: linear-gradient(90deg, var(--ink) 0%, rgba(31, 27, 24, 0) 30%); }
 .hero-motif { left: auto; top: auto; right: -70px; bottom: -70px; width: 340px; height: 340px; opacity: .07; }
 
 /* Kartu keunggulan */
@@ -1033,13 +1030,14 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 .steps p { color: var(--muted); font-size: 15px; max-width: 30ch; }
 
 /* Life at Sarinah */
+
 .life { padding-bottom: 96px; background: linear-gradient(180deg, var(--white) 0, var(--white) 96px, var(--surface) 96px); margin-top: 56px; }
-.life-banner { padding: 72px 0 120px; background: radial-gradient(60% 120% at 50% 0%, rgba(196, 22, 28, .32), rgba(196, 22, 28, 0) 70%), var(--ink); }
+.life-banner { padding: 72px 0 120px; background: var(--ink); }
 .life .container { position: relative; z-index: 2; }
 .life-panel { margin-top: -72px; border: 0; border-radius: 24px; box-shadow: 0 28px 60px rgba(31, 27, 24, .2); }
 
 /* Lowongan */
-.section.alt { background: linear-gradient(180deg, var(--surface), #efedea); }
+.section.alt { background: var(--surface); }
 .pos-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
 .pos-card { display: grid; gap: 18px; padding: 24px; border-radius: 18px; background: var(--white); border: 1px solid var(--line); transition: transform .2s, box-shadow .2s, border-color .2s; }
 .pos-card:hover { transform: translateY(-3px); border-color: rgba(196, 22, 28, .4); box-shadow: 0 16px 36px rgba(31, 27, 24, .12); }
@@ -1056,11 +1054,9 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 .empty-jobs { padding: 44px 20px; border-radius: 20px; background: var(--white); }
 .empty-jobs .empty-icon { display: grid; place-items: center; width: 56px; height: 56px; margin: 0 auto 14px; border-radius: 50%; background: var(--red-tint); color: var(--red); }
 
-.invite { margin-top: 48px; padding: 36px 40px; border: 0; border-radius: 22px; color: #fff; background: radial-gradient(80% 160% at 100% 0%, rgba(255, 255, 255, .16), rgba(255, 255, 255, 0) 55%), linear-gradient(120deg, var(--red-strong), var(--red)); box-shadow: 0 20px 44px rgba(196, 22, 28, .3); }
-.invite h3 { color: #fff; font-size: 24px; letter-spacing: -.015em; }
-.invite p { color: rgba(255, 255, 255, .9); font-size: 16px; }
-.invite .btn-primary { background: #fff; color: var(--red-strong); border-color: #fff; box-shadow: none; }
-.invite .btn-primary:hover { background: var(--red-tint); }
+.invite { margin-top: 48px; padding: 32px 36px; border-radius: 18px; background: var(--white); border: 1px solid var(--line); border-left: 4px solid var(--red); }
+.invite h3 { font-size: 22px; letter-spacing: -.015em; }
+.invite p { color: var(--muted); margin-top: 4px; max-width: 560px; }
 
 /* FAQ */
 .faq-layout { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 64px; align-items: start; }
@@ -1090,8 +1086,7 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
   .invite { padding: 26px 22px; }
 }
 @media (max-width: 640px) {
-  .hero-eyebrow { font-size: 12px; padding: 6px 12px; }
-  .hero p { font-size: 15.5px; }
+   .hero p { font-size: 15.5px; }
   .value, .value + .value { padding: 18px 14px; }
   .value .value-icon { width: 40px; height: 40px; margin-bottom: 10px; border-radius: 12px; }
   .pos-card { padding: 20px; }
