@@ -60,6 +60,25 @@ const SCHEMAS: Record<string, Schema> = {
         </div>
       </div>
 
+      <section class="table-card language-card">
+        <div class="language-setting">
+          <div>
+            <h2>Bahasa tampilan situs</h2>
+            <p class="muted">Berlaku untuk seluruh situs kandidat: landing page, lowongan, daftar/login, formulir data, dan portal. Back office tetap Bahasa Indonesia.</p>
+          </div>
+          <div class="language-controls">
+            <select [(ngModel)]="language" name="siteLanguage" aria-label="Bahasa tampilan situs">
+              <option value="id">Bahasa Indonesia</option>
+              <option value="en">English</option>
+            </select>
+            <button type="button" class="btn btn-primary" (click)="saveLanguage()" [disabled]="languageSaving || language === savedLanguage">{{ languageSaving ? 'Menyimpan…' : 'Simpan' }}</button>
+          </div>
+        </div>
+        <div class="alert alert-success" *ngIf="languageSaved" role="status" style="margin: 0 18px 14px"><app-icon name="check"></app-icon><span>Bahasa tersimpan. Pengunjung melihat bahasa baru setelah memuat ulang halaman.</span></div>
+        <div class="alert alert-error" *ngIf="languageError" role="alert" style="margin: 0 18px 14px"><app-icon name="alert"></app-icon><span>{{ languageError }}</span></div>
+        <p class="muted" style="margin: 0 18px 14px; font-size: 13.5px" *ngIf="language === 'en'">Mode English menerjemahkan teks bawaan situs. Teks landing yang Mas ubah sendiri di bawah ini tampil persis seperti yang ditulis, jadi tulis dalam bahasa Inggris bila perlu.</p>
+      </section>
+
       <section class="table-card responsive">
         <div class="alert alert-error" *ngIf="error" role="alert" style="margin: 12px 18px"><app-icon name="alert"></app-icon><span>{{ error }}</span></div>
         <div class="table-wrap">
@@ -157,6 +176,23 @@ export class BackofficeSiteContentComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    this.api.siteLanguage().subscribe({ next: (r) => this.language = this.savedLanguage = r?.language || 'id' });
+  }
+
+  language = 'id';
+  savedLanguage = 'id';
+  languageSaving = false;
+  languageSaved = false;
+  languageError = '';
+
+  saveLanguage(): void {
+    this.languageSaving = true;
+    this.languageSaved = false;
+    this.languageError = '';
+    this.api.saveSiteLanguage(this.language).subscribe({
+      next: (r) => { this.languageSaving = false; this.language = this.savedLanguage = r.language; this.languageSaved = true; },
+      error: (err) => { this.languageSaving = false; this.languageError = err?.error?.message || 'Bahasa belum tersimpan. Coba lagi.'; },
+    });
   }
 
   load(): void {

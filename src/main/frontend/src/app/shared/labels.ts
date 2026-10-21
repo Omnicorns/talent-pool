@@ -34,9 +34,17 @@ export function tone(value: string | null | undefined): string {
   }
 }
 
-const monthFmt = new Intl.DateTimeFormat('id-ID', { month: 'short', year: 'numeric' });
-const dayFmt = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-const timeFmt = new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit' });
+let monthFmt = new Intl.DateTimeFormat('id-ID', { month: 'short', year: 'numeric' });
+let dayFmt = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+let timeFmt = new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+/** Format tanggal mengikuti bahasa situs (id atau en). */
+export function setLocale(language: 'id' | 'en'): void {
+  const locale = language === 'en' ? 'en-GB' : 'id-ID';
+  monthFmt = new Intl.DateTimeFormat(locale, { month: 'short', year: 'numeric' });
+  dayFmt = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+  timeFmt = new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' });
+}
 
 function parse(value: string | null | undefined): Date | null {
   if (!value) return null;

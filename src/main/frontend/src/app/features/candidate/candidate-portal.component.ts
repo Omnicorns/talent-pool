@@ -14,6 +14,7 @@ import { SocialAccountsFieldComponent } from '../../shared/social-accounts-field
 import { cleanSocial, socialError, socialList } from '../../shared/social-accounts';
 import { ChoiceFieldComponent } from '../../shared/choice-field.component';
 import { TALENT_OPTIONS } from '../../shared/talent-options';
+import { translate } from '../../core/i18n/translator';
 
 type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'training' | 'additional';
 
@@ -564,7 +565,7 @@ export class CandidatePortalComponent implements OnInit {
         app.stage = updated.stage;
       },
       error: (error) => {
-        window.alert(error?.error?.message || 'Lamaran tidak dapat ditarik.');
+        window.alert(translate(error?.error?.message || 'Lamaran tidak dapat ditarik.'));
       },
     });
   }
@@ -592,7 +593,7 @@ export class CandidatePortalComponent implements OnInit {
         link.click();
         setTimeout(() => URL.revokeObjectURL(href), 1000);
       },
-      error: () => window.alert('Dokumen gagal diunduh. Silakan coba lagi.'),
+      error: () => window.alert(translate('Dokumen gagal diunduh. Silakan coba lagi.')),
     });
   }
 

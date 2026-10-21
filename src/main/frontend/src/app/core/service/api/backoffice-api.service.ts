@@ -163,6 +163,14 @@ export class BackofficeApiService {
     );
   }
 
+  siteLanguage() {
+    return this.http.get<{ language: string }>(`${API_BASE}/backoffice/site/language`, { headers: this.headers });
+  }
+
+  saveSiteLanguage(language: string) {
+    return this.http.put<{ language: string }>(`${API_BASE}/backoffice/site/language`, { language }, { headers: this.headers });
+  }
+
   siteContents() {
     return this.http.get<any[]>(`${API_BASE}/backoffice/site/contents`, { headers: this.headers });
   }

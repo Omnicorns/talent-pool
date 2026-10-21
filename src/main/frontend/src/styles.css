@@ -983,3 +983,10 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 @media (prefers-reduced-motion: reduce) { .lc-main img { transition: none; } }
 .life-panel-carousel { padding: 24px; background: var(--white); }
 @media (max-width: 900px) { .life-panel-carousel { padding: 12px; } }
+
+.language-card { margin-bottom: 16px; }
+.language-setting { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px; flex-wrap: wrap; }
+.language-setting h2 { font-size: 16px; margin: 0 0 4px; }
+.language-setting p { margin: 0; max-width: 60ch; font-size: 14px; }
+.language-controls { display: flex; gap: 8px; align-items: center; }
+.language-controls select { min-width: 180px; }

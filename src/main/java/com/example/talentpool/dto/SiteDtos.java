@@ -21,5 +21,7 @@ public final class SiteDtos {
 
     public record PublicBanner(String category, String groupKey, String alt, String imageUrl) {}
 
-    public record PublicSite(Map<String, JsonNode> contents, List<PublicBanner> banners) {}
+    public record PublicSite(Map<String, JsonNode> contents, List<PublicBanner> banners, String language) {}
+
+    public record LanguageSetting(String language) {}
 }
