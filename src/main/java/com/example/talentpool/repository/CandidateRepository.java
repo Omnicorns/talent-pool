@@ -15,8 +15,8 @@ import java.util.UUID;
 public interface CandidateRepository extends JpaRepository<Candidate, UUID>, JpaSpecificationExecutor<Candidate> {
     Optional<Candidate> findByEmailIgnoreCase(String email);
 
-    /** Kandidat yang akunnya belum memverifikasi email tidak ditampilkan di back office. */
-    String VISIBLE = "not exists (select 1 from TalentAccount a where a.candidate = c and a.emailVerifiedAt is null)";
+    /** Kandidat yang akunnya belum verifikasi email atau belum menyelesaikan pengisian data Talent Pool tidak ditampilkan di back office. */
+    String VISIBLE = "not exists (select 1 from TalentAccount a where a.candidate = c and (a.emailVerifiedAt is null or a.onboardingCompleted = false))";
 
     @Query("select count(c) from Candidate c where " + VISIBLE)
     long countVisible();
@@ -43,7 +43,7 @@ public interface CandidateRepository extends JpaRepository<Candidate, UUID>, Jpa
     SELECT ji, COUNT(c)
     FROM Candidate c
     JOIN c.jobInterests ji
-    WHERE c.id IN (select v.id from Candidate v where not exists (select 1 from TalentAccount a where a.candidate = v and a.emailVerifiedAt is null))
+    WHERE c.id IN (select v.id from Candidate v where not exists (select 1 from TalentAccount a where a.candidate = v and (a.emailVerifiedAt is null or a.onboardingCompleted = false)))
     GROUP BY ji
     ORDER BY COUNT(c) DESC
     """)
@@ -54,7 +54,7 @@ public interface CandidateRepository extends JpaRepository<Candidate, UUID>, Jpa
             FROM Candidate c
             JOIN c.preferredLocations location
             WHERE location IS NOT NULL
-              AND c.id IN (select v.id from Candidate v where not exists (select 1 from TalentAccount a where a.candidate = v and a.emailVerifiedAt is null))
+              AND c.id IN (select v.id from Candidate v where not exists (select 1 from TalentAccount a where a.candidate = v and (a.emailVerifiedAt is null or a.onboardingCompleted = false)))
             GROUP BY location
             ORDER BY COUNT(c) DESC
             """)

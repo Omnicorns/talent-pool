@@ -22,14 +22,15 @@ public final class CandidateSpecifications {
                 .and(emailVerifiedOrManual());
     }
 
-    /** Sembunyikan kandidat yang mendaftar lewat portal tetapi belum memverifikasi email. */
+    /** Sembunyikan kandidat yang mendaftar lewat portal tetapi belum memverifikasi email atau belum selesai mengisi data Talent Pool. */
     private static Specification<Candidate> emailVerifiedOrManual() {
         return (root, query, cb) -> {
             var sub = query.subquery(Long.class);
             var account = sub.from(com.example.talentpool.domain.TalentAccount.class);
             sub.select(cb.literal(1L)).where(
                     cb.equal(account.get("candidate"), root),
-                    cb.isNull(account.get("emailVerifiedAt")));
+                    cb.or(cb.isNull(account.get("emailVerifiedAt")),
+                            cb.equal(account.<Boolean>get("onboardingCompleted"), false)));
             return cb.not(cb.exists(sub));
         };
     }
