@@ -75,6 +75,9 @@ import { DEFAULT_LIFE_PROGRAMS } from '../public/site-defaults';
                 <select [(ngModel)]="form.category" name="category">
                   <option value="HERO">Hero (foto utama)</option>
                   <option value="LIFE">Life at Sarinah</option>
+                  <option value="LOGO_PARTNER">Logo header (kiri)</option>
+                  <option value="LOGO_BRAND">Logo Sarinah (header kanan, footer, login)</option>
+                  <option value="LOGIN_IMAGE">Gambar halaman login</option>
                 </select>
               </label>
               <label class="field" *ngIf="form.category === 'LIFE'">Program (kartu)
@@ -89,7 +92,7 @@ import { DEFAULT_LIFE_PROGRAMS } from '../public/site-defaults';
               <div class="field span-2">
                 <span>Gambar <span class="opt" *ngIf="editing">(kosongkan untuk tetap memakai gambar saat ini)</span></span>
                 <input type="file" accept="image/jpeg,image/png,image/webp" (change)="pick($event)" aria-label="Pilih gambar">
-                <small class="muted">JPG, PNG, atau WebP, maksimal 5 MB. Foto Life at Sarinah paling pas rasio 3:2 (mis. 1200 × 800 px); hero rasio sekitar 4:3.</small>
+                <small class="muted">JPG, PNG, atau WebP, maksimal 5 MB. Foto Life at Sarinah paling pas rasio 3:2 (mis. 1200 × 800 px); hero rasio sekitar 4:3. Logo paling pas PNG transparan; bila ada beberapa logo aktif di kategori yang sama, yang urutannya terkecil dipakai.</small>
                 <img class="banner-preview" *ngIf="previewUrl" [src]="previewUrl" alt="Pratinjau gambar">
               </div>
             </div>
@@ -188,6 +191,9 @@ export class BackofficeBannersComponent implements OnInit, OnDestroy {
 
   categoryLabel(b: any): string {
     if (b.category === 'HERO') return 'Hero (foto utama)';
+    if (b.category === 'LOGO_PARTNER') return 'Logo header (kiri)';
+    if (b.category === 'LOGO_BRAND') return 'Logo Sarinah';
+    if (b.category === 'LOGIN_IMAGE') return 'Gambar halaman login';
     const program = this.programs.find((p) => p.key === b.groupKey);
     return 'Life at Sarinah · ' + (program?.title || b.groupKey);
   }

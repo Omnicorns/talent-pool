@@ -3,6 +3,7 @@ import { Component, ElementRef, HostListener, Input } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TalentAuthService } from '../core/service/api/talent-auth.service';
 import { IconComponent } from './icon.component';
+import { Branding, DEFAULT_BRANDING, SiteContentService } from '../core/service/api/site-content.service';
 import { initials } from './labels';
 
 @Component({
@@ -13,19 +14,19 @@ import { initials } from './labels';
     <header class="site-header">
       <div class="container">
         <a routerLink="/" class="site-brand" aria-label="Beranda Sarinah Karier">
-          <img src="images/Danantara_Indonesia.png" alt="Danantara Indonesia">
+          <img [src]="b.partnerLogo" alt="Danantara Indonesia">
         </a>
 
         <nav id="site-navigation" class="site-nav" [class.open]="mobileMenuOpen" aria-label="Navigasi utama">
-          <a routerLink="/" [class.active]="active === 'home' && sectionActive === ''" (click)="mobileMenuOpen = false">Home</a>
-          <button type="button" [class.active]="sectionActive === 'life'" (click)="goToSection('life')">Life at Sarinah</button>
-          <button type="button" [class.active]="active === 'open' || sectionActive === 'open-positions'" (click)="goToSection('open-positions')">Open Positions</button>
-          <button type="button" [class.active]="sectionActive === 'faq'" (click)="goToSection('faq')">FAQ</button>
-          <a *ngIf="!auth.authenticated" class="nav-signin" routerLink="/sign-in" (click)="mobileMenuOpen = false">Masuk</a>
+          <a routerLink="/" [class.active]="active === 'home' && sectionActive === ''" (click)="mobileMenuOpen = false">{{ b.header.navHome }}</a>
+          <button type="button" [class.active]="sectionActive === 'life'" (click)="goToSection('life')">{{ b.header.navLife }}</button>
+          <button type="button" [class.active]="active === 'open' || sectionActive === 'open-positions'" (click)="goToSection('open-positions')">{{ b.header.navOpen }}</button>
+          <button type="button" [class.active]="sectionActive === 'faq'" (click)="goToSection('faq')">{{ b.header.navFaq }}</button>
+          <a *ngIf="!auth.authenticated" class="nav-signin" routerLink="/sign-in" (click)="mobileMenuOpen = false">{{ b.header.signIn }}</a>
         </nav>
 
         <div class="site-actions">
-          <a *ngIf="!auth.authenticated" class="btn btn-secondary btn-sm desktop-only" routerLink="/sign-in">Masuk</a>
+          <a *ngIf="!auth.authenticated" class="btn btn-secondary btn-sm desktop-only" routerLink="/sign-in">{{ b.header.signIn }}</a>
 
           <div class="account" *ngIf="auth.authenticated">
             <button type="button" class="account-chip" [attr.aria-expanded]="accountMenuOpen" aria-haspopup="menu"
@@ -55,7 +56,7 @@ import { initials } from './labels';
           </div>
 
           <a routerLink="/" aria-label="Sarinah" class="site-brand">
-            <img class="sarinah-mark" src="images/sarinah.png" alt="Sarinah">
+            <img class="sarinah-mark" [src]="b.brandLogo" alt="Sarinah">
           </a>
 
           <button type="button" class="icon-btn menu-toggle" (click)="mobileMenuOpen = !mobileMenuOpen"
@@ -74,7 +75,11 @@ export class CareerHeaderComponent {
   mobileMenuOpen = false;
   accountMenuOpen = false;
 
-  constructor(public auth: TalentAuthService, private router: Router, private elementRef: ElementRef<HTMLElement>) {}
+  b: Branding = DEFAULT_BRANDING;
+
+  constructor(public auth: TalentAuthService, private router: Router, private elementRef: ElementRef<HTMLElement>, site: SiteContentService) {
+    site.branding().subscribe((branding) => (this.b = branding));
+  }
 
   @HostListener('document:click', ['$event'])
   closeMenusOnOutsideClick(event: MouseEvent): void {

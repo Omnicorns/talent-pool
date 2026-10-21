@@ -29,8 +29,11 @@ public class SiteService {
         CONTENT_KEYS.put("LIFE_HEADING", new String[]{"Life at Sarinah - judul", "Life at Sarinah"});
         CONTENT_KEYS.put("LIFE_PROGRAMS", new String[]{"Life at Sarinah - program", "Life at Sarinah"});
         CONTENT_KEYS.put("FAQ", new String[]{"Pertanyaan yang sering diajukan", "FAQ"});
+        CONTENT_KEYS.put("HEADER", new String[]{"Header (menu navigasi)", "Header & Footer"});
+        CONTENT_KEYS.put("FOOTER", new String[]{"Footer (deskripsi, kontak, hak cipta)", "Header & Footer"});
+        CONTENT_KEYS.put("LOGIN", new String[]{"Halaman login & daftar (teks)", "Login"});
     }
-    private static final Set<String> BANNER_CATEGORIES = Set.of(SiteBanner.HERO, SiteBanner.LIFE);
+    private static final Set<String> BANNER_CATEGORIES = Set.of(SiteBanner.HERO, SiteBanner.LIFE, SiteBanner.LOGO_PARTNER, SiteBanner.LOGO_BRAND, SiteBanner.LOGIN_IMAGE);
     private static final int MAX_CONTENT_BYTES = 100_000;
     private static final String LANGUAGE_KEY = "SITE_LANGUAGE";
     private static final Set<String> LANGUAGES = Set.of("id", "en");

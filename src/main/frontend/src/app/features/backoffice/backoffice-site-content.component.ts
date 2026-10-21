@@ -38,6 +38,28 @@ const SCHEMAS: Record<string, Schema> = {
     { name: 'title', label: 'Nama program', type: 'text', max: 80 },
     { name: 'description', label: 'Deskripsi', type: 'textarea', max: 250 },
   ], hint: 'Foto tiap program diatur di menu Banner. Menghapus program menyembunyikan foto-fotonya dari landing page.' },
+  HEADER: { kind: 'object', fields: [
+    { name: 'navHome', label: 'Menu: Home', type: 'text', max: 30 },
+    { name: 'navLife', label: 'Menu: Life at Sarinah', type: 'text', max: 30 },
+    { name: 'navOpen', label: 'Menu: Open Positions', type: 'text', max: 30 },
+    { name: 'navFaq', label: 'Menu: FAQ', type: 'text', max: 30 },
+    { name: 'signIn', label: 'Tombol masuk', type: 'text', max: 30 },
+  ], hint: 'Logo header diatur di menu Banner (kategori Logo).' },
+  FOOTER: { kind: 'object', fields: [
+    { name: 'description', label: 'Deskripsi', type: 'textarea', max: 300 },
+    { name: 'exploreTitle', label: 'Judul kolom tautan', type: 'text', max: 40 },
+    { name: 'contactTitle', label: 'Judul kolom kontak', type: 'text', max: 40 },
+    { name: 'company', label: 'Nama perusahaan', type: 'text', max: 100 },
+    { name: 'address', label: 'Alamat', type: 'text', max: 200 },
+    { name: 'phone', label: 'Telepon', type: 'text', max: 40 },
+    { name: 'email', label: 'Email', type: 'text', max: 120 },
+    { name: 'copyright', label: 'Nama di hak cipta', type: 'text', max: 100 },
+    { name: 'tagline', label: 'Teks bawah kanan', type: 'text', max: 100 },
+  ], hint: 'Logo footer memakai Logo Sarinah dari menu Banner.' },
+  LOGIN: { kind: 'object', fields: [
+    { name: 'title', label: 'Judul', type: 'text', max: 120 },
+    { name: 'subtitle', label: 'Kalimat pendukung', type: 'textarea', max: 250 },
+  ], hint: 'Teks di sisi kiri halaman login/daftar. Gambar latar diatur di menu Banner (Gambar halaman login).' },
   FAQ: { kind: 'list', itemLabel: 'Pertanyaan', min: 1, max: 20, fields: [
     { name: 'q', label: 'Pertanyaan', type: 'text', max: 200 },
     { name: 'a', label: 'Jawaban', type: 'textarea', max: 800 },
@@ -53,7 +75,7 @@ const SCHEMAS: Record<string, Schema> = {
       <div class="bo-head">
         <div>
           <h1>Konten</h1>
-          <p>Atur teks di landing page. Bagian yang belum diubah memakai teks bawaan.</p>
+          <p>Atur teks landing page, header, footer, dan halaman login. Bagian yang belum diubah memakai teks bawaan.</p>
         </div>
         <div class="bo-actions">
           <button class="btn btn-secondary" type="button" (click)="load()"><app-icon name="history" [size]="16"></app-icon> Muat ulang</button>

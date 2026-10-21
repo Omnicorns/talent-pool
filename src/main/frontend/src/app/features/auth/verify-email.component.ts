@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
+import { inject } from '@angular/core';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TalentAuthService } from '../../core/service/api/talent-auth.service';
+import { Branding, DEFAULT_BRANDING, SiteContentService } from '../../core/service/api/site-content.service';
 import { IconComponent } from '../../shared/icon.component';
 
 @Component({
@@ -11,7 +13,7 @@ import { IconComponent } from '../../shared/icon.component';
   template: `
     <main class="recovery">
       <section class="recovery-card">
-        <a routerLink="/" aria-label="Beranda Sarinah Karier"><img class="logo" src="images/sarinah.png" alt="Sarinah"></a>
+        <a routerLink="/" aria-label="Beranda Sarinah Karier"><img class="logo" [src]="b.brandLogo" alt="Sarinah"></a>
 
         <p class="muted" *ngIf="state === 'loading'" role="status">Memverifikasi email Anda…</p>
 
@@ -36,6 +38,8 @@ import { IconComponent } from '../../shared/icon.component';
   `,
 })
 export class VerifyEmailComponent implements OnInit {
+  b: Branding = DEFAULT_BRANDING;
+  private readonly brandingSub = inject(SiteContentService).branding().subscribe((branding) => (this.b = branding));
   state: 'loading' | 'success' | 'error' = 'loading';
   error = '';
 

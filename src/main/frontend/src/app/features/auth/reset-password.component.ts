@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
+import { inject } from '@angular/core';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TalentAuthService } from '../../core/service/api/talent-auth.service';
+import { Branding, DEFAULT_BRANDING, SiteContentService } from '../../core/service/api/site-content.service';
 import { IconComponent } from '../../shared/icon.component';
 
 @Component({
@@ -12,7 +14,7 @@ import { IconComponent } from '../../shared/icon.component';
   template: `
     <main class="recovery">
       <section class="recovery-card">
-        <a routerLink="/" aria-label="Beranda Sarinah Karier"><img class="logo" src="images/sarinah.png" alt="Sarinah"></a>
+        <a routerLink="/" aria-label="Beranda Sarinah Karier"><img class="logo" [src]="b.brandLogo" alt="Sarinah"></a>
 
         <ng-container *ngIf="!success">
           <div>
@@ -56,6 +58,8 @@ import { IconComponent } from '../../shared/icon.component';
   `,
 })
 export class ResetPasswordComponent {
+  b: Branding = DEFAULT_BRANDING;
+  private readonly brandingSub = inject(SiteContentService).branding().subscribe((branding) => (this.b = branding));
   token = '';
   newPassword = '';
   confirmPassword = '';
