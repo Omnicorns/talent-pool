@@ -52,6 +52,9 @@ class TalentEmailVerificationApiTest {
     @Autowired
     com.example.talentpool.repository.CandidateRepository candidates;
 
+    @Autowired
+    com.example.talentpool.repository.TalentAccountRepository accounts;
+
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper mapper;
     @MockitoBean TalentPasswordResetMailService mailService;
@@ -139,7 +142,7 @@ class TalentEmailVerificationApiTest {
     }
 
     @Test
-    void unverifiedCandidateIsHiddenFromBackofficeUntilVerified() throws Exception {
+    void candidateIsHiddenFromBackofficeUntilVerifiedAndOnboardingCompleted() throws Exception {
         String email = "belum-verif@example.com";
         mvc.perform(post("/api/talent/auth/register").contentType("application/json").content(json(Map.of(
                         "fullName", "Belum Verif", "email", email, "phone", "081234567890",
@@ -150,6 +153,12 @@ class TalentEmailVerificationApiTest {
 
         mvc.perform(post("/api/talent/auth/verify-email").contentType("application/json")
                 .content(json(Map.of("token", lastToken(email))))).andExpect(status().isOk());
+        // Sudah verifikasi email, tetapi data Talent Pool belum diisi: masih disembunyikan.
+        org.junit.jupiter.api.Assertions.assertTrue(candidates.findAll(spec).isEmpty());
+
+        var account = accounts.findByEmailIgnoreCase(email).orElseThrow();
+        account.setOnboardingCompleted(true);
+        accounts.saveAndFlush(account);
         org.junit.jupiter.api.Assertions.assertEquals(1, candidates.findAll(spec).size());
     }
 }
