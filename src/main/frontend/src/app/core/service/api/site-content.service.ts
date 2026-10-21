@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, catchError, map, of } from 'rxjs';
+import { Observable, catchError, map, of, shareReplay } from 'rxjs';
 import { API_BASE, APP_BASE } from './api-base';
 import {
   DEFAULT_CONTENT, DEFAULT_FAQ, DEFAULT_HERO, DEFAULT_HERO_IMAGE, DEFAULT_LIFE_HEADING, DEFAULT_LIFE_IMAGES,
@@ -22,8 +22,15 @@ export interface LandingData {
 export class SiteContentService {
   constructor(private http: HttpClient) {}
 
+  private site$?: Observable<{ contents?: Record<string, any>; banners?: any[]; language?: string }>;
+
+  /** Respons /public/site (dipakai bersama oleh landing dan pengaturan bahasa). */
+  raw() {
+    return this.site$ ||= this.http.get<{ contents?: Record<string, any>; banners?: any[]; language?: string }>(`${API_BASE}/public/site`).pipe(shareReplay(1));
+  }
+
   landing(): Observable<LandingData> {
-    return this.http.get<{ contents?: Record<string, any>; banners?: any[] }>(`${API_BASE}/public/site`).pipe(
+    return this.raw().pipe(
       map((site) => this.merge(site?.contents || {}, site?.banners || [])),
       catchError(() => of(this.merge({}, []))),
     );

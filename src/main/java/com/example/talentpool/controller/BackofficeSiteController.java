@@ -20,6 +20,12 @@ public class BackofficeSiteController {
         this.service = service;
     }
 
+    @GetMapping("/language")
+    public LanguageSetting language() { return new LanguageSetting(service.language()); }
+
+    @PutMapping("/language")
+    public LanguageSetting saveLanguage(@RequestBody LanguageSetting request) { return new LanguageSetting(service.saveLanguage(request.language())); }
+
     @GetMapping("/contents")
     public List<ContentSummary> contents() { return service.listContents(); }
 

@@ -32,6 +32,8 @@ public class SiteService {
     }
     private static final Set<String> BANNER_CATEGORIES = Set.of(SiteBanner.HERO, SiteBanner.LIFE);
     private static final int MAX_CONTENT_BYTES = 100_000;
+    private static final String LANGUAGE_KEY = "SITE_LANGUAGE";
+    private static final Set<String> LANGUAGES = Set.of("id", "en");
 
     private final SiteContentRepository contents;
     private final SiteBannerRepository banners;
@@ -142,13 +144,30 @@ public class SiteService {
     @Transactional(readOnly = true)
     public PublicSite publicSite() {
         Map<String, JsonNode> values = new LinkedHashMap<>();
-        contents.findAll().forEach(c -> values.put(c.getKey(), parse(c.getValue())));
+        contents.findAll().stream().filter(c -> !LANGUAGE_KEY.equals(c.getKey())).forEach(c -> values.put(c.getKey(), parse(c.getValue())));
         List<PublicBanner> list = banners.findByActiveTrueOrderByCategoryAscSequenceAscCreatedAtAsc().stream()
                 .map(b -> new PublicBanner(b.getCategory(), b.getGroupKey(),
                         b.getAltText() == null || b.getAltText().isBlank() ? b.getName() : b.getAltText(),
                         "/api/public/site/banners/" + b.getId() + "/image?v=" + b.getUpdatedAt().toEpochMilli()))
                 .toList();
-        return new PublicSite(values, list);
+        return new PublicSite(values, list, language());
+    }
+
+    /** Bahasa tampilan situs kandidat: "id" (bawaan) atau "en". */
+    @Transactional(readOnly = true)
+    public String language() {
+        return contents.findById(LANGUAGE_KEY).map(c -> c.getValue().replace("\"", "").trim())
+                .filter(LANGUAGES::contains).orElse("id");
+    }
+
+    @Transactional
+    public String saveLanguage(String language) {
+        String value = language == null ? "" : language.trim().toLowerCase(Locale.ROOT);
+        if (!LANGUAGES.contains(value)) throw new BadRequestException("Bahasa harus id atau en");
+        SiteContent entity = contents.findById(LANGUAGE_KEY).orElseGet(() -> new SiteContent(LANGUAGE_KEY, "\"" + value + "\""));
+        entity.setValue("\"" + value + "\"");
+        contents.saveAndFlush(entity);
+        return value;
     }
 
     public record ImageFile(Resource resource, String filename) {}
