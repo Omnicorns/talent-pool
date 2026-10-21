@@ -20,10 +20,24 @@ public record TalentProfileDetails(
     @Pattern(regexp="^$|[0-9]{5}") String residentialPostalCode,
     @Size(max=500) String residentialRegion,
     /** Media sosial tambahan (opsional, maksimal 2). Media sosial wajib tetap di socialPlatform/socialUsername. */
-    @Size(max=2) List<@Valid SocialAccount> socialAccounts
+    @Size(max=2) List<@Valid SocialAccount> socialAccounts,
+    /** Kandidat menyatakan tidak memiliki pelatihan, sertifikasi, atau keahlian bahasa. */
+    boolean noTraining,
+    boolean noCertification,
+    boolean noLanguage
 ) {
     public TalentProfileDetails {
         socialAccounts = socialAccounts == null ? List.of() : socialAccounts;
+    }
+
+    /** Konstruktor lama (tanpa penanda "tidak memiliki"); pelatihan dan sertifikasi dianggap tidak ada. */
+    public TalentProfileDetails(String gender, String postalCode, String region, String linkedinUrl,
+            String socialPlatform, String socialUsername, BigDecimal expectedSalaryMax, boolean noExperience,
+            List<LanguageSkill> languageSkills, List<TrainingCertification> trainingCertifications,
+            String residentialPostalCode, String residentialRegion, List<SocialAccount> socialAccounts) {
+        this(gender, postalCode, region, linkedinUrl, socialPlatform, socialUsername, expectedSalaryMax,
+                noExperience, languageSkills, trainingCertifications, residentialPostalCode, residentialRegion,
+                socialAccounts, true, true, false);
     }
 
     public TalentProfileDetails(String gender, String postalCode, String region, String linkedinUrl,
@@ -46,6 +60,8 @@ public record TalentProfileDetails(
         @NotBlank @Size(max=100) String name, @NotBlank @Size(max=50) String proficiency) {}
 
     public record TrainingCertification(
+        /** Kunci tetap sertifikasi; dipakai untuk mengaitkan file sertifikat yang diunggah. */
+        @Size(max=80) @Pattern(regexp="^$|[a-zA-Z0-9-]{1,80}") String key,
         @NotBlank @Size(max=200) String name,
         @NotBlank @Size(max=200) String issuingOrganization,
         @NotNull LocalDate issueDate,

@@ -11,7 +11,10 @@ export interface TalentSession {
 export interface TalentProfileDetails {
   gender: string; postalCode: string; region: string; linkedinUrl: string;
   socialPlatform: string; socialUsername: string; expectedSalaryMax: number|null;
-  noExperience: boolean; languageSkills: Array<{key:string;name:string;proficiency:string}>;
+  noExperience: boolean;
+  /** Kandidat menyatakan tidak memiliki pelatihan, sertifikasi, atau keahlian bahasa. */
+  noTraining?: boolean; noCertification?: boolean; noLanguage?: boolean;
+  languageSkills: Array<{key:string;name:string;proficiency:string}>;
   trainingCertifications: TrainingCertification[];
   residentialPostalCode?: string | null;
   residentialRegion?: string | null;
@@ -19,6 +22,7 @@ export interface TalentProfileDetails {
   socialAccounts?: Array<{ platform: string; username: string }>;
 }
 export interface TrainingCertification {
+  key?: string | null;
   name: string;
   issuingOrganization: string;
   issueDate: string;

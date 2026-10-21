@@ -118,24 +118,50 @@
           </ng-container>
         </ng-container>
 
-        <!-- 4. Sertifikat -->
+        <!-- 4. Pelatihan & Sertifikasi -->
         <ng-container *ngIf="step === 4">
-          <p class="muted" *ngIf="!details.trainingCertifications.length">Belum punya sertifikat? Lewati langkah ini.</p>
-          <article class="repeat" *ngFor="let cert of details.trainingCertifications; let i = index">
-            <div class="repeat-head">
-              <strong>Sertifikat {{ i + 1 }}</strong>
-              <button type="button" class="btn btn-ghost btn-sm" (click)="removeTrainingCertification(i)"><app-icon name="trash" [size]="16"></app-icon> Hapus</button>
-            </div>
-            <div class="form-grid">
-              <label class="field">Nama sertifikat *<input [(ngModel)]="cert.name" maxlength="200" placeholder="Contoh: Certified Retail Professional"></label>
-              <label class="field">Diterbitkan oleh *<input [(ngModel)]="cert.issuingOrganization" maxlength="200" placeholder="Contoh: APRINDO"></label>
-              <label class="field">Tanggal terbit *<input type="date" [(ngModel)]="cert.issueDate" [max]="today"></label>
-              <label class="field">Berlaku sampai *<input type="date" [(ngModel)]="cert.expiryDate" [min]="cert.issueDate || null"></label>
-              <label class="field">Nomor sertifikat *<input [(ngModel)]="cert.credentialId" maxlength="100"></label>
-              <label class="field">Tautan verifikasi <span class="opt">(opsional)</span><input type="url" [(ngModel)]="cert.credentialUrl" maxlength="1000" placeholder="https://…"></label>
-            </div>
-          </article>
-          <button type="button" class="btn btn-secondary add-row" (click)="addTrainingCertification()"><app-icon name="plus" [size]="16"></app-icon> Tambah sertifikat</button>
+          <h3>Pelatihan</h3>
+          <label class="check"><input type="checkbox" [(ngModel)]="details.noTraining" (ngModelChange)="toggleNoTraining()"> Saya tidak memiliki pelatihan</label>
+          <ng-container *ngIf="!details.noTraining">
+            <article class="repeat" *ngFor="let t of trainings; let i = index">
+              <div class="repeat-head">
+                <strong>Pelatihan {{ i + 1 }}</strong>
+                <button type="button" class="btn btn-ghost btn-sm" *ngIf="trainings.length > 1" (click)="removeTraining(i)"><app-icon name="trash" [size]="16"></app-icon> Hapus</button>
+              </div>
+              <div class="form-grid">
+                <label class="field">Jenis *
+                  <select [(ngModel)]="t.level" [attr.aria-label]="'Jenis pelatihan ' + (i + 1)">
+                    <option value="">Pilih jenis</option>
+                    <option *ngFor="let kind of trainingTypes" [value]="kind">{{ kind }}</option>
+                  </select>
+                </label>
+                <label class="field">Nama pelatihan *<input [(ngModel)]="t.major" maxlength="200" placeholder="Contoh: Retail Merchandising Basics"></label>
+                <label class="field">Penyelenggara *<input [(ngModel)]="t.institution" maxlength="200" placeholder="Contoh: APRINDO"></label>
+                <label class="field">Tahun *<input type="number" min="1900" [max]="currentYear" [ngModel]="t.startYear" (ngModelChange)="t.startYear = $event; t.endYear = $event"></label>
+              </div>
+            </article>
+            <button type="button" class="btn btn-secondary add-row" (click)="addTraining()"><app-icon name="plus" [size]="16"></app-icon> Tambah pelatihan</button>
+          </ng-container>
+
+          <h3>Sertifikasi</h3>
+          <label class="check"><input type="checkbox" [(ngModel)]="details.noCertification" (ngModelChange)="toggleNoCertification()"> Saya tidak memiliki sertifikasi</label>
+          <ng-container *ngIf="!details.noCertification">
+            <article class="repeat" *ngFor="let cert of details.trainingCertifications; let i = index">
+              <div class="repeat-head">
+                <strong>Sertifikasi {{ i + 1 }}</strong>
+                <button type="button" class="btn btn-ghost btn-sm" *ngIf="details.trainingCertifications.length > 1" (click)="removeTrainingCertification(i)"><app-icon name="trash" [size]="16"></app-icon> Hapus</button>
+              </div>
+              <div class="form-grid">
+                <label class="field span-2">Nama sertifikasi *<input [(ngModel)]="cert.name" maxlength="200" placeholder="Contoh: Certified Retail Professional"></label>
+                <label class="field">Nomor sertifikat *<input [(ngModel)]="cert.credentialId" maxlength="100"></label>
+                <label class="field">Penyelenggara / institusi yang mengeluarkan *<input [(ngModel)]="cert.issuingOrganization" maxlength="200" placeholder="Contoh: APRINDO"></label>
+                <label class="field">Masa berlaku: mulai *<input type="date" [(ngModel)]="cert.issueDate" [max]="today"></label>
+                <label class="field">Masa berlaku: sampai *<input type="date" [(ngModel)]="cert.expiryDate" [min]="cert.issueDate || null"></label>
+                <label class="file-field span-2">Upload sertifikat * <input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Upload sertifikat ' + (i + 1)" (change)="selectDocument($event, certificateKey(cert))"><small class="field-hint">{{ documentName(certificateKey(cert)) || 'PDF, maksimal 2 MB' }}</small></label>
+              </div>
+            </article>
+            <button type="button" class="btn btn-secondary add-row" (click)="addTrainingCertification()"><app-icon name="plus" [size]="16"></app-icon> Tambah sertifikasi</button>
+          </ng-container>
         </ng-container>
 
         <!-- 5. Informasi tambahan -->
@@ -158,6 +184,8 @@
           </div>
 
           <h3>Bahasa</h3>
+          <label class="check"><input type="checkbox" [(ngModel)]="details.noLanguage" (ngModelChange)="toggleNoLanguage()"> Saya tidak memiliki keahlian berbahasa</label>
+          <ng-container *ngIf="!details.noLanguage">
           <article class="repeat" *ngFor="let language of details.languageSkills; let i = index">
             <div class="repeat-head">
               <strong>Bahasa {{ i + 1 }}</strong>
@@ -170,6 +198,7 @@
             </div>
           </article>
           <button type="button" class="btn btn-secondary add-row" (click)="addLanguage()"><app-icon name="plus" [size]="16"></app-icon> Tambah bahasa</button>
+          </ng-container>
 
           <h3>Tentang Anda</h3>
           <label class="field">Ringkasan profil <span class="opt">(opsional)</span><textarea rows="4" [(ngModel)]="profile.about" maxlength="4000" placeholder="Ceritakan pengalaman dan tujuan karier Anda dalam beberapa kalimat"></textarea></label>

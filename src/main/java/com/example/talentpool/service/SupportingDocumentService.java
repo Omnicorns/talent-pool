@@ -33,7 +33,7 @@ public class SupportingDocumentService {
         if (keys.size()!=files.size() || keys.size()>60 || new HashSet<>(keys).size()!=keys.size())
             throw new BadRequestException("Daftar dokumen tidak valid");
         for (int i=0;i<keys.size();i++) {
-            if (!keys.get(i).matches("(education:[a-zA-Z0-9-]{1,80}:(diploma|transcript)|language:[a-zA-Z0-9-]{1,80}:certificate)"))
+            if (!keys.get(i).matches("(education:[a-zA-Z0-9-]{1,80}:(diploma|transcript)|language:[a-zA-Z0-9-]{1,80}:certificate|certification:[a-zA-Z0-9-]{1,80}:certificate)"))
                 throw new BadRequestException("Jenis dokumen tidak valid");
             storage.validateSupportingDocument(files.get(i));
         }
@@ -44,6 +44,8 @@ public class SupportingDocumentService {
         if(request.educations()!=null) request.educations().forEach(e -> {if(e.clientKey()!=null) owners.add("education:"+e.clientKey());});
         if(request.profileDetails()!=null && request.profileDetails().languageSkills()!=null)
             request.profileDetails().languageSkills().forEach(l -> owners.add("language:"+l.key()));
+        if(request.profileDetails()!=null && request.profileDetails().trainingCertifications()!=null)
+            request.profileDetails().trainingCertifications().forEach(t -> { if(t.key()!=null && !t.key().isBlank()) owners.add("certification:"+t.key()); });
         for(String key:keys) if(!owners.contains(key.substring(0,key.lastIndexOf(':'))))
             throw new BadRequestException("Pemilik dokumen tidak ditemukan");
     }
@@ -54,6 +56,8 @@ public class SupportingDocumentService {
         candidate.getEducations().forEach(e -> { if(e.getClientKey()!=null) owners.add("education:"+e.getClientKey()); });
         TalentProfileDetails details=json.read(candidate.getProfileDetails(),TalentProfileDetails.class);
         if(details!=null && details.languageSkills()!=null) details.languageSkills().forEach(l -> owners.add("language:"+l.key()));
+        if(details!=null && details.trainingCertifications()!=null)
+            details.trainingCertifications().forEach(t -> { if(t.key()!=null && !t.key().isBlank()) owners.add("certification:"+t.key()); });
         List<StoredDocument> docs=new ArrayList<>(documents(candidate,json));
         List<String> removed=new ArrayList<>(), created=new ArrayList<>();
         // Old editors leave profileDetails intact. Deleted entries no longer keep orphaned attachments.

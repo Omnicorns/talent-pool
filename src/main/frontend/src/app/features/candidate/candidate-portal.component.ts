@@ -365,7 +365,7 @@ export class CandidatePortalComponent implements OnInit {
   drawerError = '';
   showAllApplications = false;
   readonly applicationPreview = 2;
-  readonly trainingKinds = ['Pelatihan', 'Sertifikasi'];
+  readonly trainingKinds = ['Workshop', 'Webinar', 'Seminar'];
   readonly options = TALENT_OPTIONS;
   readonly tabs = [
     { id: 'about', label: 'Tentang' },
@@ -574,6 +574,10 @@ export class CandidatePortalComponent implements OnInit {
       const language = this.profile.profileDetails?.languageSkills.find(item => key.includes(item.key));
       return `Sertifikat ${language?.name || 'Bahasa'}`;
     }
+    if (key.startsWith('certification:')) {
+      const cert = this.profile.profileDetails?.trainingCertifications.find(item => item.key && key.includes(item.key));
+      return `Sertifikat ${cert?.name || ''}`.trim();
+    }
     const education = this.profile.educations.find(item => item.clientKey && key.includes(item.clientKey));
     return `${key.endsWith(':diploma') ? 'Ijazah' : 'Transkrip'} ${education?.institution || ''}`.trim();
   }
@@ -665,6 +669,7 @@ export class CandidatePortalComponent implements OnInit {
   get languageSummary(): string {
     const skills = this.profile?.profileDetails?.languageSkills || [];
     if (skills.length) return skills.map((item) => `${item.name} (${item.proficiency.toLowerCase()})`).join(', ');
+    if (this.profile?.profileDetails?.noLanguage) return 'Tidak memiliki keahlian berbahasa';
     return this.profile?.languanges || '-';
   }
 
