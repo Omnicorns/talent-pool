@@ -56,7 +56,10 @@ public class TalentProfileValidator {
         else {
             require(d.languageSkills()!=null && !d.languageSkills().isEmpty(),"Tambahkan bahasa dan tingkat penguasaan, atau pilih tidak memiliki keahlian berbahasa.");
             keys.clear();
-            for(var l:d.languageSkills()) require(!blank(l.name()) && !blank(l.proficiency()) && !blank(l.key()) && keys.add(l.key()),"Bahasa dan tingkat penguasaan wajib diisi.");
+            for(var l:d.languageSkills()) {
+                require(!blank(l.name()) && !blank(l.proficiency()) && !blank(l.key()) && keys.add(l.key()),"Bahasa dan tingkat penguasaan wajib diisi.");
+                require(documents.contains("language:"+l.key()+":certificate"),"Sertifikat bahasa wajib diunggah untuk setiap bahasa. Bila tidak memiliki sertifikat, pilih tidak memiliki keahlian berbahasa.");
+            }
         }
         List<Education> trainings=c.getEducations().stream().filter(e -> e.getType()==EducationType.INFORMAL).toList();
         if(d.noTraining()) require(trainings.isEmpty(),"Hapus pelatihan yang diisi atau batalkan pilihan tidak memiliki pelatihan.");

@@ -27,7 +27,7 @@ class TalentProfileReferenceTest {
         String region=new PostalCodeService().search("10350").get(0);
         c.setProfileDetails(json.write(new TalentProfileDetails("Perempuan","10350",region,"","Instagram","@test",new BigDecimal("7000000"),true,List.of(new TalentProfileDetails.LanguageSkill("lang-1","Bahasa Indonesia","Fasih / Native")))));
         Education e=new Education();e.setClientKey("edu-1");e.setType(EducationType.FORMAL);e.setLevel("S1");e.setInstitution("Universitas Indonesia");e.setMajor("Manajemen");e.setStartYear(2018);e.setEndYear(2022);e.setIpk("3.7");c.replaceEducations(List.of(e));
-        c.setSupportingDocuments(json.write(List.of(new SupportingDocumentService.StoredDocument("education:edu-1:diploma","ijazah.pdf","a.pdf"),new SupportingDocumentService.StoredDocument("education:edu-1:transcript","transkrip.pdf","b.pdf"))));return c;
+        c.setSupportingDocuments(json.write(List.of(new SupportingDocumentService.StoredDocument("education:edu-1:diploma","ijazah.pdf","a.pdf"),new SupportingDocumentService.StoredDocument("education:edu-1:transcript","transkrip.pdf","b.pdf"),new SupportingDocumentService.StoredDocument("language:lang-1:certificate","toefl.pdf","l.pdf"))));return c;
     }
     @Test void pdfStoredAndDownloadable(){var file=storage.storeSupportingDocument(pdf("ijazah.PDF"),UUID.randomUUID());assertThat(storage.load(file.storedPath()).exists()).isTrue();assertThat(file.originalName()).isEqualTo("ijazah.PDF");}
     @Test void rejectsPdfNamedFileWithNonPdfBytes(){assertThatThrownBy(()->storage.validateSupportingDocument(new MockMultipartFile("f","ijazah.pdf","application/pdf","invalid".getBytes()))).isInstanceOf(BadRequestException.class);}
@@ -62,10 +62,11 @@ class TalentProfileReferenceTest {
     @Test void certificationNeedsEveryFieldAndUploadedFile(){
         var cert=new TalentProfileDetails.TrainingCertification("cert-1","CRP","APRINDO",LocalDate.of(2024,1,1),LocalDate.of(2027,1,1),"NO-1",null);
         Candidate c=withDetails(true,false,false,List.of(cert),oneLanguage);assertBlocked(c,"Upload sertifikat");
-        c.setSupportingDocuments(json.write(List.of(new SupportingDocumentService.StoredDocument("education:edu-1:diploma","i.pdf","a.pdf"),new SupportingDocumentService.StoredDocument("education:edu-1:transcript","t.pdf","b.pdf"),new SupportingDocumentService.StoredDocument("certification:cert-1:certificate","c.pdf","c.pdf"))));
+        c.setSupportingDocuments(json.write(List.of(new SupportingDocumentService.StoredDocument("education:edu-1:diploma","i.pdf","a.pdf"),new SupportingDocumentService.StoredDocument("education:edu-1:transcript","t.pdf","b.pdf"),new SupportingDocumentService.StoredDocument("certification:cert-1:certificate","c.pdf","c.pdf"),new SupportingDocumentService.StoredDocument("language:lang-1:certificate","l.pdf","l.pdf"))));
         assertThatCode(()->new TalentProfileValidator(json,new PostalCodeService()).validate(c)).doesNotThrowAnyException();
         var noNumber=new TalentProfileDetails.TrainingCertification("cert-1","CRP","APRINDO",LocalDate.of(2024,1,1),LocalDate.of(2027,1,1),"",null);
         Candidate d=withDetails(true,false,false,List.of(noNumber),oneLanguage);d.setSupportingDocuments(c.getSupportingDocuments());assertBlocked(d,"Lengkapi nama, penyelenggara, nomor");}
     @Test void languageRequiredUnlessDeclaredNone(){assertBlocked(withDetails(true,true,false,List.of(),List.of()),"keahlian berbahasa");assertThatCode(()->new TalentProfileValidator(json,new PostalCodeService()).validate(withDetails(true,true,true,List.of(),List.of()))).doesNotThrowAnyException();}
     @Test void declaringNoLanguageConflictsWithFilledLanguage(){assertBlocked(withDetails(true,true,true,List.of(),oneLanguage),"keahlian berbahasa");}
+    @Test void languageCertificateIsRequiredForEveryLanguage(){Candidate c=withDetails(true,true,false,List.of(),oneLanguage);c.setSupportingDocuments(json.write(List.of(new SupportingDocumentService.StoredDocument("education:edu-1:diploma","i.pdf","a.pdf"),new SupportingDocumentService.StoredDocument("education:edu-1:transcript","t.pdf","b.pdf"))));assertBlocked(c,"Sertifikat bahasa");}
 }
