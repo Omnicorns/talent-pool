@@ -194,7 +194,7 @@
             <div class="form-grid">
               <label class="field">Bahasa *<app-choice-field [options]="options.languages" label="Bahasa" [(value)]="language.name"></app-choice-field></label>
               <label class="field">Tingkat penguasaan *<app-choice-field [options]="options.proficiency" [allowOther]="false" label="Tingkat" [(value)]="language.proficiency"></app-choice-field></label>
-              <label class="file-field span-2">Sertifikat bahasa <span class="opt">(opsional)</span><input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Sertifikat bahasa ' + (i + 1)" (change)="selectDocument($event, 'language:' + language.key + ':certificate')"><small class="field-hint">{{ documentName('language:' + language.key + ':certificate') || 'PDF, maksimal 2 MB' }}</small></label>
+              <label class="file-field span-2">Sertifikat bahasa * <input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Sertifikat bahasa ' + (i + 1)" (change)="selectDocument($event, 'language:' + language.key + ':certificate')"><small class="field-hint">{{ documentName('language:' + language.key + ':certificate') || 'PDF, maksimal 2 MB' }}</small></label>
             </div>
           </article>
           <button type="button" class="btn btn-secondary add-row" (click)="addLanguage()"><app-icon name="plus" [size]="16"></app-icon> Tambah bahasa</button>
