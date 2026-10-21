@@ -151,7 +151,7 @@ public class JobApplicationService {
                     candidate.setJobPosition(null);
                     candidate.setHiringStage(null);
                     if (candidate.getStatus() == CandidateStatus.HIRED || candidate.getStatus() == CandidateStatus.REJECTED) {
-                        candidate.setStatus(CandidateStatus.POTENTIAL);
+                        candidate.setStatus(null);
                     }
                 }
         );
@@ -186,8 +186,11 @@ public class JobApplicationService {
         candidate.setMovedToJobListing(true);
         candidate.setJobPosition(job.getTitle());
         candidate.setHiringStage(stage.name());
+        CandidateStatus current = candidate.getStatus();
         candidate.setStatus(switch (stage) {
-            case NEW_CANDIDATE -> CandidateStatus.POTENTIAL;
+            // Lamaran baru tidak otomatis "Potensial"; status itu ditentukan recruiter. Status lama
+            // yang sudah final (diterima/ditolak) dikosongkan lagi agar lamaran baru dinilai ulang.
+            case NEW_CANDIDATE -> current == CandidateStatus.HIRED || current == CandidateStatus.REJECTED ? null : current;
             case SCREENING -> CandidateStatus.SCREENED;
             case INTERVIEW, OFFER -> CandidateStatus.AVAILABLE;
             case HIRED -> CandidateStatus.HIRED;
