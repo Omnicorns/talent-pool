@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.util.*;
 @Component
 public class TalentProfileValidator {
+    private static final Set<String> TRAINING_TYPES=Set.of("Workshop","Webinar","Seminar");
     private final ProfileJson json;
     private final PostalCodeService postalCodes;
     public TalentProfileValidator(ProfileJson json,PostalCodeService postalCodes) { this.json=json; this.postalCodes=postalCodes; }
@@ -51,14 +52,33 @@ public class TalentProfileValidator {
         }
         require(c.getExpectedSalary()!=null && c.getExpectedSalary().signum()>=0 && d.expectedSalaryMax()!=null && d.expectedSalaryMax().compareTo(c.getExpectedSalary())>=0,"Isi rentang ekspektasi gaji yang valid.");
         require(!empty(c.getJobInterests()) && !empty(c.getPreferredLocations()) && !blank(c.getSource()),"Fungsi, lokasi, dan sumber informasi wajib diisi.");
-        require(d.languageSkills()!=null && !d.languageSkills().isEmpty(),"Tambahkan bahasa dan tingkat penguasaan.");
-        keys.clear();
-        for(var l:d.languageSkills()) require(!blank(l.name()) && !blank(l.proficiency()) && !blank(l.key()) && keys.add(l.key()),"Bahasa dan tingkat penguasaan wajib diisi.");
-        if(d.trainingCertifications()!=null) for(var cert:d.trainingCertifications()) {
-            require(!blank(cert.name()) && !blank(cert.issuingOrganization()) && cert.issueDate()!=null && cert.expiryDate()!=null
-                && !cert.expiryDate().isBefore(cert.issueDate()) && !blank(cert.credentialId())
-                && (blank(cert.credentialUrl()) || cert.credentialUrl().matches("https?://.+")),
-                "Data sertifikat pelatihan tidak valid.");
+        if(d.noLanguage()) require(d.languageSkills()==null || d.languageSkills().isEmpty(),"Hapus bahasa yang diisi atau batalkan pilihan tidak memiliki keahlian berbahasa.");
+        else {
+            require(d.languageSkills()!=null && !d.languageSkills().isEmpty(),"Tambahkan bahasa dan tingkat penguasaan, atau pilih tidak memiliki keahlian berbahasa.");
+            keys.clear();
+            for(var l:d.languageSkills()) require(!blank(l.name()) && !blank(l.proficiency()) && !blank(l.key()) && keys.add(l.key()),"Bahasa dan tingkat penguasaan wajib diisi.");
+        }
+        List<Education> trainings=c.getEducations().stream().filter(e -> e.getType()==EducationType.INFORMAL).toList();
+        if(d.noTraining()) require(trainings.isEmpty(),"Hapus pelatihan yang diisi atau batalkan pilihan tidak memiliki pelatihan.");
+        else {
+            require(!trainings.isEmpty(),"Tambahkan pelatihan, atau pilih tidak memiliki pelatihan.");
+            for(Education t:trainings) {
+                require(TRAINING_TYPES.contains(Objects.toString(t.getLevel(),"")) && !blank(t.getMajor()) && !blank(t.getInstitution()),"Jenis, nama pelatihan, dan penyelenggara wajib diisi.");
+                require(t.getStartYear()!=null && t.getStartYear()>=1900 && t.getStartYear()<=LocalDate.now().getYear(),"Tahun pelatihan tidak valid.");
+            }
+        }
+        List<TalentProfileDetails.TrainingCertification> certs=d.trainingCertifications()==null ? List.of() : d.trainingCertifications();
+        if(d.noCertification()) require(certs.isEmpty(),"Hapus sertifikasi yang diisi atau batalkan pilihan tidak memiliki sertifikasi.");
+        else {
+            require(!certs.isEmpty(),"Tambahkan sertifikasi, atau pilih tidak memiliki sertifikasi.");
+            Set<String> certKeys=new HashSet<>();
+            for(var cert:certs) {
+                require(!blank(cert.name()) && !blank(cert.issuingOrganization()) && !blank(cert.credentialId())
+                    && cert.issueDate()!=null && cert.expiryDate()!=null && !cert.expiryDate().isBefore(cert.issueDate())
+                    && (blank(cert.credentialUrl()) || cert.credentialUrl().matches("https?://.+")),
+                    "Lengkapi nama, penyelenggara, nomor, dan masa berlaku sertifikasi.");
+                require(!blank(cert.key()) && certKeys.add(cert.key()) && documents.contains("certification:"+cert.key()+":certificate"),"Upload sertifikat wajib diisi untuk setiap sertifikasi.");
+            }
         }
         require(c.isTermsAccepted(),"Syarat dan ketentuan harus disetujui.");
     }

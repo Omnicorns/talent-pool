@@ -70,6 +70,7 @@ export class TalentProfileDetailsComponent {
   languages(details: TalentProfileDetails): string {
     const skills = details.languageSkills || [];
     if (skills.length) return skills.map((item) => `${item.name} (${(item.proficiency || '').toLowerCase()})`).join(', ');
+    if (details.noLanguage) return 'Tidak memiliki keahlian berbahasa';
     return this.profile.languanges || '-';
   }
 
@@ -77,6 +78,10 @@ export class TalentProfileDetailsComponent {
     if (key.startsWith('language:')) {
       const lang = this.profile.profileDetails?.languageSkills.find((l) => key.includes(l.key));
       return 'Sertifikat ' + (lang?.name || 'bahasa');
+    }
+    if (key.startsWith('certification:')) {
+      const cert = this.profile.profileDetails?.trainingCertifications.find((c) => c.key && key.includes(c.key));
+      return 'Sertifikat ' + (cert?.name || '');
     }
     const edu = this.profile.educations.find((e) => e.clientKey && key.includes(e.clientKey));
     return (key.endsWith(':diploma') ? 'Ijazah' : 'Transkrip') + ' ' + (edu?.institution || '');
