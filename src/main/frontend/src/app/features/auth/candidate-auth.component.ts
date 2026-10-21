@@ -1,8 +1,10 @@
+import { inject } from '@angular/core';
 import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TalentAuthService } from '../../core/service/api/talent-auth.service';
+import { Branding, DEFAULT_BRANDING, SiteContentService } from '../../core/service/api/site-content.service';
 import { IconComponent } from '../../shared/icon.component';
 
 @Component({
@@ -12,11 +14,11 @@ import { IconComponent } from '../../shared/icon.component';
   template: `
     <main class="auth">
       <section class="auth-aside">
-        <img class="bg" src="assets/images/hero-sarinah.jpg" alt="">
-        <a routerLink="/" aria-label="Beranda Sarinah Karier"><img class="logo" src="images/sarinah.png" alt="Sarinah"></a>
+        <img class="bg" [src]="b.loginImage" alt="">
+        <a routerLink="/" aria-label="Beranda Sarinah Karier"><img class="logo" [src]="b.brandLogo" alt="Sarinah"></a>
         <div>
-          <h1>Bergabung dengan Talent Pool Sarinah</h1>
-          <p>Temukan peluang karier terbaik dan jadi bagian dari perjalanan kami.</p>
+          <h1>{{ b.login.title }}</h1>
+          <p>{{ b.login.subtitle }}</p>
         </div>
       </section>
 
@@ -213,6 +215,8 @@ import { IconComponent } from '../../shared/icon.component';
   `,
 })
 export class CandidateAuthComponent implements OnDestroy {
+  b: Branding = DEFAULT_BRANDING;
+  private readonly brandingSub = inject(SiteContentService).branding().subscribe((branding) => (this.b = branding));
   mode: 'login' | 'register' = location.pathname.endsWith('/register') ? 'register' : 'login';
   fullName = '';
   email = '';

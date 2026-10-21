@@ -15,6 +15,12 @@ import java.util.UUID;
 public class SiteBanner {
     public static final String HERO = "HERO";
     public static final String LIFE = "LIFE";
+    /** Logo kiri di header (mitra/induk). Yang aktif dengan urutan terkecil dipakai. */
+    public static final String LOGO_PARTNER = "LOGO_PARTNER";
+    /** Logo utama Sarinah: header kanan, footer, dan halaman login. */
+    public static final String LOGO_BRAND = "LOGO_BRAND";
+    /** Gambar latar sisi kiri halaman login/daftar. */
+    public static final String LOGIN_IMAGE = "LOGIN_IMAGE";
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -23,7 +29,7 @@ public class SiteBanner {
     @Column(nullable = false, length = 200)
     private String name;
 
-    /** HERO atau LIFE. */
+    /** HERO, LIFE, LOGO_PARTNER, LOGO_BRAND, atau LOGIN_IMAGE. */
     @Column(nullable = false, length = 30)
     private String category;
 

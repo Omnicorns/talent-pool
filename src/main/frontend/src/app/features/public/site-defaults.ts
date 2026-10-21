@@ -29,10 +29,30 @@ export const DEFAULT_FAQ = [
   { q: 'Bagaimana saya memantau status lamaran?', a: 'Masuk ke akun Anda, lalu buka Profil saya. Status setiap lamaran tampil di bagian Lamaran saya, lengkap dengan riwayat prosesnya.' },
 ];
 
+export const DEFAULT_HEADER = {
+  navHome: 'Home', navLife: 'Life at Sarinah', navOpen: 'Open Positions', navFaq: 'FAQ', signIn: 'Masuk',
+};
+export const DEFAULT_FOOTER = {
+  description: 'Tempat bertemunya karya, budaya, produk lokal, dan talenta yang ingin ikut membangun pengalaman ritel Indonesia.',
+  exploreTitle: 'Jelajahi', contactTitle: 'Kontak',
+  company: 'PT Sarinah', address: 'Jl. M.H. Thamrin No. 11, Jakarta Pusat', phone: '(021) 3192 3008', email: 'div.sekretariat@sarinah.co.id',
+  copyright: 'PT Sarinah', tagline: 'Portal Karier & Talent Pool',
+};
+export const DEFAULT_LOGIN = {
+  title: 'Bergabung dengan Talent Pool Sarinah',
+  subtitle: 'Temukan peluang karier terbaik dan jadi bagian dari perjalanan kami.',
+};
+export const DEFAULT_PARTNER_LOGO = 'images/Danantara_Indonesia.png';
+export const DEFAULT_BRAND_LOGO = 'images/sarinah.png';
+export const DEFAULT_LOGIN_IMAGE = 'assets/images/hero-sarinah.jpg';
+
 export const DEFAULT_CONTENT: Record<string, any> = {
   HERO: DEFAULT_HERO,
   VALUES: DEFAULT_VALUES,
   LIFE_HEADING: DEFAULT_LIFE_HEADING,
   LIFE_PROGRAMS: DEFAULT_LIFE_PROGRAMS,
   FAQ: DEFAULT_FAQ,
+  HEADER: DEFAULT_HEADER,
+  FOOTER: DEFAULT_FOOTER,
+  LOGIN: DEFAULT_LOGIN,
 };
