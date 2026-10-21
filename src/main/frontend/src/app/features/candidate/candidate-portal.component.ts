@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TalentProfileDetailsComponent } from '../../shared/talent-profile-details.component';
 import { CareerHeaderComponent } from '../../shared/career-header.component';
-import { CandidateProfile, EducationItem, JobApplication, WorkExperienceItem } from '../../core/models/talent.models';
+import { CandidateProfile, EducationItem, JobApplication, SupportingUpload, TrainingCertification, WorkExperienceItem } from '../../core/models/talent.models';
 import { TalentAuthService } from '../../core/service/api/talent-auth.service';
 import { TalentPortalService } from '../../core/service/api/talent-portal.service';
 import { FMT } from '../../shared/labels';
@@ -13,15 +13,16 @@ import { PostalRegionFieldComponent } from '../../shared/postal-region-field.com
 import { SocialAccountsFieldComponent } from '../../shared/social-accounts-field.component';
 import { cleanSocial, socialError, socialList } from '../../shared/social-accounts';
 import { ChoiceFieldComponent } from '../../shared/choice-field.component';
+import { TagSelectComponent } from '../../shared/tag-select.component';
 import { TALENT_OPTIONS } from '../../shared/talent-options';
 import { translate } from '../../core/i18n/translator';
 
-type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'training' | 'additional';
+type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience' | 'education' | 'training' | 'certification' | 'additional';
 
 @Component({
   selector: 'app-candidate-portal',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, CareerHeaderComponent, TalentProfileDetailsComponent, IconComponent, ChoiceFieldComponent, PostalRegionFieldComponent, SocialAccountsFieldComponent],
+  imports: [CommonModule, FormsModule, RouterLink, CareerHeaderComponent, TalentProfileDetailsComponent, IconComponent, ChoiceFieldComponent, TagSelectComponent, PostalRegionFieldComponent, SocialAccountsFieldComponent],
   template: `
     <div class="site" *ngIf="profile; else loadingTpl">
       <app-career-header active="portal" [profilePictureUrl]="profilePictureUrl"></app-career-header>
@@ -50,7 +51,7 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
               </div>
             </div>
             <div class="profile-head-actions">
-              <button class="btn btn-secondary" (click)="openDrawer('profile')"><app-icon name="edit" [size]="16"></app-icon> Ubah profil</button>
+              <button class="btn btn-secondary" (click)="openDrawer('header')"><app-icon name="edit" [size]="16"></app-icon> Ubah profil</button>
             </div>
           </section>
 
@@ -65,9 +66,10 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
                 <section id="about" class="profile-section">
                   <div class="section-title"><h2>Tentang saya</h2><button class="btn btn-ghost btn-sm" (click)="openDrawer('about')"><app-icon name="edit" [size]="16"></app-icon> Ubah</button></div>
                   <p class="about-copy" [class.placeholder]="!profile.about">{{ profile.about || 'Tulis ringkasan singkat tentang pengalaman dan tujuan karier Anda agar recruiter cepat memahami profil Anda.' }}</p>
-                  <div class="interest-box" *ngIf="profile.jobInterests.length">
+                  <div class="interest-box">
                     <span class="interest-icon"><app-icon name="award" [size]="20"></app-icon></span>
-                    <div><strong>Minat Karier</strong><p>{{ profile.jobInterests.join('  •  ') }}</p></div>
+                    <div><strong>Minat Karier</strong><p>{{ profile.jobInterests.length ? profile.jobInterests.join('  •  ') : 'Belum dipilih' }}</p></div>
+                    <button type="button" class="btn btn-ghost btn-sm interest-edit" (click)="openDrawer('interest')" aria-label="Ubah minat karier"><app-icon name="edit" [size]="16"></app-icon> Ubah</button>
                   </div>
                 </section>
 
@@ -107,10 +109,10 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
                     </article>
                   </div>
                   <ng-template #emptyEducation><p class="muted">Belum ada pendidikan formal yang ditambahkan.</p></ng-template>
-                  <ng-container *ngIf="profile.supportingDocuments?.length">
+                  <ng-container *ngIf="educationDocuments.length">
                     <p class="subhead">Dokumen pendukung</p>
                     <div class="doc-list">
-                      <button type="button" class="doc" *ngFor="let doc of profile.supportingDocuments" (click)="downloadSupportingDocument(doc.key, doc.originalName)">
+                      <button type="button" class="doc" *ngFor="let doc of educationDocuments" (click)="downloadSupportingDocument(doc.key, doc.originalName)">
                         <app-icon name="file"></app-icon>
                         <span><strong>{{ supportingDocumentLabel(doc.key) }}</strong><small>{{ doc.originalName }}</small></span>
                         <app-icon name="download" [size]="16"></app-icon>
@@ -120,28 +122,36 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
                 </section>
 
                 <section id="training" class="profile-section">
-                  <div class="section-title"><h2>Pelatihan &amp; sertifikasi</h2><button class="btn btn-ghost btn-sm" (click)="openDrawer('training')"><app-icon name="plus" [size]="16"></app-icon> Tambah</button></div>
-                  <div class="timeline" *ngIf="informalEducations.length || profile.profileDetails?.trainingCertifications?.length; else emptyTraining">
-                    <article class="timeline-item" *ngFor="let item of profile.profileDetails?.trainingCertifications || []">
-                      <span class="timeline-mark"><app-icon name="award"></app-icon></span>
-                      <div>
-                        <h3>{{ item.name }}</h3>
-                        <p class="org">{{ joinParts(item.issuingOrganization, item.credentialId ? 'No. ' + item.credentialId : '') }}</p>
-                        <p class="desc">{{ certificationDates(item.issueDate, item.expiryDate) }}</p>
-                        <a *ngIf="item.credentialUrl" class="link" style="font-size: 14px; margin-top: 6px" [href]="item.credentialUrl" target="_blank" rel="noopener noreferrer">Lihat sertifikat <app-icon name="arrow-up-right" [size]="14"></app-icon></a>
-                      </div>
-                    </article>
+                  <div class="section-title"><h2>Pelatihan</h2><button class="btn btn-ghost btn-sm" (click)="openDrawer('training')"><app-icon name="plus" [size]="16"></app-icon> Tambah</button></div>
+                  <div class="timeline" *ngIf="informalEducations.length; else emptyTraining">
                     <article class="timeline-item" *ngFor="let item of informalEducations">
                       <span class="timeline-mark"><app-icon name="award"></app-icon></span>
                       <div>
                         <h3>{{ item.major || item.level }} <button class="icon-btn" (click)="openEducationDrawer('training', item)" [attr.aria-label]="'Ubah ' + (item.major || item.level)"><app-icon name="edit" [size]="15"></app-icon></button></h3>
-                        <p class="org">{{ item.institution }}</p>
+                        <p class="org">{{ joinParts(item.level, item.institution) }}</p>
                         <p class="desc" *ngIf="item.description">{{ item.description }}</p>
                       </div>
-                      <time>{{ item.startYear || '-' }}{{ item.endYear && item.endYear !== item.startYear ? ' – ' + item.endYear : '' }}</time>
+                      <time>{{ item.startYear || '-' }}</time>
                     </article>
                   </div>
-                  <ng-template #emptyTraining><p class="muted">Belum ada pelatihan atau sertifikasi.</p></ng-template>
+                  <ng-template #emptyTraining><p class="muted">{{ profile.profileDetails?.noTraining ? 'Tidak memiliki pelatihan.' : 'Belum ada pelatihan.' }}</p></ng-template>
+                </section>
+
+                <section id="certification" class="profile-section">
+                  <div class="section-title"><h2>Sertifikasi</h2><button class="btn btn-ghost btn-sm" (click)="openDrawer('certification')"><app-icon name="plus" [size]="16"></app-icon> Tambah</button></div>
+                  <div class="timeline" *ngIf="certifications.length; else emptyCertification">
+                    <article class="timeline-item" *ngFor="let item of certifications; let i = index">
+                      <span class="timeline-mark"><app-icon name="award"></app-icon></span>
+                      <div>
+                        <h3>{{ item.name }} <button class="icon-btn" (click)="openDrawer('certification', i)" [attr.aria-label]="'Ubah ' + item.name"><app-icon name="edit" [size]="15"></app-icon></button></h3>
+                        <p class="org">{{ joinParts(item.issuingOrganization, item.credentialId ? 'No. ' + item.credentialId : '') }}</p>
+                        <p class="desc">{{ certificationDates(item.issueDate, item.expiryDate) }}</p>
+                        <button type="button" class="link" *ngIf="certificateDocument(item) as doc" style="font-size: 14px; margin-top: 6px; border: 0; background: none; padding: 0; cursor: pointer" (click)="downloadSupportingDocument(doc.key, doc.originalName)">Lihat sertifikat <app-icon name="download" [size]="14"></app-icon></button>
+                        <a *ngIf="item.credentialUrl" class="link" style="font-size: 14px; margin-top: 6px" [href]="item.credentialUrl" target="_blank" rel="noopener noreferrer">Lihat sertifikat <app-icon name="arrow-up-right" [size]="14"></app-icon></a>
+                      </div>
+                    </article>
+                  </div>
+                  <ng-template #emptyCertification><p class="muted">{{ profile.profileDetails?.noCertification ? 'Tidak memiliki sertifikasi.' : 'Belum ada sertifikasi.' }}</p></ng-template>
                 </section>
 
                 <section id="additional" class="profile-section">
@@ -154,10 +164,6 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
                     <div><dt>LinkedIn</dt><dd>{{ profile.profileDetails?.linkedinUrl || '-' }}</dd></div>
                     <div><dt>Media sosial</dt><dd><span class="line" *ngFor="let item of socials">{{ item }}</span><ng-container *ngIf="!socials.length">-</ng-container></dd></div>
                   </dl>
-                  <ng-container *ngIf="profile.tools.length">
-                    <p class="subhead">Tools yang dikuasai</p>
-                    <div class="chips"><span class="chip" *ngFor="let tool of profile.tools">{{ tool }}</span></div>
-                  </ng-container>
                 </section>
               </section>
 
@@ -215,7 +221,7 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
 
             <aside class="profile-side">
               <section class="side-card">
-                <h2>Data pribadi <button class="btn btn-ghost btn-sm" (click)="openDrawer('profile')" aria-label="Ubah data pribadi"><app-icon name="edit" [size]="16"></app-icon></button></h2>
+                <h2>Data pribadi <button class="btn btn-ghost btn-sm" (click)="openDrawer('personal')" aria-label="Ubah data pribadi"><app-icon name="edit" [size]="16"></app-icon></button></h2>
                 <app-talent-profile-details [profile]="profile" [showAdditionalInformation]="false" [showEducationInformation]="false"></app-talent-profile-details>
               </section>
             </aside>
@@ -261,7 +267,7 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
 
           <div class="drawer-body">
             <p class="alert alert-error" *ngIf="drawerError" role="alert" style="margin-bottom: 16px"><app-icon name="alert"></app-icon><span>{{ drawerError }}</span></p>
-            <div class="form-stack" *ngIf="drawerSection === 'profile'">
+            <div class="form-stack" *ngIf="drawerSection === 'header'">
               <div class="photo-edit">
                 <span class="avatar avatar-lg">
                   <img *ngIf="profilePicturePreview || profilePictureUrl; else photoInitials" [src]="profilePicturePreview || profilePictureUrl" alt="">
@@ -280,6 +286,9 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
               <label class="field">Nama lengkap<input [(ngModel)]="profile.fullName"></label>
               <label class="field">Email<input [ngModel]="profile.email" disabled><small>Email dipakai untuk masuk dan tidak dapat diubah.</small></label>
               <label class="field">Nomor WhatsApp<input type="tel" [(ngModel)]="profile.phone"></label>
+            </div>
+
+            <div class="form-stack" *ngIf="drawerSection === 'personal'">
               <label class="field">Jenis kelamin<app-choice-field [options]="options.genders" [allowOther]="false" label="Jenis kelamin" [value]="profile.profileDetails?.gender" (valueChange)="setDetail('gender', $event)"></app-choice-field></label>
               <label class="field">Agama<app-choice-field [options]="options.religions" [allowOther]="false" label="Agama" [(value)]="profile.religion"></app-choice-field></label>
               <label class="field">Alamat KTP<textarea rows="3" [(ngModel)]="profile.citizenIdAddress" placeholder="Nama jalan, nomor rumah, RT/RW"></textarea></label>
@@ -294,6 +303,10 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
               <label class="field">Tahu Sarinah dari<app-choice-field [options]="options.sources" label="Sumber" [(value)]="profile.source"></app-choice-field></label>
             </div>
 
+            <div class="form-stack" *ngIf="drawerSection === 'interest'">
+              <label class="field">Fungsi yang diminati<app-tag-select [options]="options.functions" label="Fungsi" [limit]="3" [(value)]="profile.jobInterests"></app-tag-select><small>Pilih maksimal 3 fungsi.</small></label>
+            </div>
+
             <div class="form-stack" *ngIf="drawerSection === 'about'">
               <label class="field">Tentang saya<textarea rows="10" [(ngModel)]="profile.about" placeholder="Tulis ringkasan singkat tentang pengalaman dan tujuan karier Anda agar recruiter cepat memahami profil Anda." maxlength="500"></textarea><small>{{ (profile.about || '').length }} / 500 karakter</small></label>
             </div>
@@ -302,34 +315,64 @@ type DrawerSection = 'profile' | 'about' | 'experience' | 'education' | 'trainin
               <label class="field">Posisi<input [(ngModel)]="editExperience.position"></label>
               <label class="field">Perusahaan<input [(ngModel)]="editExperience.companyName"></label>
               <div class="form-grid">
+                <label class="field">Status kepegawaian<app-choice-field [options]="options.employmentTypes" [allowOther]="false" label="Status kepegawaian" [(value)]="expDetails.employmentType"></app-choice-field></label>
+                <label class="field">Industri<app-choice-field [options]="options.industries" label="Industri" [(value)]="expDetails.industry"></app-choice-field></label>
+              </div>
+              <div class="form-grid">
                 <label class="field">Mulai<input type="date" [(ngModel)]="editExperience.startDate"></label>
                 <label class="field">Selesai<input type="date" [(ngModel)]="editExperience.endDate" [disabled]="editExperience.currentJob"></label>
               </div>
               <label class="check"><input type="checkbox" [(ngModel)]="editExperience.currentJob"> Saya masih bekerja di sini</label>
               <label class="field">Tugas dan pencapaian<textarea rows="5" [(ngModel)]="editExperience.description"></textarea></label>
+              <label class="field">Keahlian<app-tag-select [options]="options.skills" label="Keahlian" [(value)]="expDetails.skills"></app-tag-select></label>
+              <label class="field">Tools<app-tag-select [options]="options.tools" label="Tools" [(value)]="expDetails.tools"></app-tag-select></label>
+              <label class="field" *ngIf="!editExperience.currentJob">Alasan berhenti<input [(ngModel)]="expDetails.resignReason"></label>
             </div>
 
-            <div class="form-stack" *ngIf="(drawerSection === 'education' || drawerSection === 'training') && editEducation">
-              <label class="field" *ngIf="drawerSection === 'education'">Institusi<input [(ngModel)]="editEducation.institution"></label>
-              <label class="field" *ngIf="drawerSection === 'education'">Jurusan<input [(ngModel)]="editEducation.major"></label>
-              <label class="field" *ngIf="drawerSection === 'training'">Nama pelatihan atau sertifikasi<input [(ngModel)]="editEducation.major"></label>
-              <label class="field" *ngIf="drawerSection === 'training'">Penyelenggara<input [(ngModel)]="editEducation.institution"></label>
-              <label class="field" *ngIf="drawerSection === 'education'">Jenjang<app-choice-field [options]="educationLevelOptions" [allowOther]="false" label="Jenjang" [(value)]="editEducation.level"></app-choice-field></label>
-              <label class="field" *ngIf="drawerSection === 'training'">Jenis<app-choice-field [options]="trainingKindOptions" [allowOther]="false" label="Jenis" [(value)]="editEducation.level"></app-choice-field></label>
+            <div class="form-stack" *ngIf="drawerSection === 'education' && editEducation">
+              <label class="field">Institusi<app-choice-field [options]="options.institutions" label="Institusi" [(value)]="editEducation.institution"></app-choice-field></label>
+              <label class="field">Jurusan<app-choice-field [options]="options.majors" label="Jurusan" [(value)]="editEducation.major"></app-choice-field></label>
+              <div class="form-grid">
+                <label class="field">Jenjang<app-choice-field [options]="educationLevelOptions" [allowOther]="false" label="Jenjang" [(value)]="editEducation.level"></app-choice-field></label>
+                <label class="field">IPK / nilai akhir<input [(ngModel)]="editEducation.ipk" inputmode="decimal" placeholder="Contoh: 3.50"></label>
+              </div>
               <div class="form-grid">
                 <label class="field">Tahun mulai<input type="number" [(ngModel)]="editEducation.startYear"></label>
                 <label class="field">Tahun selesai<input type="number" [(ngModel)]="editEducation.endYear"></label>
               </div>
+              <label class="file-field">Ijazah <input type="file" accept=".pdf,application/pdf" aria-label="Ijazah" (change)="selectDocument($event, educationDocKey('diploma'))"><small class="field-hint">{{ documentName(educationDocKey('diploma')) || 'PDF, maksimal 2 MB' }}</small></label>
+              <label class="file-field">Transkrip nilai <input type="file" accept=".pdf,application/pdf" aria-label="Transkrip" (change)="selectDocument($event, educationDocKey('transcript'))"><small class="field-hint">{{ documentName(educationDocKey('transcript')) || 'PDF, maksimal 2 MB' }}</small></label>
+              <label class="field">Proyek atau penghargaan<textarea [(ngModel)]="editEducation.description" placeholder="Proyek akademik, prestasi, atau penghargaan"></textarea></label>
+            </div>
+
+            <div class="form-stack" *ngIf="drawerSection === 'training' && editEducation">
+              <label class="field">Jenis<app-choice-field [options]="trainingKindOptions" [allowOther]="false" label="Jenis" [(value)]="editEducation.level"></app-choice-field></label>
+              <label class="field">Nama pelatihan<input [(ngModel)]="editEducation.major"></label>
+              <label class="field">Penyelenggara<input [(ngModel)]="editEducation.institution"></label>
+              <label class="field">Tahun<input type="number" [(ngModel)]="editEducation.startYear"></label>
               <label class="field">Keterangan<textarea [(ngModel)]="editEducation.description"></textarea></label>
             </div>
 
+            <div class="form-stack" *ngIf="drawerSection === 'certification' && editCert">
+              <label class="field">Nama sertifikasi<input [(ngModel)]="editCert.name"></label>
+              <label class="field">Nomor sertifikat<input [(ngModel)]="editCert.credentialId"></label>
+              <label class="field">Penyelenggara / institusi yang mengeluarkan<input [(ngModel)]="editCert.issuingOrganization"></label>
+              <div class="form-grid">
+                <label class="field">Masa berlaku: mulai<input type="date" [(ngModel)]="editCert.issueDate"></label>
+                <label class="field">Masa berlaku: sampai<input type="date" [(ngModel)]="editCert.expiryDate"></label>
+              </div>
+              <label class="file-field">Upload sertifikat <input type="file" accept=".pdf,application/pdf" aria-label="Upload sertifikat" (change)="selectDocument($event, certDocKey())"><small class="field-hint">{{ documentName(certDocKey()) || 'PDF, maksimal 2 MB' }}</small></label>
+            </div>
+
             <div class="form-stack" *ngIf="drawerSection === 'additional'">
-              <label class="field">Ekspektasi gaji minimum per bulan<input type="number" [(ngModel)]="profile.expectedSalary"></label>
-              <label class="field">Fungsi yang diminati<input [ngModel]="profile.jobInterests.join(', ')" (ngModelChange)="profile.jobInterests = splitList($event)"><small>Pisahkan dengan koma, maksimal 3.</small></label>
-              <label class="field">Lokasi kerja yang diminati<input [ngModel]="profile.preferredLocations.join(', ')" (ngModelChange)="profile.preferredLocations = splitList($event)"><small>Pisahkan dengan koma, maksimal 3.</small></label>
-              <label class="field">Posisi yang diminati<input [ngModel]="profile.relatedJobPositions.join(', ')" (ngModelChange)="profile.relatedJobPositions = splitList($event)"><small>Pisahkan dengan koma, maksimal 3.</small></label>
-              <label class="field">Industri<input [ngModel]="profile.relatedIndustries.join(', ')" (ngModelChange)="profile.relatedIndustries = splitList($event)"><small>Pisahkan dengan koma, maksimal 3.</small></label>
-              <label class="field">Tools<input [ngModel]="profile.tools.join(', ')" (ngModelChange)="profile.tools = splitList($event, 20)"><small>Pisahkan dengan koma.</small></label>
+              <fieldset class="field-group">
+                <legend>Ekspektasi gaji per bulan</legend>
+                <div class="form-grid">
+                  <label class="field">Minimum<input type="number" min="0" step="1" [(ngModel)]="profile.expectedSalary" placeholder="Contoh: 8000000"></label>
+                  <label class="field">Maksimum<input type="number" [min]="profile.expectedSalary || 0" step="1" [ngModel]="profile.profileDetails?.expectedSalaryMax" (ngModelChange)="setSalaryMax($event)" placeholder="Contoh: 10000000"></label>
+                </div>
+              </fieldset>
+              <label class="field">Lokasi kerja yang diminati<app-tag-select [options]="options.locations" label="Lokasi" [limit]="3" [(value)]="profile.preferredLocations"></app-tag-select></label>
               <label class="field">Bahasa<input [(ngModel)]="profile.languanges"></label>
               <label class="field">LinkedIn<input [ngModel]="profile.profileDetails?.linkedinUrl || ''" (ngModelChange)="setLinkedInUrl($event)" type="url" placeholder="https://www.linkedin.com/in/…"></label>
               <fieldset class="field-group"><legend>Media sosial</legend><app-social-accounts-field [details]="socialDetails"></app-social-accounts-field></fieldset>
@@ -358,6 +401,8 @@ export class CandidatePortalComponent implements OnInit {
   snapshot: CandidateProfile | null = null;
   editExperience: WorkExperienceItem | null = null;
   editEducation: EducationItem | null = null;
+  editCert: TrainingCertification | null = null;
+  pendingUploads: SupportingUpload[] = [];
   profilePictureFile: File | null = null;
   profilePictureUrl: string | null = null;
   profilePicturePreview: string | null = null;
@@ -372,12 +417,13 @@ export class CandidatePortalComponent implements OnInit {
     { id: 'about', label: 'Tentang' },
     { id: 'experiences', label: 'Pengalaman' },
     { id: 'education', label: 'Pendidikan' },
-    { id: 'training', label: 'Sertifikasi' },
+    { id: 'training', label: 'Pelatihan' },
+    { id: 'certification', label: 'Sertifikasi' },
     { id: 'additional', label: 'Info tambahan' },
   ];
   activeSection = 'about';
   private tabClickedAt = 0;
-  private readonly profileSectionIds = ['about', 'experiences', 'education', 'training', 'additional'];
+  private readonly profileSectionIds = ['about', 'experiences', 'education', 'training', 'certification', 'additional'];
   applicationSubmitted = false;
   applicationHistoryOpen = false;
   applicationHistoryLoading = false;
@@ -639,6 +685,41 @@ export class CandidatePortalComponent implements OnInit {
     return current && !levels.includes(current) ? [current, ...levels] : levels;
   }
 
+  get educationDocuments(): Array<{ key: string; originalName: string }> {
+    return (this.profile?.supportingDocuments || []).filter((doc) => !doc.key.startsWith('certification:'));
+  }
+  get certifications(): TrainingCertification[] { return this.profile?.profileDetails?.trainingCertifications || []; }
+  get expDetails() {
+    const exp = this.editExperience!;
+    return exp.details ||= { employmentType: '', industry: '', skills: [], tools: [], resignReason: '' };
+  }
+
+  certificateDocument(item: TrainingCertification): { key: string; originalName: string } | null {
+    return (this.profile.supportingDocuments || []).find((doc) => doc.key === `certification:${item.key}:certificate`) || null;
+  }
+
+  educationDocKey(kind: 'diploma' | 'transcript'): string { return `education:${this.editEducation?.clientKey}:${kind}`; }
+  certDocKey(): string { return `certification:${this.editCert?.key}:certificate`; }
+
+  documentName(key: string): string {
+    return this.pendingUploads.find((u) => u.key === key)?.file.name || this.profile.supportingDocuments?.find((d) => d.key === key)?.originalName || '';
+  }
+
+  selectDocument(event: Event, key: string): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (!/\.pdf$/i.test(file.name) || file.size > 2 * 1024 * 1024) {
+      input.value = '';
+      this.drawerError = 'File harus berformat PDF dan maksimal 2 MB.';
+      return;
+    }
+    this.drawerError = '';
+    this.pendingUploads = [...this.pendingUploads.filter((u) => u.key !== key), { key, file }];
+  }
+
+  setSalaryMax(value: number | null): void { this.ensureDetails().expectedSalaryMax = value === null || (value as any) === '' ? null : Number(value); }
+
   get formalEducations(): EducationItem[] { return (this.profile?.educations || []).filter((item) => item.type === 'FORMAL'); }
   get informalEducations(): EducationItem[] { return (this.profile?.educations || []).filter((item) => item.type === 'INFORMAL'); }
   get firstPortfolio(): string { return this.profile?.portfolios?.find((item) => item.url)?.title || ''; }
@@ -649,11 +730,14 @@ export class CandidatePortalComponent implements OnInit {
   }
   get drawerTitle(): string {
     const map: Record<DrawerSection, string> = {
-      profile: 'Ubah profil',
+      header: 'Ubah profil',
+      personal: 'Ubah data pribadi',
+      interest: 'Ubah minat karier',
       about: 'Tentang saya',
       experience: this.drawerIndex == null ? 'Tambah pengalaman kerja' : 'Ubah pengalaman kerja',
       education: this.drawerIndex == null ? 'Tambah pendidikan' : 'Ubah pendidikan',
       training: this.drawerIndex == null ? 'Tambah pelatihan' : 'Ubah pelatihan',
+      certification: this.drawerIndex == null ? 'Tambah sertifikasi' : 'Ubah sertifikasi',
       additional: 'Informasi tambahan',
     };
     return this.drawerSection ? map[this.drawerSection] : '';
@@ -680,17 +764,29 @@ export class CandidatePortalComponent implements OnInit {
     this.drawerIndex = index;
     this.editExperience = null;
     this.editEducation = null;
+    this.editCert = null;
+    this.pendingUploads = [];
+    this.drawerError = '';
 
+    if (section === 'certification') {
+      const list = this.ensureDetails().trainingCertifications ||= [];
+      this.editCert = index == null
+        ? { key: crypto.randomUUID(), name: '', issuingOrganization: '', issueDate: '', expiryDate: '', credentialId: '', credentialUrl: '' }
+        : structuredClone(list[index]);
+      if (!this.editCert.key) this.editCert.key = crypto.randomUUID();
+    }
     if (section === 'experience') {
       this.editExperience = index == null
         ? { companyName: '', position: '', startDate: '', endDate: null, currentJob: false, description: '', details: { employmentType: '', industry: '', skills: [], tools: [], resignReason: '' } }
         : structuredClone(this.profile.workExperiences[index]);
+      if (this.editExperience) this.editExperience.details ||= { employmentType: '', industry: '', skills: [], tools: [], resignReason: '' };
     }
     if (section === 'education' || section === 'training') {
       const type = section === 'education' ? 'FORMAL' : 'INFORMAL';
       this.editEducation = index == null
-        ? { type, clientKey: type === 'FORMAL' ? crypto.randomUUID() : null, institution: '', level: '', major: '', startYear: null, endYear: null, description: '', ipk: null }
+        ? { type, clientKey: crypto.randomUUID(), institution: '', level: '', major: '', startYear: null, endYear: null, description: '', ipk: null }
         : structuredClone(this.profile.educations[index]);
+      if (this.editEducation && !this.editEducation.clientKey) this.editEducation.clientKey = crypto.randomUUID();
     }
     this.drawerOpen = true;
   }
@@ -725,15 +821,51 @@ export class CandidatePortalComponent implements OnInit {
 
   private validateDrawer(): string {
     const p = this.profile;
-    if (this.drawerSection === 'profile') {
+    const text = (v: unknown) => String(v ?? '').trim();
+    const year = (v: unknown) => Number.isInteger(Number(v)) && Number(v) >= 1950 && Number(v) <= new Date().getFullYear() + 10;
+    if (this.drawerSection === 'header') {
+      if (!text(p.fullName)) return 'Nama lengkap wajib diisi.';
+      if (!/^\d{8,15}$/.test(text(p.phone))) return 'Nomor WhatsApp harus 8–15 digit angka.';
+    }
+    if (this.drawerSection === 'personal') {
       const d = p.profileDetails;
       if (!p.sameAsCitizenIdAddress) {
-        if (!(p.residentialAddress || '').trim()) return 'Alamat domisili wajib diisi.';
-        if (!/^\d{5}$/.test(d?.residentialPostalCode || '') || !(d?.residentialRegion || '').trim()) return 'Lengkapi kode pos dan pilihan wilayah domisili.';
+        if (!text(p.residentialAddress)) return 'Alamat domisili wajib diisi.';
+        if (!/^\d{5}$/.test(d?.residentialPostalCode || '') || !text(d?.residentialRegion)) return 'Lengkapi kode pos dan pilihan wilayah domisili.';
       }
+    }
+    if (this.drawerSection === 'interest' && !p.jobInterests.length) return 'Pilih minimal satu fungsi yang diminati.';
+    if (this.drawerSection === 'experience' && this.editExperience) {
+      const e = this.editExperience, d = this.expDetails;
+      if (!text(e.position) || !text(e.companyName) || !text(d.employmentType) || !text(d.industry) || !text(e.description)) return 'Lengkapi posisi, perusahaan, status, industri, dan tugas.';
+      if (!e.startDate || (!e.currentJob && (!e.endDate || e.endDate < e.startDate))) return 'Periksa tanggal kerja. Tanggal selesai tidak boleh sebelum tanggal mulai.';
+      if (!d.skills.length || !d.tools.length) return 'Pilih minimal satu keahlian dan satu tools.';
+      if (!e.currentJob && !text(d.resignReason)) return 'Alasan berhenti wajib diisi.';
+      if (e.currentJob) { e.endDate = null; d.resignReason = ''; }
+    }
+    if (this.drawerSection === 'education' && this.editEducation) {
+      const e = this.editEducation;
+      if (!e.level || !text(e.institution) || !text(e.major) || !text(e.ipk)) return 'Jenjang, institusi, jurusan, dan IPK / nilai wajib diisi.';
+      if (!Number.isFinite(Number(e.ipk))) return 'IPK / nilai harus berupa angka.';
+      if (!year(e.startYear) || !year(e.endYear) || Number(e.endYear) < Number(e.startYear)) return 'Tahun pendidikan harus valid dan tahun selesai tidak boleh sebelum tahun mulai.';
+      if (!this.documentName(this.educationDocKey('diploma')) || !this.documentName(this.educationDocKey('transcript'))) return 'Ijazah dan transkrip wajib diunggah (PDF, maks. 2 MB).';
+    }
+    if (this.drawerSection === 'training' && this.editEducation) {
+      const e = this.editEducation;
+      if (!this.trainingKinds.includes(e.level || '') || !text(e.major) || !text(e.institution)) return 'Jenis, nama pelatihan, dan penyelenggara wajib diisi.';
+      if (!year(e.startYear)) return 'Tahun pelatihan harus valid.';
+    }
+    if (this.drawerSection === 'certification' && this.editCert) {
+      const c = this.editCert;
+      if (!text(c.name) || !text(c.issuingOrganization) || !text(c.credentialId) || !c.issueDate || !c.expiryDate) return 'Lengkapi nama, penyelenggara atau institusi penerbit, nomor, dan masa berlaku sertifikasi.';
+      if (c.expiryDate < c.issueDate) return 'Masa berlaku sertifikasi: tanggal akhir tidak boleh sebelum tanggal mulai.';
+      if (!this.documentName(this.certDocKey())) return 'Upload sertifikat wajib diisi (PDF, maks. 2 MB).';
     }
     if (this.drawerSection === 'additional') {
       const d = this.ensureDetails();
+      const min = Number(p.expectedSalary), max = Number(d.expectedSalaryMax);
+      if (!(min >= 0) || p.expectedSalary == null || !(max >= min) || d.expectedSalaryMax == null) return 'Isi rentang ekspektasi gaji yang valid. Maksimum harus sama atau lebih besar dari minimum.';
+      if (!p.preferredLocations.length) return 'Pilih minimal satu lokasi kerja yang diminati.';
       cleanSocial(d);
       if (!(d.socialPlatform || '').trim() || !(d.socialUsername || '').trim()) return 'Media sosial dan username wajib diisi.';
       return socialError(d);
@@ -754,8 +886,21 @@ export class CandidatePortalComponent implements OnInit {
       else this.profile.educations[this.drawerIndex] = this.editEducation;
     }
 
+    if (this.drawerSection === 'certification' && this.editCert) {
+      const d = this.ensureDetails();
+      const list = [...(d.trainingCertifications || [])];
+      if (this.drawerIndex == null) list.push(this.editCert); else list[this.drawerIndex] = this.editCert;
+      d.trainingCertifications = list;
+      d.noCertification = false;
+    }
+    if (this.drawerSection === 'training') this.ensureDetails().noTraining = false;
+    if (this.drawerSection === 'experience') {
+      this.ensureDetails().noExperience = false;
+      this.syncDerivedFromExperience();
+    }
+
     this.saving = true;
-    this.portal.saveProfile(this.profile, this.profilePictureFile).subscribe({
+    this.portal.saveProfile(this.profile, this.profilePictureFile, null, [], this.pendingUploads).subscribe({
       next: (profile) => {
         this.profile = profile;
         this.saving = false;
@@ -770,7 +915,16 @@ export class CandidatePortalComponent implements OnInit {
     });
   }
 
+  /** Tools, industri, dan posisi minat diturunkan dari pengalaman kerja, sama seperti saat onboarding. */
+  private syncDerivedFromExperience(): void {
+    const work = this.profile.workExperiences;
+    this.profile.tools = Array.from(new Set(work.flatMap((exp) => exp.details?.tools || []))).slice(0, 20);
+    this.profile.relatedIndustries = Array.from(new Set(work.map((exp) => exp.details?.industry || '').filter(Boolean))).slice(0, 3);
+  }
+
   private closeDrawer(): void {
+    this.editCert = null;
+    this.pendingUploads = [];
     this.drawerError = '';
     this.drawerOpen = false;
     this.drawerSection = null;

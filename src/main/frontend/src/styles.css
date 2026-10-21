@@ -990,3 +990,5 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 .language-setting p { margin: 0; max-width: 60ch; font-size: 14px; }
 .language-controls { display: flex; gap: 8px; align-items: center; }
 .language-controls select { min-width: 180px; }
+.interest-box > div { flex: 1; min-width: 0; }
+.interest-box .interest-edit { flex: none; }
