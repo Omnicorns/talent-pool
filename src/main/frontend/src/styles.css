@@ -1022,12 +1022,12 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 
 /* Cara bergabung */
 .how { padding: 96px 0 24px; }
-.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; position: relative; counter-reset: step; }
-.steps::before { content: ""; position: absolute; top: 28px; left: 16.6%; right: 16.6%; height: 2px; background: repeating-linear-gradient(90deg, var(--line-strong) 0 8px, transparent 8px 16px); }
-.steps li { position: relative; display: grid; justify-items: center; text-align: center; gap: 8px; padding: 0 12px; }
-.step-num { position: relative; z-index: 1; display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: var(--red); color: #fff; font-size: 22px; font-weight: 800; box-shadow: 0 0 0 8px var(--white), 0 10px 22px rgba(196, 22, 28, .3); }
-.steps h3 { margin-top: 10px; font-size: 19px; }
-.steps p { color: var(--muted); font-size: 15px; max-width: 30ch; }
+.how-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; position: relative; counter-reset: step; }
+.how-steps::before { content: ""; position: absolute; top: 28px; left: 16.6%; right: 16.6%; height: 2px; background: repeating-linear-gradient(90deg, var(--line-strong) 0 8px, transparent 8px 16px); }
+.how-steps li { position: relative; display: grid; justify-items: center; text-align: center; gap: 8px; padding: 0 12px; }
+.how-num { position: relative; z-index: 1; display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: var(--red); color: #fff; font-size: 22px; font-weight: 800; box-shadow: 0 0 0 8px var(--white), 0 10px 22px rgba(196, 22, 28, .3); }
+.how-steps h3 { margin-top: 10px; font-size: 19px; }
+.how-steps p { color: var(--muted); font-size: 15px; max-width: 30ch; }
 
 /* Life at Sarinah */
 
@@ -1075,8 +1075,8 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
   .hero-copy { padding-bottom: 110px; }
   .hero h1 { max-width: 15ch; }
   .how { padding-top: 72px; }
-  .steps { grid-template-columns: minmax(0, 1fr); gap: 32px; }
-  .steps::before { display: none; }
+  .how-steps { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .how-steps::before { display: none; }
   .life { margin-top: 32px; }
   .life-banner { padding: 56px 0 104px; }
   .pos-grid { grid-template-columns: minmax(0, 1fr); }

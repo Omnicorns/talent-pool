@@ -56,9 +56,9 @@ import { LandingData, SiteContentService } from '../../core/service/api/site-con
               <h2 id="how-title">Mulai karier Anda dalam 3 langkah</h2>
               <p>Proses pendaftaran dibuat singkat, dan Anda bisa memantau setiap perkembangannya dari akun Anda.</p>
             </div>
-            <ol class="steps">
+            <ol class="how-steps">
               <li *ngFor="let step of steps; let i = index">
-                <span class="step-num">{{ i + 1 }}</span>
+                <span class="how-num">{{ i + 1 }}</span>
                 <h3>{{ step.title }}</h3>
                 <p>{{ step.text }}</p>
               </li>
