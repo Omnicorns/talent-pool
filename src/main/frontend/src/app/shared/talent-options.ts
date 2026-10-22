@@ -1,6 +1,6 @@
 export const TALENT_OPTIONS = {
   genders: ['Laki-laki','Perempuan'],
-  religions: ['Islam','Kristen','Katolik','Hindu','Buddha','Konghucu','Kepercayaan terhadap Tuhan Yang Maha Esa'],
+  religions: ['Islam','Kristen','Katolik','Hindu','Buddha','Konghucu'],
   socialPlatforms: ['Instagram','TikTok','Facebook','X','YouTube','Threads'],
   educationLevels: ['SMA/SMK','D1','D2','D3','D4','S1','S2','S3'],
   institutions: ['Universitas Indonesia','Universitas Gadjah Mada','Institut Teknologi Bandung','Universitas Padjadjaran','Universitas Diponegoro','Universitas Airlangga','Universitas Brawijaya','Universitas Negeri Jakarta','Universitas Bina Nusantara','Universitas Telkom','Universitas Trisakti','Universitas Atma Jaya'],
@@ -14,4 +14,5 @@ export const TALENT_OPTIONS = {
   sources: ['Website Sarinah','LinkedIn','Instagram','Job Portal','Job Fair','Karyawan Sarinah','Kampus'],
   languages: ['Bahasa Indonesia','Bahasa Inggris','Mandarin','Jepang','Korea','Arab','Prancis','Jerman'],
   proficiency: ['Dasar','Menengah','Mahir','Fasih / Native'],
+  jenisPelatihan : ['Pelatihan','Sertifikasi'],
 };
