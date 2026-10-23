@@ -5,6 +5,7 @@ import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptor/auth.interceptor';
 import { I18nService } from './core/i18n/i18n.service';
 import { SiteContentService } from './core/service/api/site-content.service';
+import { applyManagedOptions } from './shared/talent-options';
 import { firstValueFrom, timeout } from 'rxjs';
 
 export const appConfig: ApplicationConfig = {
@@ -23,7 +24,7 @@ export const appConfig: ApplicationConfig = {
       multi: true,
       deps: [I18nService, SiteContentService],
       useFactory: (i18n: I18nService, site: SiteContentService) => () =>
-        firstValueFrom(site.raw().pipe(timeout(2500))).then((s) => i18n.apply(s?.language), () => i18n.apply('id')),
+        firstValueFrom(site.raw().pipe(timeout(2500))).then((s) => { applyManagedOptions(s?.contents); i18n.apply(s?.language); }, () => i18n.apply('id')),
     },
   ],
 };

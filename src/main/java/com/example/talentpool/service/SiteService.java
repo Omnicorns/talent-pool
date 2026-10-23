@@ -29,6 +29,8 @@ public class SiteService {
         CONTENT_KEYS.put("LIFE_HEADING", new String[]{"Life at Sarinah - judul", "Life at Sarinah"});
         CONTENT_KEYS.put("LIFE_PROGRAMS", new String[]{"Life at Sarinah - program", "Life at Sarinah"});
         CONTENT_KEYS.put("FAQ", new String[]{"Pertanyaan yang sering diajukan", "FAQ"});
+        CONTENT_KEYS.put("OPTION_FUNCTIONS", new String[]{"Pilihan: Fungsi yang diminati", "Pilihan formulir"});
+        CONTENT_KEYS.put("OPTION_LOCATIONS", new String[]{"Pilihan: Lokasi kerja yang diminati", "Pilihan formulir"});
         CONTENT_KEYS.put("HEADER", new String[]{"Header (menu navigasi)", "Header & Footer"});
         CONTENT_KEYS.put("FOOTER", new String[]{"Footer (deskripsi, kontak, hak cipta)", "Header & Footer"});
         CONTENT_KEYS.put("LOGIN", new String[]{"Halaman login & daftar (teks)", "Login"});

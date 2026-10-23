@@ -1,3 +1,6 @@
+export const DEFAULT_FUNCTIONS = ['Asset Management','Business Development','Corporate Planning & Subsidiary','Corporate Secretary','Customer Experience','Finance & Accounting','Governance & Risk','Human Capital','Internal Audit','Marketing, Promotion, & Events','Retail','Technology','Ekspor/Import'];
+export const DEFAULT_LOCATIONS = ['Jakarta','Malang','Bali'];
+
 export const TALENT_OPTIONS = {
   genders: ['Laki-laki','Perempuan'],
   religions: ['Islam','Kristen','Katolik','Hindu','Buddha','Konghucu'],
@@ -9,10 +12,22 @@ export const TALENT_OPTIONS = {
   industries: ['Perbankan & Keuangan','Asuransi','Teknologi & IT','E-Commerce','Retail & Consumer Goods','Hospitality & Pariwisata','Properti & Real Estate','Konstruksi & Infrastruktur','Manufaktur','FMCG','Energi & Pertambangan','Telekomunikasi','Transportasi & Logistik','Kesehatan','Pendidikan','Pemerintahan / BUMN','Konsultan & Professional Services','Media & Entertainment','Food & Beverage'],
   skills: ['Leadership','Communication','Project Management','Data Analysis','Business Development','Marketing','Sales','Finance & Accounting','Human Resources','Administration','Operations','IT & Programming','Design & Creative','Customer Service'],
   tools: ['Microsoft Office','Microsoft Excel','Power BI','Tableau','SQL','Python','ERP system','Adobe','Canva','Figma','Google Workspace'],
-  functions: ['Asset Management','Business Development','Corporate Planning & Subsidiary','Corporate Secretary','Customer Experience','Finance & Accounting','Governance & Risk','Human Capital','Internal Audit','Marketing, Promotion, & Events','Retail','Technology','Ekspor/Import'],
-  locations: ['Jakarta','Bandung','Malang','Bali','Tangerang'],
+  functions: [...DEFAULT_FUNCTIONS],
+  locations: [...DEFAULT_LOCATIONS],
   sources: ['Website Sarinah','LinkedIn','Instagram','Job Portal','Job Fair','Karyawan Sarinah','Kampus'],
   languages: ['Bahasa Indonesia','Bahasa Inggris','Mandarin','Jepang','Korea','Arab','Prancis','Jerman'],
   proficiency: ['Dasar','Menengah','Mahir','Fasih / Native'],
   jenisPelatihan : ['Pelatihan','Sertifikasi'],
 };
+
+/** Daftar Fungsi dan Lokasi yang diminati bisa diubah HC dari back office (Konten). Dipanggil sekali saat aplikasi mulai. */
+export function applyManagedOptions(contents: Record<string, any> | null | undefined): void {
+  const names = (key: string, fallback: string[]) => {
+    const list = contents?.[key];
+    if (!Array.isArray(list)) return fallback;
+    const result = Array.from(new Set(list.map((item: any) => String(item?.name ?? item ?? '').trim()).filter(Boolean)));
+    return result.length ? result : fallback;
+  };
+  TALENT_OPTIONS.functions = names('OPTION_FUNCTIONS', [...DEFAULT_FUNCTIONS]);
+  TALENT_OPTIONS.locations = names('OPTION_LOCATIONS', [...DEFAULT_LOCATIONS]);
+}
