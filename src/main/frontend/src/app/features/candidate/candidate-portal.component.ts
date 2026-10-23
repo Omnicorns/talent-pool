@@ -373,7 +373,24 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
                 </div>
               </fieldset>
               <label class="field">Lokasi kerja yang diminati<app-tag-select [options]="options.locations" label="Lokasi" [limit]="3" [(value)]="profile.preferredLocations"></app-tag-select></label>
-              <label class="field">Bahasa<input [(ngModel)]="profile.languanges"></label>
+              <fieldset class="field-group language-edit">
+                <legend>Bahasa</legend>
+                <label class="check"><input type="checkbox" [ngModel]="profile.profileDetails?.noLanguage" (ngModelChange)="toggleNoLanguage($event)"> Saya tidak memiliki keahlian berbahasa</label>
+                <ng-container *ngIf="!profile.profileDetails?.noLanguage">
+                  <article class="repeat" *ngFor="let language of languageSkills; let i = index">
+                    <div class="repeat-head">
+                      <strong>Bahasa {{ i + 1 }}</strong>
+                      <button type="button" class="btn btn-ghost btn-sm" *ngIf="languageSkills.length > 1" (click)="removeLanguage(i)"><app-icon name="trash" [size]="16"></app-icon> Hapus</button>
+                    </div>
+                    <div class="form-grid">
+                      <label class="field">Bahasa<app-choice-field [options]="options.languages" label="Bahasa" [(value)]="language.name"></app-choice-field></label>
+                      <label class="field">Tingkat penguasaan<app-choice-field [options]="options.proficiency" [allowOther]="false" label="Tingkat" [(value)]="language.proficiency"></app-choice-field></label>
+                      <label class="file-field span-2">Sertifikat bahasa <input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Sertifikat bahasa ' + (i + 1)" (change)="selectDocument($event, languageDocKey(language))"><small class="field-hint">{{ documentName(languageDocKey(language)) || 'PDF, maksimal 2 MB' }}</small></label>
+                    </div>
+                  </article>
+                  <button type="button" class="btn btn-secondary add-row" (click)="addLanguage()"><app-icon name="plus" [size]="16"></app-icon> Tambah bahasa</button>
+                </ng-container>
+              </fieldset>
               <label class="field">LinkedIn<input [ngModel]="profile.profileDetails?.linkedinUrl || ''" (ngModelChange)="setLinkedInUrl($event)" type="url" placeholder="https://www.linkedin.com/in/…"></label>
               <fieldset class="field-group"><legend>Media sosial</legend><app-social-accounts-field [details]="socialDetails"></app-social-accounts-field></fieldset>
             </div>
@@ -699,6 +716,28 @@ export class CandidatePortalComponent implements OnInit {
   }
 
   educationDocKey(kind: 'diploma' | 'transcript'): string { return `education:${this.editEducation?.clientKey}:${kind}`; }
+  languageDocKey(language: { key: string }): string { return `language:${language.key}:certificate`; }
+
+  get languageSkills() { return this.ensureDetails().languageSkills ||= []; }
+
+  addLanguage(): void { this.languageSkills.push({ key: crypto.randomUUID(), name: '', proficiency: '' }); }
+
+  removeLanguage(index: number): void {
+    const [language] = this.languageSkills.splice(index, 1);
+    if (language) this.pendingUploads = this.pendingUploads.filter((u) => !u.key.startsWith(`language:${language.key}:`));
+  }
+
+  toggleNoLanguage(checked: boolean): void {
+    const details = this.ensureDetails();
+    details.noLanguage = checked;
+    if (checked) {
+      this.pendingUploads = this.pendingUploads.filter((u) => !u.key.startsWith('language:'));
+      details.languageSkills = [];
+    } else if (!details.languageSkills.length) {
+      this.addLanguage();
+    }
+  }
+
   certDocKey(): string { return `certification:${this.editCert?.key}:certificate`; }
 
   documentName(key: string): string {
@@ -752,7 +791,7 @@ export class CandidatePortalComponent implements OnInit {
   }
 
   get languageSummary(): string {
-    const skills = this.profile?.profileDetails?.languageSkills || [];
+    const skills = (this.profile?.profileDetails?.languageSkills || []).filter((item) => item.name);
     if (skills.length) return skills.map((item) => `${item.name} (${item.proficiency.toLowerCase()})`).join(', ');
     if (this.profile?.profileDetails?.noLanguage) return 'Tidak memiliki keahlian berbahasa';
     return this.profile?.languanges || '-';
@@ -768,6 +807,10 @@ export class CandidatePortalComponent implements OnInit {
     this.pendingUploads = [];
     this.drawerError = '';
 
+    if (section === 'additional') {
+      const details = this.ensureDetails();
+      if (!details.noLanguage && !(details.languageSkills || []).length) this.addLanguage();
+    }
     if (section === 'certification') {
       const list = this.ensureDetails().trainingCertifications ||= [];
       this.editCert = index == null
@@ -866,6 +909,11 @@ export class CandidatePortalComponent implements OnInit {
       const min = Number(p.expectedSalary), max = Number(d.expectedSalaryMax);
       if (!(min >= 0) || p.expectedSalary == null || !(max >= min) || d.expectedSalaryMax == null) return 'Isi rentang ekspektasi gaji yang valid. Maksimum harus sama atau lebih besar dari minimum.';
       if (!p.preferredLocations.length) return 'Pilih minimal satu lokasi kerja yang diminati.';
+      if (!d.noLanguage) {
+        const skills = d.languageSkills || [];
+        if (!skills.length || skills.some((l) => !text(l.name) || !l.proficiency)) return 'Bahasa dan tingkat penguasaan wajib diisi, atau centang tidak memiliki keahlian berbahasa.';
+        if (skills.some((l) => !this.documentName(this.languageDocKey(l)))) return 'Sertifikat bahasa wajib diunggah untuk setiap bahasa (PDF, maks. 2 MB). Bila tidak memiliki sertifikat, centang tidak memiliki keahlian berbahasa.';
+      }
       cleanSocial(d);
       if (!(d.socialPlatform || '').trim() || !(d.socialUsername || '').trim()) return 'Media sosial dan username wajib diisi.';
       return socialError(d);
@@ -894,6 +942,10 @@ export class CandidatePortalComponent implements OnInit {
       d.noCertification = false;
     }
     if (this.drawerSection === 'training') this.ensureDetails().noTraining = false;
+    if (this.drawerSection === 'additional') {
+      const d = this.ensureDetails();
+      this.profile.languanges = d.noLanguage ? '' : (d.languageSkills || []).map((l) => l.name).join(', ');
+    }
     if (this.drawerSection === 'experience') {
       this.ensureDetails().noExperience = false;
       this.syncDerivedFromExperience();
