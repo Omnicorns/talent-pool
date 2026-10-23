@@ -38,6 +38,12 @@ const SCHEMAS: Record<string, Schema> = {
     { name: 'title', label: 'Nama program', type: 'text', max: 80 },
     { name: 'description', label: 'Deskripsi', type: 'textarea', max: 250 },
   ], hint: 'Foto tiap program diatur di menu Banner. Menghapus program menyembunyikan foto-fotonya dari landing page.' },
+  OPTION_FUNCTIONS: { kind: 'list', itemLabel: 'Fungsi', min: 1, max: 100, fields: [
+    { name: 'name', label: 'Nama fungsi', type: 'text', max: 100 },
+  ], hint: 'Pilihan Fungsi yang diminati di formulir kandidat. Jawaban kandidat yang sudah tersimpan tidak berubah bila pilihan dihapus.' },
+  OPTION_LOCATIONS: { kind: 'list', itemLabel: 'Lokasi', min: 1, max: 100, fields: [
+    { name: 'name', label: 'Nama lokasi', type: 'text', max: 100 },
+  ], hint: 'Pilihan Lokasi kerja yang diminati di formulir kandidat. Lokasi baru langsung bisa dipilih kandidat; kandidat lama menambahkannya lewat menu Profil. Jawaban yang sudah tersimpan tidak berubah bila pilihan dihapus.' },
   HEADER: { kind: 'object', fields: [
     { name: 'navHome', label: 'Menu: Home', type: 'text', max: 30 },
     { name: 'navLife', label: 'Menu: Life at Sarinah', type: 'text', max: 30 },

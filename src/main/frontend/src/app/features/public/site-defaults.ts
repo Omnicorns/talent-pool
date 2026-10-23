@@ -1,3 +1,4 @@
+import { DEFAULT_FUNCTIONS, DEFAULT_LOCATIONS } from '../../shared/talent-options';
 import { LIFE_HEADING, LIFE_PROGRAMS, LifeProgram } from './life-at-sarinah.config';
 
 /** Isi bawaan landing page. Dipakai bila belum ada isi yang disimpan dari back office. */
@@ -52,6 +53,8 @@ export const DEFAULT_CONTENT: Record<string, any> = {
   LIFE_HEADING: DEFAULT_LIFE_HEADING,
   LIFE_PROGRAMS: DEFAULT_LIFE_PROGRAMS,
   FAQ: DEFAULT_FAQ,
+  OPTION_FUNCTIONS: DEFAULT_FUNCTIONS.map((name) => ({ name })),
+  OPTION_LOCATIONS: DEFAULT_LOCATIONS.map((name) => ({ name })),
   HEADER: DEFAULT_HEADER,
   FOOTER: DEFAULT_FOOTER,
   LOGIN: DEFAULT_LOGIN,
