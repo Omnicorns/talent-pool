@@ -29,6 +29,11 @@ public class JobApplicationController {
         return PageResponse.from(service.list(stage, pageable));
     }
 
+    @GetMapping("/by-candidate/{candidateId}")
+    public java.util.List<JobApplicationResponse> byCandidate(@PathVariable UUID candidateId) {
+        return service.listByCandidate(candidateId);
+    }
+
     @GetMapping("/stage-counts")
     public java.util.Map<String, Long> stageCounts() {
         return service.stageCounts();

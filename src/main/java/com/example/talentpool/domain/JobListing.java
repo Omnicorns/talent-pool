@@ -27,8 +27,8 @@ public class JobListing {
     private String location;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "employment_type", nullable = false, length = 30)
-    private EmploymentType employmentType = EmploymentType.FULL_TIME;
+    @Column(name = "employment_type", length = 30)
+    private EmploymentType employmentType;
 
     @Column(columnDefinition = "text")
     private String description;

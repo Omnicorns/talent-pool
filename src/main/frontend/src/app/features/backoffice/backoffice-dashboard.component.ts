@@ -34,7 +34,7 @@ interface Insight {
         <div class="stat"><span>Kandidat di Talent Pool</span><strong>{{ dashboard?.totalCandidates ?? '–' }}</strong><a routerLink="/backoffice/candidates">Lihat kandidat <app-icon name="chevron-right" [size]="14"></app-icon></a></div>
         <div class="stat"><span>Siap diproses</span><strong>{{ dashboard?.availableCandidates ?? '–' }}</strong><a routerLink="/backoffice/candidates">Status tersedia <app-icon name="chevron-right" [size]="14"></app-icon></a></div>
         <div class="stat"><span>Lowongan dibuka</span><strong>{{ dashboard?.openJobListings ?? '–' }}</strong><a routerLink="/backoffice/job-listings">Dari {{ dashboard?.totalJobListings ?? 0 }} lowongan <app-icon name="chevron-right" [size]="14"></app-icon></a></div>
-        <div class="stat"><span>Lamaran masuk</span><strong>{{ dashboard?.totalApplications ?? '–' }}</strong><a routerLink="/backoffice/applications">Lihat lamaran <app-icon name="chevron-right" [size]="14"></app-icon></a></div>
+        <div class="stat"><span>Lamaran masuk</span><strong>{{ dashboard?.totalApplications ?? '–' }}</strong><a routerLink="/backoffice/applications">Lihat pipeline <app-icon name="chevron-right" [size]="14"></app-icon></a></div>
       </section>
 
       <div class="bo-grid">

@@ -7,16 +7,18 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
 import { FMT } from '../../shared/labels';
 import { IconComponent } from '../../shared/icon.component';
 import { PaginationComponent } from '../../shared/pagination.component';
+import { ColumnFilterComponent } from '../../shared/column-filter.component';
+import { TableFilters } from '../../shared/table-filters';
 
 @Component({
   selector: 'app-backoffice-applications',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, BackofficeLayoutComponent, IconComponent, PaginationComponent],
+  imports: [CommonModule, FormsModule, RouterLink, BackofficeLayoutComponent, IconComponent, PaginationComponent, ColumnFilterComponent],
   template: `
     <app-backoffice-layout active="applications">
       <div class="bo-head">
         <div>
-          <h1>Lamaran</h1>
+          <h1>Pipeline</h1>
           <p>Pindahkan tahap kandidat langsung dari daftar. Kandidat di tahap Interview bisa langsung dijadwalkan.</p>
         </div>
       </div>
@@ -30,7 +32,10 @@ import { PaginationComponent } from '../../shared/pagination.component';
         <div class="table-meta"><span><strong>{{ total }}</strong> lamaran</span><span *ngIf="loading">Memuat…</span></div>
         <div class="table-wrap">
           <table class="table">
-            <thead><tr><th>Kandidat</th><th>Lowongan</th><th>Tahap</th><th>Status</th><th>Tanggal melamar</th><th><span class="sr-only">Aksi</span></th></tr></thead>
+            <thead><tr>
+              <th *ngFor="let col of tf.cols"><app-column-filter [label]="col.label" [options]="tf.options(byStage, col.key)" [selected]="tf.filters[col.key] ?? null" [sort]="tf.sortFor(col.key)" (selectedChange)="tf.setFilter(col.key, $event); page = 0" (sortChange)="tf.setSort(col.key, $event)"></app-column-filter></th>
+              <th><span class="sr-only">Aksi</span></th>
+            </tr></thead>
             <tbody>
               <tr *ngFor="let item of visible">
                 <td><strong>{{ item.candidateName }}</strong></td>
@@ -77,28 +82,49 @@ import { PaginationComponent } from '../../shared/pagination.component';
 })
 export class BackofficeApplicationsComponent implements OnInit {
   readonly fmt = FMT;
-  rows: any[] = [];
+  /** Semua lamaran (maks. 500 terbaru) dimuat sekali; filter kolom dan paginasi berjalan di klien. */
+  all: any[] = [];
   loading = false;
   stageFilter = '';
 
   page = 0;
   size = 10;
-  total = 0;
-  counts: Record<string, number> = {};
+  stages = ['NEW_CANDIDATE','SCREENING','INTERVIEW','OFFER','HIRED','REJECTED'];
 
-  /** Server-side: baris yang tampil sudah difilter tahap dan dipaginasi oleh API. */
+  readonly tf = new TableFilters<any>([
+    { key: 'kandidat', label: 'Kandidat', value: (r) => r.candidateName || '' },
+    { key: 'lowongan', label: 'Lowongan', value: (r) => r.jobTitle || '' },
+    { key: 'tahap', label: 'Tahap', value: (r) => FMT.label(r.stage) },
+    { key: 'status', label: 'Status', value: (r) => FMT.label(r.status) },
+    { key: 'tanggal', label: 'Tanggal melamar', value: (r) => FMT.fullDate(r.appliedAt), sortValue: (r) => String(r.appliedAt) },
+  ]);
+
+  get byStage(): any[] {
+    return this.stageFilter ? this.all.filter((r) => r.stage === this.stageFilter) : this.all;
+  }
+
+  get filtered(): any[] {
+    return this.tf.apply(this.byStage);
+  }
+
+  get total(): number {
+    return this.filtered.length;
+  }
+
   get visible(): any[] {
-    return this.rows;
+    const rows = this.filtered;
+    const lastPage = Math.max(0, Math.ceil(rows.length / this.size) - 1);
+    if (this.page > lastPage) this.page = lastPage;
+    return rows.slice(this.page * this.size, (this.page + 1) * this.size);
   }
 
   get allCount(): number {
-    return Object.values(this.counts).reduce((sum, n) => sum + n, 0);
+    return this.all.length;
   }
 
   countFor(stage: string): number {
-    return this.counts[stage] ?? 0;
+    return this.all.filter((r) => r.stage === stage).length;
   }
-  stages = ['NEW_CANDIDATE','SCREENING','INTERVIEW','OFFER','HIRED','REJECTED'];
 
   constructor(private api: BackofficeApiService) {}
 
@@ -108,29 +134,24 @@ export class BackofficeApplicationsComponent implements OnInit {
 
   setStage(stage: string): void {
     this.stageFilter = stage;
+    this.tf.clear();
     this.page = 0;
-    this.load();
   }
 
   goToPage(page: number): void {
     this.page = page;
-    this.load();
   }
 
   changeSize(size: number): void {
     this.size = size;
     this.page = 0;
-    this.load();
   }
 
   load(): void {
     this.loading = true;
-    this.api.applicationStageCounts().subscribe({ next: (counts) => this.counts = counts || {} });
-    this.api.applications(this.page, this.size, this.stageFilter).subscribe({
+    this.api.applications(0, 500, '').subscribe({
       next: (result) => {
-        this.total = result?.totalElements ?? 0;
-        if (!(result?.content || []).length && this.page > 0) { this.page = Math.max(0, (result?.totalPages ?? 1) - 1); this.load(); return; }
-        this.rows = result?.content || [];
+        this.all = result?.content || [];
         this.loading = false;
       },
       error: () => this.loading = false,

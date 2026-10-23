@@ -95,7 +95,6 @@ import { LandingData, SiteContentService } from '../../core/service/api/site-con
                 <span class="eyebrow-red">FAQ</span>
                 <h2>Pertanyaan yang sering diajukan</h2>
                 <p>Belum menemukan jawaban yang Anda cari? Tim Human Capital siap membantu lewat kontak di bagian bawah halaman ini.</p>
-                <a [routerLink]="talentPoolLink" class="btn btn-primary">{{ site.hero.secondaryCta }}</a>
               </div>
               <div class="faq">
                 <details *ngFor="let item of site.faqs; let first = first" [open]="first">

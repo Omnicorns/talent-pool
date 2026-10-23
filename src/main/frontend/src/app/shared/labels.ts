@@ -9,7 +9,7 @@ const LABELS: Record<string, string> = {
   // application status
   ACTIVE: 'Diproses',
   // job listing status
-  DRAFT: 'Draf', PUBLISHED: 'Dibuka', CLOSED: 'Ditutup',
+  DRAFT: 'Private', PUBLISHED: 'Dibuka', CLOSED: 'Ditutup',
   // employment type
   FULL_TIME: 'Penuh waktu', PART_TIME: 'Paruh waktu', CONTRACT: 'Kontrak', INTERNSHIP: 'Magang', TEMPORARY: 'Sementara',
   // interview

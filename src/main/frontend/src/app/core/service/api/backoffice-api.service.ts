@@ -145,6 +145,10 @@ export class BackofficeApiService {
     return this.http.get<any>(`${API_BASE}/backoffice/job-listings/${jobId}/applications`, { headers: this.headers, params });
   }
 
+  candidateApplications(candidateId: string) {
+    return this.http.get<any[]>(`${API_BASE}/backoffice/applications/by-candidate/${candidateId}`, { headers: this.headers });
+  }
+
   applications(page = 0, size = 10, stage = '') {
     let params = new HttpParams().set('page', String(page)).set('size', String(size)).set('sort', 'updatedAt,desc');
     if (stage) params = params.set('stage', stage);
