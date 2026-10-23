@@ -7,6 +7,7 @@ import { BackofficeLayoutComponent } from '../../shared/backoffice-layout.compon
 import { BackofficeApiService } from '../../core/service/api/backoffice-api.service';
 import { FMT } from '../../shared/labels';
 import { IconComponent } from '../../shared/icon.component';
+import { TALENT_OPTIONS } from '../../shared/talent-options';
 import { PaginationComponent } from '../../shared/pagination.component';
 import { ColumnFilterComponent, SortDir } from '../../shared/column-filter.component';
 
@@ -57,7 +58,7 @@ type AppKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review' | 'penilaia
             <button class="btn btn-secondary btn-sm" (click)="openEdit(job)"><app-icon name="edit" [size]="15"></app-icon> Ubah</button>
             <button class="btn btn-primary btn-sm" *ngIf="job.status === 'DRAFT'" (click)="changeStatus(job, 'PUBLISHED')">Buka lowongan</button>
             <button class="btn btn-secondary btn-sm" *ngIf="job.status === 'PUBLISHED'" (click)="changeStatus(job, 'CLOSED')">Tutup lowongan</button>
-            <button class="btn btn-secondary btn-sm" *ngIf="job.status === 'CLOSED'" (click)="changeStatus(job, 'DRAFT')"><app-icon name="undo" [size]="15"></app-icon> Jadikan draf</button>
+            <button class="btn btn-secondary btn-sm" *ngIf="job.status === 'CLOSED'" (click)="changeStatus(job, 'DRAFT')"><app-icon name="undo" [size]="15"></app-icon> Jadikan private</button>
             <button class="btn btn-ghost btn-sm" style="margin-left: auto; color: var(--negative)" *ngIf="!job.applicationCount" (click)="deleteJob(job)" [attr.aria-label]="'Hapus ' + job.title"><app-icon name="trash" [size]="15"></app-icon> Hapus</button>
           </div>
         </article>
@@ -86,10 +87,21 @@ type AppKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review' | 'penilaia
             <div class="form-stack">
               <label class="field">Nama posisi<input [(ngModel)]="form.title" placeholder="Contoh: Retail Operations Supervisor"></label>
               <div class="form-grid">
-                <label class="field">Departemen<input [(ngModel)]="form.department" placeholder="Contoh: Retail"></label>
-                <label class="field">Lokasi<input [(ngModel)]="form.location" placeholder="Contoh: Jakarta"></label>
+                <label class="field">Departemen
+                  <select [(ngModel)]="form.department">
+                    <option value="">Pilih departemen</option>
+                    <option *ngFor="let o of departmentOptions" [value]="o">{{ o }}</option>
+                  </select>
+                </label>
+                <label class="field">Lokasi
+                  <select [(ngModel)]="form.location">
+                    <option value="">Pilih lokasi</option>
+                    <option *ngFor="let o of locationOptions" [value]="o">{{ o }}</option>
+                  </select>
+                </label>
                 <label class="field">Tipe pekerjaan
                   <select [(ngModel)]="form.employmentType">
+                    <option value="">Tidak ditentukan</option>
                     <option value="FULL_TIME">Penuh waktu</option>
                     <option value="PART_TIME">Paruh waktu</option>
                     <option value="CONTRACT">Kontrak</option>
@@ -101,7 +113,7 @@ type AppKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review' | 'penilaia
                 <label class="field">Batas lamaran<input type="date" [(ngModel)]="form.applicationDeadline"></label>
                 <label class="field">Status
                   <select [(ngModel)]="form.status">
-                    <option value="DRAFT">Draf</option>
+                    <option value="DRAFT">Private</option>
                     <option value="PUBLISHED">Dibuka</option>
                     <option value="CLOSED">Ditutup</option>
                   </select>
@@ -129,36 +141,6 @@ type AppKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review' | 'penilaia
             <button type="button" class="icon-btn" (click)="closeApplicants()" aria-label="Tutup"><app-icon name="x"></app-icon></button>
           </header>
           <div class="drawer-body">
-            <div class="applicant-toolbar">
-              <button type="button" class="btn btn-secondary btn-sm" (click)="toggleAdd()" [attr.aria-expanded]="addOpen"><app-icon name="plus" [size]="15"></app-icon> Tambah kandidat</button>
-            </div>
-
-            <section class="add-panel" *ngIf="addOpen" aria-label="Tambah kandidat dari Talent Pool">
-              <form class="add-search" (ngSubmit)="searchCandidates()" role="search">
-                <label class="bo-search">
-                  <span class="sr-only">Cari kandidat Talent Pool</span>
-                  <app-icon name="search" [size]="16"></app-icon>
-                  <input [(ngModel)]="addQ" name="addQ" placeholder="Cari nama atau email kandidat">
-                </label>
-                <button class="btn btn-secondary btn-sm" type="submit">Cari</button>
-              </form>
-              <div class="alert alert-error" *ngIf="addError" role="alert"><app-icon name="alert"></app-icon><span>{{ addError }}</span></div>
-              <p class="muted" *ngIf="addLoading">Memuat kandidat…</p>
-              <p class="muted" *ngIf="!addLoading && !addResults.length">Tidak ada kandidat yang cocok.</p>
-              <ul class="add-list" *ngIf="addResults.length">
-                <li *ngFor="let c of addResults">
-                  <div>
-                    <strong>{{ c.fullName }}</strong>
-                    <small>{{ c.email }}{{ c.jobInterests?.length ? ' · ' + c.jobInterests.join(', ') : '' }}</small>
-                  </div>
-                  <button type="button" class="btn btn-primary btn-sm" *ngIf="!isApplicant(c.id); else already" (click)="addCandidate(c)" [disabled]="addingId === c.id">
-                    {{ addingId === c.id ? 'Menambah…' : 'Tambah' }}
-                  </button>
-                  <ng-template #already><span class="tag tag-positive">Sudah di lowongan</span></ng-template>
-                </li>
-              </ul>
-            </section>
-
             <div class="segmented applicant-filter" role="tablist" aria-label="Filter pelamar" *ngIf="applicants.length">
               <button type="button" role="tab" [class.active]="!onlyPotential" [attr.aria-selected]="!onlyPotential" (click)="onlyPotential = false">Semua ({{ applicants.length }})</button>
               <button type="button" role="tab" [class.active]="onlyPotential" [attr.aria-selected]="onlyPotential" (click)="onlyPotential = true">Potensial ({{ potentialCount }})</button>
@@ -196,7 +178,7 @@ type AppKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review' | 'penilaia
                     </td>
                     <td class="actions">
                       <div class="row-actions">
-                        <button class="icon-btn" (click)="api.viewCv(a.candidateId)" [disabled]="!a.candidate?.hasCv" [attr.aria-label]="'Lihat CV ' + a.candidateName" title="Lihat CV"><app-icon name="eye" [size]="16"></app-icon></button>
+                        <a class="icon-btn" routerLink="/backoffice/candidates" [queryParams]="{ candidateId: a.candidateId }" (click)="closeApplicants()" [attr.aria-label]="'Lihat profil ' + a.candidateName" title="Lihat profil kandidat"><app-icon name="eye" [size]="16"></app-icon></a>
                         <button class="icon-btn" (click)="api.downloadCv(a.candidateId, 'CV-' + a.candidateName + '.pdf')" [disabled]="!a.candidate?.hasCv" [attr.aria-label]="'Unduh CV ' + a.candidateName" title="Unduh CV"><app-icon name="download" [size]="16"></app-icon></button>
                       </div>
                     </td>
@@ -207,7 +189,7 @@ type AppKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review' | 'penilaia
           </div>
           <footer class="drawer-foot">
             <button class="btn btn-secondary" (click)="closeApplicants()">Tutup</button>
-            <a class="btn btn-primary" routerLink="/backoffice/applications" (click)="closeApplicants()">Kelola tahap di Lamaran</a>
+            <a class="btn btn-primary" routerLink="/backoffice/applications" (click)="closeApplicants()">Kelola tahap di Pipeline</a>
           </footer>
         </aside>
       </div>
@@ -292,7 +274,7 @@ export class BackofficeJobListingsComponent implements OnInit {
       title: job.title || '',
       department: job.department || '',
       location: job.location || '',
-      employmentType: job.employmentType || 'FULL_TIME',
+      employmentType: job.employmentType || '',
       description: job.description || '',
       openings: Number(job.openings || 1),
       applicationDeadline: job.applicationDeadline || '',
@@ -321,8 +303,6 @@ export class BackofficeJobListingsComponent implements OnInit {
     this.applicants = [];
     this.applicantsError = '';
     this.applicantsLoading = true;
-    this.addOpen = false;
-    this.addError = '';
     this.api.jobApplications(job.id).subscribe({
       next: (result) => { this.applicants = result?.content || []; this.applicantsLoading = false; },
       error: () => { this.applicantsLoading = false; this.applicantsError = 'Daftar pelamar belum bisa dimuat. Coba lagi.'; },
@@ -446,53 +426,6 @@ export class BackofficeJobListingsComponent implements OnInit {
     });
   }
 
-  addOpen = false;
-  addQ = '';
-  addResults: any[] = [];
-  addLoading = false;
-  addError = '';
-  addingId: string | null = null;
-
-  isApplicant(candidateId: string): boolean {
-    return this.applicants.some((a) => a.candidateId === candidateId);
-  }
-
-  toggleAdd(): void {
-    this.addOpen = !this.addOpen;
-    if (this.addOpen && !this.addResults.length) this.searchCandidates();
-  }
-
-  searchCandidates(): void {
-    this.addLoading = true;
-    this.addError = '';
-    this.api.candidates(this.addQ).subscribe({
-      next: (result) => { this.addResults = result?.content || []; this.addLoading = false; },
-      error: () => { this.addLoading = false; this.addError = 'Daftar kandidat belum bisa dimuat. Coba lagi.'; },
-    });
-  }
-
-  addCandidate(candidate: any): void {
-    if (!this.applicantsJob) return;
-    const job = this.applicantsJob;
-    this.addingId = candidate.id;
-    this.addError = '';
-    this.api.moveCandidateToJobListing(candidate.id, job.id, 'NEW_CANDIDATE').subscribe({
-      next: () => {
-        this.addingId = null;
-        this.api.jobApplications(job.id).subscribe({
-          next: (result) => {
-            this.applicants = result?.content || [];
-            job.applicationCount = this.applicants.length;
-          },
-        });
-      },
-      error: (error) => {
-        this.addingId = null;
-        this.addError = error?.error?.message || 'Kandidat belum bisa ditambahkan. Coba lagi.';
-      },
-    });
-  }
-
   closeApplicants(): void {
     this.applicantsJob = null;
   }
@@ -515,10 +448,6 @@ export class BackofficeJobListingsComponent implements OnInit {
       return;
     }
 
-    if (!this.form.employmentType) {
-      this.error = 'Pilih tipe pekerjaan.';
-      return;
-    }
 
     if (!this.form.openings || Number(this.form.openings) < 1) {
       this.error = 'Jumlah kebutuhan minimal 1 orang.';
@@ -529,7 +458,7 @@ export class BackofficeJobListingsComponent implements OnInit {
       title: this.form.title.trim(),
       department: this.form.department?.trim() || null,
       location: this.form.location?.trim() || null,
-      employmentType: this.form.employmentType,
+      employmentType: this.form.employmentType || null,
       description: this.form.description?.trim() || null,
       openings: Number(this.form.openings),
       applicationDeadline: this.form.applicationDeadline || null,
@@ -561,7 +490,7 @@ export class BackofficeJobListingsComponent implements OnInit {
         ? `Tutup lowongan "${job.title}"?`
         : status === 'PUBLISHED'
           ? `Buka lowongan "${job.title}" untuk pelamar?`
-          : `Jadikan lowongan "${job.title}" sebagai draf?`;
+          : `Jadikan lowongan "${job.title}" sebagai private?`;
 
     if (!window.confirm(message)) return;
 
@@ -589,12 +518,18 @@ export class BackofficeJobListingsComponent implements OnInit {
     });
   }
 
+  get departmentOptions(): string[] { return this.withCurrent(TALENT_OPTIONS.functions, this.form?.department); }
+  get locationOptions(): string[] { return this.withCurrent(TALENT_OPTIONS.locations, this.form?.location); }
+  private withCurrent(list: string[], current: string): string[] {
+    return current && !list.includes(current) ? [...list, current] : list;
+  }
+
   private emptyForm(): any {
     return {
       title: '',
       department: '',
       location: '',
-      employmentType: 'FULL_TIME',
+      employmentType: '',
       description: '',
       openings: 1,
       applicationDeadline: '',

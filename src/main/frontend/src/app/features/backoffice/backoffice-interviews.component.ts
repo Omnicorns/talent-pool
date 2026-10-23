@@ -8,11 +8,13 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
 import { FMT } from '../../shared/labels';
 import { IconComponent } from '../../shared/icon.component';
 import { PaginationComponent } from '../../shared/pagination.component';
+import { ColumnFilterComponent } from '../../shared/column-filter.component';
+import { TableFilters } from '../../shared/table-filters';
 
 @Component({
   selector: 'app-backoffice-interviews',
   standalone: true,
-  imports: [CommonModule, FormsModule, BackofficeLayoutComponent, BackofficeOverlayDirective, IconComponent, PaginationComponent],
+  imports: [CommonModule, FormsModule, BackofficeLayoutComponent, BackofficeOverlayDirective, IconComponent, PaginationComponent, ColumnFilterComponent],
   template: `
     <app-backoffice-layout active="interviews">
       <div class="bo-head">
@@ -34,7 +36,10 @@ import { PaginationComponent } from '../../shared/pagination.component';
         <div class="table-wrap">
           <table class="table">
             <thead>
-              <tr><th>Jadwal</th><th>Kandidat</th><th>Cara dan tempat</th><th>Pewawancara</th><th>Status</th><th>Hasil</th><th><span class="sr-only">Aksi</span></th></tr>
+              <tr>
+                <th *ngFor="let col of tf.cols"><app-column-filter [label]="col.label" [options]="tf.options(byChip, col.key)" [selected]="tf.filters[col.key] ?? null" [sort]="tf.sortFor(col.key)" (selectedChange)="tf.setFilter(col.key, $event); page = 0" (sortChange)="tf.setSort(col.key, $event)"></app-column-filter></th>
+                <th><span class="sr-only">Aksi</span></th>
+              </tr>
             </thead>
             <tbody>
               <tr *ngFor="let item of paged">
@@ -196,8 +201,21 @@ export class BackofficeInterviewsComponent implements OnInit {
   }
 
   get visible(): any[] {
+    return this.tf.apply(this.byChip);
+  }
+
+  get byChip(): any[] {
     return this.rows.filter((item) => this.matches(item, this.filter));
   }
+
+  readonly tf = new TableFilters<any>([
+    { key: 'jadwal', label: 'Jadwal', value: (r) => FMT.fullDate(r.scheduledAt), sortValue: (r) => String(r.scheduledAt) },
+    { key: 'kandidat', label: 'Kandidat', value: (r) => r.candidateName || '' },
+    { key: 'cara', label: 'Cara dan tempat', value: (r) => FMT.label(r.mode) },
+    { key: 'pewawancara', label: 'Pewawancara', value: (r) => r.interviewer || '' },
+    { key: 'status', label: 'Status', value: (r) => FMT.label(r.status) },
+    { key: 'hasil', label: 'Hasil', value: (r) => FMT.label(r.result) },
+  ]);
 
   page = 0;
   size = 10;
@@ -212,6 +230,7 @@ export class BackofficeInterviewsComponent implements OnInit {
 
   setFilter(id: string): void {
     this.filter = id;
+    this.tf.clear();
     this.page = 0;
   }
 

@@ -25,6 +25,8 @@ public class SchemaCompatibilityRunner implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         // Kandidat baru dari portal berstatus kosong.
         execute("ALTER TABLE candidates ALTER COLUMN status DROP NOT NULL");
+        // Tipe pekerjaan lowongan boleh kosong.
+        execute("ALTER TABLE job_listings ALTER COLUMN employment_type DROP NOT NULL");
         // Pengaman bila Hibernate belum sempat menambah kolom pada tabel yang sudah berisi data.
         execute("ALTER TABLE candidates ADD COLUMN IF NOT EXISTS reviewed boolean NOT NULL DEFAULT false");
         execute("ALTER TABLE job_applications ADD COLUMN IF NOT EXISTS potential boolean NOT NULL DEFAULT false");

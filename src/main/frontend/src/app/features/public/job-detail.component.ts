@@ -27,7 +27,7 @@ import { FMT } from '../../shared/labels';
               <h1>{{ job.title }}</h1>
               <div class="job-head-meta">
                 <span><app-icon name="pin" [size]="16"></app-icon>{{ job.location || 'Jakarta' }}</span>
-                <span><app-icon name="briefcase" [size]="16"></app-icon>{{ fmt.label(job.employmentType) }}</span>
+                <span *ngIf="job.employmentType"><app-icon name="briefcase" [size]="16"></app-icon>{{ fmt.label(job.employmentType) }}</span>
                 <span *ngIf="job.applicationDeadline"><app-icon name="calendar" [size]="16"></app-icon>Lamar sebelum {{ fmt.fullDate(job.applicationDeadline) }}</span>
               </div>
             </div>
@@ -51,7 +51,7 @@ import { FMT } from '../../shared/labels';
               <dl class="facts">
                 <div><dt>Departemen</dt><dd>{{ job.department || '-' }}</dd></div>
                 <div><dt>Lokasi</dt><dd>{{ job.location || '-' }}</dd></div>
-                <div><dt>Tipe pekerjaan</dt><dd>{{ fmt.label(job.employmentType) }}</dd></div>
+                <div><dt>Tipe pekerjaan</dt><dd>{{ job.employmentType ? fmt.label(job.employmentType) : '-' }}</dd></div>
                 <div><dt>Batas lamaran</dt><dd>{{ job.applicationDeadline ? fmt.fullDate(job.applicationDeadline) : 'Tanpa batas' }}</dd></div>
               </dl>
               <button class="btn btn-primary btn-block" (click)="startApply()">Lamar posisi ini</button>

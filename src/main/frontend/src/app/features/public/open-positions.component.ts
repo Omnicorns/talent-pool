@@ -38,7 +38,7 @@ import { FMT } from '../../shared/labels';
           </div>
           <div class="pos-tags">
             <span><app-icon name="pin" [size]="15"></app-icon>{{ job.location || 'Jakarta' }}</span>
-            <span><app-icon name="briefcase" [size]="15"></app-icon>{{ fmt.label(job.employmentType) }}</span>
+            <span *ngIf="job.employmentType"><app-icon name="briefcase" [size]="15"></app-icon>{{ fmt.label(job.employmentType) }}</span>
           </div>
           <div class="pos-foot">
             <span><app-icon name="calendar" [size]="15"></app-icon>{{ job.applicationDeadline ? 'Hingga ' + fmt.fullDate(job.applicationDeadline) : 'Tanpa batas lamaran' }}</span>

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { TalentProfileDetailsComponent } from '../../shared/talent-profile-details.component';
 import { BackofficeOverlayDirective } from '../../shared/backoffice-overlay.directive';
 import { BackofficeLayoutComponent } from '../../shared/backoffice-layout.component';
@@ -171,6 +172,16 @@ type ColKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review';
               </div>
             </section>
 
+            <section class="drawer-section" *ngIf="appliedJobs.length" aria-label="Lowongan yang dilamar">
+              <h3>Lowongan yang dilamar</h3>
+              <ul class="applied-list">
+                <li *ngFor="let a of appliedJobs">
+                  <div><strong>{{ a.jobTitle }}</strong><small>{{ a.addedByHr ? 'Ditambahkan HC' : 'Melamar' }} {{ fmt.fullDate(a.appliedAt) }}</small></div>
+                  <span class="tag tag-neutral">{{ fmt.label(a.stage) }}</span>
+                </li>
+              </ul>
+            </section>
+
             <section class="drawer-section" id="move-section">
               <h3>Masukkan ke lowongan</h3>
               <p class="muted" style="font-size: 14px" *ngIf="selected.movedToJobListing">Kandidat ini sudah pernah dimasukkan ke lowongan.</p>
@@ -285,10 +296,14 @@ export class BackofficeCandidatesComponent implements OnInit, OnDestroy {
     notes: '',
   };
 
-  constructor(public api: BackofficeApiService) {}
+  appliedJobs: any[] = [];
+
+  constructor(public api: BackofficeApiService, private route: ActivatedRoute) {}
 
   ngOnInit(): void {
     this.load();
+    const candidateId = this.route.snapshot.queryParamMap.get('candidateId');
+    if (candidateId) this.openCandidate({ id: candidateId });
     this.api.jobListings('', 0, 200).subscribe({ next: (result) => this.jobs = (result?.content || []).filter((job: any) => job.status === 'PUBLISHED') });
   }
 
@@ -447,6 +462,8 @@ export class BackofficeCandidatesComponent implements OnInit, OnDestroy {
     this.moveError = '';
     this.moveSuccess = '';
     this.moveForm = { jobListingId: '', hiringStage: 'NEW_CANDIDATE' };
+    this.appliedJobs = [];
+    this.api.candidateApplications(item.id).subscribe({ next: (list) => this.appliedJobs = list || [] });
     this.api.candidateDetail(item.id).subscribe({
       next: (detail) => {
         this.selected = detail;

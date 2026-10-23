@@ -130,6 +130,13 @@ public class JobApplicationService {
     }
 
     @Transactional
+    public java.util.List<JobApplicationResponse> listByCandidate(UUID candidateId) {
+        return repository.findByCandidateId(candidateId, org.springframework.data.domain.Pageable.unpaged(
+                org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "appliedAt")))
+                .map(this::toResponse).getContent();
+    }
+
+    @Transactional
     public Page<JobApplicationResponse> listByJob(UUID jobListingId, Pageable pageable) {
         if (!jobListingRepository.existsById(jobListingId)) {
             throw new ResourceNotFoundException("Job listing tidak ditemukan: " + jobListingId);

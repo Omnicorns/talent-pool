@@ -94,7 +94,7 @@ export const EN_PUBLIC: Record<string, string> = {
   'Tersedia': 'Available', 'Sudah disaring': 'Screened', 'Belum ditentukan': 'Not set',
   'Potensial': 'Potential', 'Diarsipkan': 'Archived', 'Tidak lanjut': 'Not proceeding', 'Diblokir': 'Blocked',
   'Mengundurkan diri': 'Withdrawn', 'Diterima': 'Hired', 'Baru': 'New', 'Penawaran': 'Offer', 'Diproses': 'In process',
-  'Draf': 'Draft', 'Dibuka': 'Open', 'Ditutup': 'Closed', 'Penuh waktu': 'Full-time', 'Paruh waktu': 'Part-time',
+  'Private': 'Private', 'Dibuka': 'Open', 'Ditutup': 'Closed', 'Penuh waktu': 'Full-time', 'Paruh waktu': 'Part-time',
   'Kontrak': 'Contract', 'Magang': 'Internship', 'Sementara': 'Temporary', 'Terjadwal': 'Scheduled',
   'Dijadwal ulang': 'Rescheduled', 'Selesai': 'Completed', 'Dibatalkan': 'Cancelled', 'Menunggu': 'Pending',
   'Lolos': 'Passed', 'Tidak lolos': 'Not passed', 'Ditahan': 'On hold', 'Tatap muka': 'In person', 'Telepon': 'Phone',

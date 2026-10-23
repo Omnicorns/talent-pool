@@ -13,7 +13,7 @@ public record JobListingRequest(
         @NotBlank @Size(max = 200) String title,
         @Size(max = 150) String department,
         @Size(max = 150) String location,
-        @NotNull EmploymentType employmentType,
+        EmploymentType employmentType,
         String description,
         @Min(1) int openings,
         LocalDate applicationDeadline,

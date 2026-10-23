@@ -64,7 +64,7 @@ export class BackofficeLayoutComponent {
     { id: 'dashboard', label: 'Ringkasan', icon: 'dashboard', link: '/backoffice/dashboard' },
     { id: 'candidates', label: 'Kandidat', icon: 'users', link: '/backoffice/candidates' },
     { id: 'jobs', label: 'Lowongan', icon: 'briefcase', link: '/backoffice/job-listings' },
-    { id: 'applications', label: 'Lamaran', icon: 'clipboard', link: '/backoffice/applications' },
+    { id: 'applications', label: 'Pipeline', icon: 'clipboard', link: '/backoffice/applications' },
     { id: 'interviews', label: 'Interview', icon: 'calendar', link: '/backoffice/interviews' },
     { id: 'banners', label: 'Banner', icon: 'image', link: '/backoffice/site/banners', heading: 'Landing page' },
     { id: 'site', label: 'Konten', icon: 'content', link: '/backoffice/site/content' },
