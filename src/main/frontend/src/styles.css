@@ -1101,3 +1101,10 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 
 /* Saat zoom out, bagian di akhir halaman tetap bisa menempel di bawah header. */
 #faq, #open-positions { min-height: calc(100vh - var(--header-h)); }
+
+/* Life at Sarinah dibuat muat dalam satu layar (di bawah header) saat dibuka dari menu. */
+.life-banner { padding: 48px 0 96px; }
+.life-lead { margin-top: 18px; padding-top: 16px; }
+.life-banner h2 { font-size: clamp(30px, 4.2vw, 48px); }
+.lc-main { max-height: max(240px, calc(100vh - var(--header-h) - 360px)); }
+@media (max-width: 900px) { .life-banner { padding: 40px 0 88px; } .lc-main { max-height: none; } }
