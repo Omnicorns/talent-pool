@@ -106,6 +106,7 @@ export class CareerHeaderComponent {
         document.getElementById(section)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         // Gambar/konten yang baru dimuat bisa menggeser layout; koreksi posisi setelah scroll selesai.
         setTimeout(() => this.alignToSection(section), 700);
+        setTimeout(() => this.alignToSection(section), 1800);
       }, 40);
     });
   }
