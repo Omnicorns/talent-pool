@@ -102,8 +102,21 @@ export class CareerHeaderComponent {
     this.mobileMenuOpen = false;
     this.router.navigate(['/'], { fragment: section }).then(() => {
       // Also scroll when the user selects the current fragment again.
-      setTimeout(() => document.getElementById(section)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 40);
+      setTimeout(() => {
+        document.getElementById(section)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Gambar/konten yang baru dimuat bisa menggeser layout; koreksi posisi setelah scroll selesai.
+        setTimeout(() => this.alignToSection(section), 700);
+      }, 40);
     });
+  }
+
+  /** Pastikan bagian tujuan menempel tepat di bawah header. */
+  private alignToSection(section: string): void {
+    const el = document.getElementById(section);
+    if (!el) return;
+    const header = document.querySelector('.site-header') as HTMLElement | null;
+    const delta = el.getBoundingClientRect().top - (header?.offsetHeight ?? 0);
+    if (Math.abs(delta) > 2) window.scrollBy({ top: delta, behavior: 'auto' });
   }
 
   get userInitials(): string {

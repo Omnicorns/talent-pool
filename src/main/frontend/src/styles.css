@@ -39,7 +39,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--header-h) + 16px); }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: var(--header-h); }
 body {
   margin: 0; font-family: var(--font); font-size: 15px; line-height: 1.6; color: var(--ink);
   background: var(--white); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
