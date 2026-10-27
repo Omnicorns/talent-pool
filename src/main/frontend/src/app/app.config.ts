@@ -1,4 +1,5 @@
-import { APP_INITIALIZER, ApplicationConfig } from '@angular/core';
+import { APP_INITIALIZER, ApplicationConfig, inject } from '@angular/core';
+import { ViewportScroller } from '@angular/common';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
@@ -10,6 +11,15 @@ import { firstValueFrom, timeout } from 'rxjs';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    {
+      // Anchor (#life, #faq, ...) berhenti tepat di bawah header sticky, bukan tertutup olehnya.
+      provide: APP_INITIALIZER,
+      multi: true,
+      useFactory: () => {
+        const scroller = inject(ViewportScroller);
+        return () => scroller.setOffset(() => [0, (document.querySelector('.site-header') as HTMLElement | null)?.offsetHeight ?? 72]);
+      },
+    },
     provideRouter(
       routes,
       withInMemoryScrolling({
