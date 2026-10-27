@@ -1106,7 +1106,7 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 .life-banner { padding: 48px 0 96px; }
 .life-lead { margin-top: 18px; padding-top: 16px; }
 .life-banner h2 { font-size: clamp(30px, 4.2vw, 48px); }
-.lc-main { width: 100%; max-height: max(240px, calc(100vh - var(--header-h) - 360px)); }
+.lc-main { width: 100%; max-height: max(300px, calc(100vh - var(--header-h) - 360px)); }
 @media (max-width: 900px) { .life-banner { padding: 40px 0 88px; } .lc-main { max-height: none; } }
 
 /* Home: hero + kartu nilai muat dalam satu layar pertama (di bawah header). */
@@ -1118,5 +1118,8 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 
 /* Carousel: tinggi panel ditentukan foto, bukan panjang deskripsi, agar halaman tidak bergeser saat slide berganti. */
 @media (min-width: 901px) {
-  .lc-side { contain: size; overflow-y: auto; }
+  .lc-side { contain: size; overflow: hidden; padding: 20px 22px; gap: 8px; }
+  .lc-side h3 { font-size: 22px; }
+  .lc-desc { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+  .lc-thumbs { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 }
