@@ -1098,3 +1098,6 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 .applied-list li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--white); }
 .applied-list li div { display: grid; gap: 2px; min-width: 0; }
 .applied-list small { color: var(--muted); font-size: 12.5px; }
+
+/* Saat zoom out, bagian di akhir halaman tetap bisa menempel di bawah header. */
+#faq, #open-positions { min-height: calc(100vh - var(--header-h)); }
