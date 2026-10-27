@@ -30,7 +30,7 @@ export interface CarouselProgram { key: string; title: string; description: stri
           <p class="lc-desc">{{ p.description }}</p>
           <div class="lc-thumbs" *ngIf="p.images.length > 1" role="group" [attr.aria-label]="'Foto ' + p.title">
             <button type="button" *ngFor="let src of p.images.slice(0, 4); let i = index" [class.on]="i === photo"
-              (click)="pick(i)" (mouseenter)="pick(i)" [attr.aria-label]="'Tampilkan foto ' + (i + 1) + ' dari ' + p.images.length"
+              (click)="pick(i)" [attr.aria-label]="'Tampilkan foto ' + (i + 1) + ' dari ' + p.images.length"
               [attr.aria-current]="i === photo ? 'true' : null">
               <img [src]="src" alt="" loading="lazy" decoding="async">
             </button>
