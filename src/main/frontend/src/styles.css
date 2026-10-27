@@ -1115,3 +1115,8 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
   .hero-copy { padding-top: 48px; padding-bottom: 104px; }
   .hero h1 { font-size: clamp(36px, 4.2vw, 56px); }
 }
+
+/* Carousel: tinggi panel ditentukan foto, bukan panjang deskripsi, agar halaman tidak bergeser saat slide berganti. */
+@media (min-width: 901px) {
+  .lc-side { contain: size; overflow-y: auto; }
+}
