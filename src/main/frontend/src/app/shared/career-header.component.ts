@@ -99,6 +99,13 @@ export class CareerHeaderComponent {
   private spyFrame = 0;
   private navToken = 0;
 
+  /** Gerakan scroll dari pengguna membatalkan koreksi posisi yang tertunda, agar halaman tidak ditarik balik. */
+  @HostListener('window:wheel')
+  @HostListener('window:touchstart')
+  @HostListener('window:mousedown')
+  @HostListener('window:keydown')
+  cancelPendingAlign(): void { this.navToken++; }
+
   get sectionActive(): string {
     const tree = this.router.parseUrl(this.router.url);
     const onLanding = !tree.root.children['primary']?.segments.length;
