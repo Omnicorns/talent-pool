@@ -1108,3 +1108,10 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 .life-banner h2 { font-size: clamp(30px, 4.2vw, 48px); }
 .lc-main { max-height: max(240px, calc(100vh - var(--header-h) - 360px)); }
 @media (max-width: 900px) { .life-banner { padding: 40px 0 88px; } .lc-main { max-height: none; } }
+
+/* Home: hero + kartu nilai muat dalam satu layar pertama (di bawah header). */
+@media (min-width: 901px) {
+  .hero { min-height: clamp(460px, calc(100vh - 250px), 720px); }
+  .hero-copy { padding-top: 48px; padding-bottom: 104px; }
+  .hero h1 { font-size: clamp(36px, 4.2vw, 56px); }
+}
