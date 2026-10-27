@@ -18,7 +18,7 @@ import { initials } from './labels';
         </a>
 
         <nav id="site-navigation" class="site-nav" [class.open]="mobileMenuOpen" aria-label="Navigasi utama">
-          <a routerLink="/" [class.active]="active === 'home' && sectionActive === ''" (click)="mobileMenuOpen = false">{{ b.header.navHome }}</a>
+          <a routerLink="/" [class.active]="active === 'home' && sectionActive === ''" (click)="goHome($event)">{{ b.header.navHome }}</a>
           <button type="button" [class.active]="sectionActive === 'life'" (click)="goToSection('life')">{{ b.header.navLife }}</button>
           <button type="button" [class.active]="active === 'open' || sectionActive === 'open-positions'" (click)="goToSection('open-positions')">{{ b.header.navOpen }}</button>
           <button type="button" [class.active]="sectionActive === 'faq'" (click)="goToSection('faq')">{{ b.header.navFaq }}</button>
@@ -94,19 +94,56 @@ export class CareerHeaderComponent {
   toggleAccountMenu(): void { this.accountMenuOpen = !this.accountMenuOpen; }
   logout(): void { this.accountMenuOpen = false; this.auth.logout(); }
 
+  /** Bagian landing yang sedang terlihat (scroll-spy); '' = paling atas. */
+  private spy = '';
+  private spyFrame = 0;
+  private navToken = 0;
+
   get sectionActive(): string {
-    return this.router.parseUrl(this.router.url).fragment || '';
+    const tree = this.router.parseUrl(this.router.url);
+    const onLanding = !tree.root.children['primary']?.segments.length;
+    return onLanding ? this.spy : (tree.fragment || '');
+  }
+
+  @HostListener('window:scroll')
+  @HostListener('window:resize')
+  onScroll(): void {
+    if (this.spyFrame) return;
+    this.spyFrame = requestAnimationFrame(() => {
+      this.spyFrame = 0;
+      const headerH = (document.querySelector('.site-header') as HTMLElement | null)?.offsetHeight ?? 72;
+      const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+      let current = '';
+      for (const id of ['life', 'open-positions', 'faq']) {
+        const el = document.getElementById(id);
+        if (el && el.getBoundingClientRect().top <= headerH + window.innerHeight * 0.3) current = id;
+      }
+      if (atBottom && document.getElementById('faq')) current = 'faq';
+      this.spy = current;
+    });
+  }
+
+  goHome(event: Event): void {
+    this.mobileMenuOpen = false;
+    this.navToken++;
+    const tree = this.router.parseUrl(this.router.url);
+    if (!tree.root.children['primary']?.segments.length) {
+      event.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (tree.fragment) this.router.navigate(['/'], { replaceUrl: true });
+    }
   }
 
   goToSection(section: 'life' | 'open-positions' | 'faq'): void {
     this.mobileMenuOpen = false;
+    const token = ++this.navToken;
     this.router.navigate(['/'], { fragment: section }).then(() => {
       // Also scroll when the user selects the current fragment again.
       setTimeout(() => {
         document.getElementById(section)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         // Gambar/konten yang baru dimuat bisa menggeser layout; koreksi posisi setelah scroll selesai.
-        setTimeout(() => this.alignToSection(section), 700);
-        setTimeout(() => this.alignToSection(section), 1800);
+        setTimeout(() => token === this.navToken && this.alignToSection(section), 700);
+        setTimeout(() => token === this.navToken && this.alignToSection(section), 1800);
       }, 40);
     });
   }
