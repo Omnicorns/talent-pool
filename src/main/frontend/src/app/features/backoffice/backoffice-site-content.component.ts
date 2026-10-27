@@ -104,7 +104,7 @@ const SCHEMAS: Record<string, Schema> = {
         </div>
         <div class="alert alert-success" *ngIf="languageSaved" role="status" style="margin: 0 18px 14px"><app-icon name="check"></app-icon><span>Bahasa tersimpan. Pengunjung melihat bahasa baru setelah memuat ulang halaman.</span></div>
         <div class="alert alert-error" *ngIf="languageError" role="alert" style="margin: 0 18px 14px"><app-icon name="alert"></app-icon><span>{{ languageError }}</span></div>
-        <p class="muted" style="margin: 0 18px 14px; font-size: 13.5px" *ngIf="language === 'en'">Mode English menerjemahkan teks bawaan situs. Teks landing yang Mas ubah sendiri di bawah ini tampil persis seperti yang ditulis, jadi tulis dalam bahasa Inggris bila perlu.</p>
+        <p class="muted" style="margin: 0 18px 14px; font-size: 13.5px" *ngIf="language === 'en'">Mode English menerjemahkan teks bawaan situs. Teks landing yang di ubah sendiri di bawah ini tampil persis seperti yang ditulis, jadi tulis dalam bahasa Inggris bila perlu.</p>
       </section>
 
       <section class="table-card responsive">
