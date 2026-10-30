@@ -34,6 +34,7 @@ const ICONS: Record<string, string> = {
   'sort-asc': '<path d="M7 18V6M3.5 9.5 7 6l3.5 3.5M14 7h3M14 12h4.5M14 17h6"/>',
   'sort-desc': '<path d="M7 6v12M3.5 14.5 7 18l3.5-3.5M14 7h6M14 12h4.5M14 17h3"/>',
   check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+  circle: '<circle cx="12" cy="12" r="7.5"/>',
   alert: '<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.3v.2"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.7v.2"/>',
   file: '<path d="M14 3.5H7A2 2 0 0 0 5 5.5v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5v5h5M8.5 13h7M8.5 16.5h5"/>',
