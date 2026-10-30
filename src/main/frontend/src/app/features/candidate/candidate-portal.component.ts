@@ -9,6 +9,8 @@ import { TalentAuthService } from '../../core/service/api/talent-auth.service';
 import { TalentPortalService } from '../../core/service/api/talent-portal.service';
 import { FMT } from '../../shared/labels';
 import { IconComponent } from '../../shared/icon.component';
+import { WordLimitDirective } from '../../shared/word-limit.directive';
+import { SearchSelectComponent } from '../../shared/search-select.component';
 import { PostalRegionFieldComponent } from '../../shared/postal-region-field.component';
 import { SocialAccountsFieldComponent } from '../../shared/social-accounts-field.component';
 import { cleanSocial, socialError, socialList } from '../../shared/social-accounts';
@@ -22,7 +24,7 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
 @Component({
   selector: 'app-candidate-portal',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, CareerHeaderComponent, TalentProfileDetailsComponent, IconComponent, ChoiceFieldComponent, TagSelectComponent, PostalRegionFieldComponent, SocialAccountsFieldComponent],
+  imports: [CommonModule, FormsModule, RouterLink, CareerHeaderComponent, TalentProfileDetailsComponent, IconComponent, ChoiceFieldComponent, SearchSelectComponent, WordLimitDirective, TagSelectComponent, PostalRegionFieldComponent, SocialAccountsFieldComponent],
   template: `
     <div class="site" *ngIf="profile; else loadingTpl">
       <app-career-header active="portal" [profilePictureUrl]="profilePictureUrl"></app-career-header>
@@ -291,12 +293,12 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
             <div class="form-stack" *ngIf="drawerSection === 'personal'">
               <label class="field">Jenis kelamin<app-choice-field [options]="options.genders" [allowOther]="false" label="Jenis kelamin" [value]="profile.profileDetails?.gender" (valueChange)="setDetail('gender', $event)"></app-choice-field></label>
               <label class="field">Agama<app-choice-field [options]="options.religions" [allowOther]="false" label="Agama" [(value)]="profile.religion"></app-choice-field></label>
-              <label class="field">Alamat KTP<textarea rows="3" [(ngModel)]="profile.citizenIdAddress" placeholder="Nama jalan, nomor rumah, RT/RW"></textarea></label>
+              <label class="field">Alamat KTP<textarea rows="3" [(ngModel)]="profile.citizenIdAddress" [wordLimit]="40" placeholder="Nama jalan, nomor rumah, RT/RW"></textarea></label>
               <app-postal-region-field codeLabel="Kode pos KTP" regionLabel="Kelurahan, kecamatan, kota"
                 [postalCode]="profile.profileDetails?.postalCode" [region]="profile.profileDetails?.region"
                 (postalCodeChange)="setDetail('postalCode', $event)" (regionChange)="setDetail('region', $event)"></app-postal-region-field>
               <label class="check"><input type="checkbox" [(ngModel)]="profile.sameAsCitizenIdAddress"> Alamat domisili sama dengan alamat KTP</label>
-              <label class="field" *ngIf="!profile.sameAsCitizenIdAddress">Alamat domisili<textarea rows="3" [(ngModel)]="profile.residentialAddress"></textarea></label>
+              <label class="field" *ngIf="!profile.sameAsCitizenIdAddress">Alamat domisili<textarea rows="3" [(ngModel)]="profile.residentialAddress" [wordLimit]="40"></textarea></label>
               <app-postal-region-field *ngIf="!profile.sameAsCitizenIdAddress" codeLabel="Kode pos domisili" regionLabel="Kelurahan, kecamatan, kota domisili"
                 [postalCode]="profile.profileDetails?.residentialPostalCode" [region]="profile.profileDetails?.residentialRegion"
                 (postalCodeChange)="setDetail('residentialPostalCode', $event)" (regionChange)="setDetail('residentialRegion', $event)"></app-postal-region-field>
@@ -308,7 +310,7 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
             </div>
 
             <div class="form-stack" *ngIf="drawerSection === 'about'">
-              <label class="field">Tentang saya<textarea rows="10" [(ngModel)]="profile.about" placeholder="Tulis ringkasan singkat tentang pengalaman dan tujuan karier Anda agar recruiter cepat memahami profil Anda." maxlength="500"></textarea><small>{{ (profile.about || '').length }} / 500 karakter</small></label>
+              <label class="field">Tentang saya<textarea rows="10" [(ngModel)]="profile.about" [wordLimit]="150" placeholder="Tulis ringkasan singkat tentang pengalaman dan tujuan karier Anda agar recruiter cepat memahami profil Anda." maxlength="500"></textarea><small>{{ (profile.about || '').length }} / 500 karakter</small></label>
             </div>
 
             <div class="form-stack" *ngIf="drawerSection === 'experience' && editExperience">
@@ -323,15 +325,15 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
                 <label class="field">Selesai<input type="date" [(ngModel)]="editExperience.endDate" [disabled]="editExperience.currentJob"></label>
               </div>
               <label class="check"><input type="checkbox" [(ngModel)]="editExperience.currentJob"> Saya masih bekerja di sini</label>
-              <label class="field">Tugas dan pencapaian<textarea rows="5" [(ngModel)]="editExperience.description"></textarea></label>
+              <label class="field">Tugas dan pencapaian<textarea rows="5" [(ngModel)]="editExperience.description" [wordLimit]="120"></textarea></label>
               <label class="field">Keahlian<app-tag-select [options]="options.skills" label="Keahlian" [(value)]="expDetails.skills"></app-tag-select></label>
               <label class="field">Tools<app-tag-select [options]="options.tools" label="Tools" [(value)]="expDetails.tools"></app-tag-select></label>
-              <label class="field" *ngIf="!editExperience.currentJob">Alasan berhenti<input [(ngModel)]="expDetails.resignReason"></label>
+              <label class="field" *ngIf="!editExperience.currentJob">Alasan berhenti<textarea rows="2" [(ngModel)]="expDetails.resignReason" [wordLimit]="50"></textarea></label>
             </div>
 
             <div class="form-stack" *ngIf="drawerSection === 'education' && editEducation">
-              <label class="field">Institusi<app-choice-field [options]="options.institutions" label="Institusi" [(value)]="editEducation.institution"></app-choice-field></label>
-              <label class="field">Jurusan<app-choice-field [options]="options.majors" label="Jurusan" [(value)]="editEducation.major"></app-choice-field></label>
+              <label class="field">Institusi<app-search-select source="campus" [popular]="options.institutions" label="Institusi" placeholder="Ketik nama kampus, mis. Universitas Indonesia" [(value)]="editEducation.institution"></app-search-select></label>
+              <label class="field">Jurusan<app-search-select source="major" [popular]="options.majors" label="Jurusan" placeholder="Ketik nama jurusan / program studi" [(value)]="editEducation.major"></app-search-select></label>
               <div class="form-grid">
                 <label class="field">Jenjang<app-choice-field [options]="educationLevelOptions" [allowOther]="false" label="Jenjang" [(value)]="editEducation.level"></app-choice-field></label>
                 <label class="field">IPK / nilai akhir<input [(ngModel)]="editEducation.ipk" inputmode="decimal" placeholder="Contoh: 3.50"></label>
@@ -342,7 +344,7 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
               </div>
               <label class="file-field">Ijazah <input type="file" accept=".pdf,application/pdf" aria-label="Ijazah" (change)="selectDocument($event, educationDocKey('diploma'))"><small class="field-hint">{{ documentName(educationDocKey('diploma')) || 'PDF, maksimal 2 MB' }}</small></label>
               <label class="file-field">Transkrip nilai <input type="file" accept=".pdf,application/pdf" aria-label="Transkrip" (change)="selectDocument($event, educationDocKey('transcript'))"><small class="field-hint">{{ documentName(educationDocKey('transcript')) || 'PDF, maksimal 2 MB' }}</small></label>
-              <label class="field">Proyek atau penghargaan<textarea [(ngModel)]="editEducation.description" placeholder="Proyek akademik, prestasi, atau penghargaan"></textarea></label>
+              <label class="field">Proyek atau penghargaan<textarea [(ngModel)]="editEducation.description" [wordLimit]="80" placeholder="Proyek akademik, prestasi, atau penghargaan"></textarea></label>
             </div>
 
             <div class="form-stack" *ngIf="drawerSection === 'training' && editEducation">
@@ -350,7 +352,7 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
               <label class="field">Nama pelatihan<input [(ngModel)]="editEducation.major"></label>
               <label class="field">Penyelenggara<input [(ngModel)]="editEducation.institution"></label>
               <label class="field">Tahun<input type="number" [(ngModel)]="editEducation.startYear"></label>
-              <label class="field">Keterangan<textarea [(ngModel)]="editEducation.description"></textarea></label>
+              <label class="field">Keterangan<textarea [(ngModel)]="editEducation.description" [wordLimit]="80"></textarea></label>
             </div>
 
             <div class="form-stack" *ngIf="drawerSection === 'certification' && editCert">
