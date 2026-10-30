@@ -5,12 +5,14 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TalentAuthService } from '../../core/service/api/talent-auth.service';
 import { Branding, DEFAULT_BRANDING, SiteContentService } from '../../core/service/api/site-content.service';
+import { PasswordMeterComponent } from '../../shared/password-meter.component';
+import { checkPassword, generatePassword } from '../../shared/password-policy';
 import { IconComponent } from '../../shared/icon.component';
 
 @Component({
   selector: 'app-reset-password',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, IconComponent],
+  imports: [CommonModule, FormsModule, RouterLink, IconComponent, PasswordMeterComponent],
   template: `
     <main class="recovery">
       <section class="recovery-card">
@@ -19,17 +21,19 @@ import { IconComponent } from '../../shared/icon.component';
         <ng-container *ngIf="!success">
           <div>
             <h1>Buat password baru</h1>
-            <p>Gunakan minimal 8 karakter dan berbeda dari password sebelumnya.</p>
+            <p>Gunakan minimal 10 karakter, kombinasi huruf besar, huruf kecil, dan angka, serta berbeda dari password sebelumnya.</p>
           </div>
           <form class="form-stack" (ngSubmit)="submit()">
             <label class="field">Password baru
               <span class="password-field">
-                <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="newPassword" name="newPassword" minlength="8" maxlength="72" autocomplete="new-password" required>
+                <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="newPassword" name="newPassword" minlength="10" maxlength="72" autocomplete="new-password" required>
                 <button type="button" class="icon-btn" (click)="showPassword = !showPassword" [attr.aria-label]="showPassword ? 'Sembunyikan password' : 'Tampilkan password'">
                   <app-icon [name]="showPassword ? 'eye-off' : 'eye'"></app-icon>
                 </button>
               </span>
             </label>
+            <app-password-meter [password]="newPassword"></app-password-meter>
+            <button type="button" class="btn btn-secondary btn-sm pw-generate" (click)="suggestPassword()">Buat password acak yang kuat</button>
             <label class="field">Ulangi password baru
               <span class="password-field">
                 <input [type]="showConfirmPassword ? 'text' : 'password'" [(ngModel)]="confirmPassword" name="confirmPassword" minlength="8" maxlength="72" autocomplete="new-password" required>
@@ -64,6 +68,14 @@ export class ResetPasswordComponent {
   newPassword = '';
   confirmPassword = '';
   showPassword = false;
+
+  suggestPassword(): void {
+    this.newPassword = generatePassword();
+    this.confirmPassword = this.newPassword;
+    this.showPassword = true;
+    this.showConfirmPassword = true;
+  }
+
   showConfirmPassword = false;
   loading = false;
   success = false;
@@ -87,8 +99,9 @@ export class ResetPasswordComponent {
       return;
     }
 
-    if (this.newPassword.length < 8) {
-      this.error = 'Password baru minimal 8 karakter.';
+    const problem = checkPassword(this.newPassword).problem;
+    if (problem) {
+      this.error = problem;
       return;
     }
 

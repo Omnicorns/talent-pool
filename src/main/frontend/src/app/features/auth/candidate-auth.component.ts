@@ -5,12 +5,14 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TalentAuthService } from '../../core/service/api/talent-auth.service';
 import { Branding, DEFAULT_BRANDING, SiteContentService } from '../../core/service/api/site-content.service';
+import { PasswordMeterComponent } from '../../shared/password-meter.component';
+import { checkPassword, generatePassword } from '../../shared/password-policy';
 import { IconComponent } from '../../shared/icon.component';
 
 @Component({
   selector: 'app-candidate-auth',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, IconComponent],
+  imports: [CommonModule, FormsModule, RouterLink, IconComponent, PasswordMeterComponent],
   template: `
     <main class="auth">
       <section class="auth-aside">
@@ -84,12 +86,22 @@ import { IconComponent } from '../../shared/icon.component';
             </div>
             <label class="field">Password
               <span class="password-field lead-field"><app-icon name="shield" [size]="18"></app-icon>
-                <input [type]="showPassword ? 'text' : 'password'" placeholder="Minimal 8 karakter" [(ngModel)]="password" name="registerPassword" autocomplete="new-password" minlength="8" required>
+                <input [type]="showPassword ? 'text' : 'password'" placeholder="Buat password yang unik" [(ngModel)]="password" name="registerPassword" autocomplete="new-password" minlength="10" maxlength="72" required>
                 <button type="button" class="icon-btn" (click)="showPassword = !showPassword" [attr.aria-label]="showPassword ? 'Sembunyikan password' : 'Tampilkan password'">
                   <app-icon [name]="showPassword ? 'eye-off' : 'eye'"></app-icon>
                 </button>
               </span>
-              <small>Minimal 8 karakter.</small>
+              <app-password-meter [password]="password" [email]="email" [fullName]="fullName"></app-password-meter>
+              <button type="button" class="btn btn-secondary btn-sm pw-generate" (click)="suggestPassword()">Buat password acak yang kuat</button>
+            </label>
+            <label class="field">Konfirmasi password
+              <span class="password-field lead-field"><app-icon name="shield" [size]="18"></app-icon>
+                <input [type]="showConfirm ? 'text' : 'password'" placeholder="Ketik ulang password" [(ngModel)]="confirmPassword" name="confirmRegisterPassword" autocomplete="new-password" maxlength="72" required [attr.aria-invalid]="confirmPassword && confirmPassword !== password ? 'true' : null">
+                <button type="button" class="icon-btn" (click)="showConfirm = !showConfirm" [attr.aria-label]="showConfirm ? 'Sembunyikan konfirmasi password' : 'Tampilkan konfirmasi password'">
+                  <app-icon [name]="showConfirm ? 'eye-off' : 'eye'"></app-icon>
+                </button>
+              </span>
+              <p class="pw-match" *ngIf="confirmPassword" [class.ok]="confirmPassword === password" [class.bad]="confirmPassword !== password" aria-live="polite">{{ confirmPassword === password ? 'Password cocok.' : 'Password belum sama.' }}</p>
             </label>
             <label class="check"><input type="checkbox" [(ngModel)]="termsAccepted" name="termsAccepted"> Saya menyetujui penggunaan data saya untuk proses rekrutmen.</label>
             <button class="btn btn-primary btn-lg btn-block" [disabled]="loading">{{ loading ? 'Memproses…' : 'Buat akun' }}</button>
@@ -226,6 +238,8 @@ export class CandidateAuthComponent implements OnDestroy {
   termsModalOpen = false;
   termsConfirmed = false;
   showPassword = false;
+  showConfirm = false;
+  confirmPassword = '';
   loading = false;
   error = '';
   returnUrl = '/portal';
@@ -280,6 +294,13 @@ export class CandidateAuthComponent implements OnDestroy {
     });
   }
 
+  suggestPassword(): void {
+    this.password = generatePassword();
+    this.confirmPassword = this.password;
+    this.showPassword = true;
+    this.showConfirm = true;
+  }
+
   requestRegister(): void {
     this.error = '';
 
@@ -288,8 +309,14 @@ export class CandidateAuthComponent implements OnDestroy {
       return;
     }
 
-    if (this.password.length < 8) {
-      this.error = 'Password minimal 8 karakter.';
+    const passwordProblem = checkPassword(this.password, this.email, this.fullName).problem;
+    if (passwordProblem) {
+      this.error = passwordProblem;
+      return;
+    }
+
+    if (this.password !== this.confirmPassword) {
+      this.error = 'Konfirmasi password tidak sama dengan password.';
       return;
     }
 
@@ -335,6 +362,7 @@ export class CandidateAuthComponent implements OnDestroy {
           this.pendingEmail = result.email;
           this.pendingMessage = result.message;
           this.password = '';
+          this.confirmPassword = '';
           this.error = result.emailSent ? '' : 'Email belum terkirim. Tekan tombol kirim ulang di bawah.';
           return;
         }

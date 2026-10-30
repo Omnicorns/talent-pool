@@ -118,6 +118,7 @@ public class TalentPasswordResetService {
             throw new BadRequestException("Password baru harus berbeda dari password sebelumnya");
         }
 
+        PasswordPolicy.require(request.newPassword(), account.getEmail(), account.getCandidate() == null ? null : account.getCandidate().getFullName());
         account.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         accountRepository.save(account);
 

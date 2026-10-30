@@ -58,6 +58,7 @@ public class TalentAuthService {
     @Transactional
     public RegisteredAccount register(TalentRegisterRequest request) {
         String email = normalizeEmail(request.email());
+        PasswordPolicy.require(request.password(), email, request.fullName());
 
         if (accountRepository.existsByEmailIgnoreCase(email)) {
             throw new BadRequestException("Email sudah memiliki akun Talent Portal");
@@ -150,6 +151,7 @@ public class TalentAuthService {
             throw new BadRequestException("Password baru harus berbeda dari password saat ini");
         }
 
+        PasswordPolicy.require(request.newPassword(), account.getEmail(), account.getCandidate() == null ? null : account.getCandidate().getFullName());
         account.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         accountRepository.save(account);
     }
