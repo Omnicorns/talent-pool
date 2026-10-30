@@ -6,7 +6,7 @@ export const TALENT_OPTIONS = {
   religions: ['Islam','Kristen','Katolik','Hindu','Buddha','Konghucu'],
   socialPlatforms: ['Instagram','TikTok','Facebook','X','YouTube','Threads'],
   educationLevels: ['SMA/SMK','D1','D2','D3','D4','S1','S2','S3'],
-  institutions: ['University of Indonesia','Gadjah Mada University','Bandung Institute of Technology','Padjadjaran University','Diponegoro University','Airlangga University','Brawijaya University','Jakarta State University','Bina Nusantara University (BINUS)','Telkom University','Trisakti University','Atma Jaya Catholic University of Indonesia'],
+  institutions: ['Universitas Indonesia','Universitas Gadjah Mada','Institut Teknologi Bandung','Universitas Padjadjaran','Universitas Diponegoro','Universitas Airlangga','Universitas Brawijaya','Universitas Negeri Jakarta','Universitas Bina Nusantara','Universitas Telkom','Universitas Trisakti','Universitas Katolik Indonesia Atma Jaya'],
   majors: ['Management','Accounting','Economics','Business Administration','Communication Studies','Psychology','Law','Informatics Engineering','Information Systems','Industrial Engineering','Visual Communication Design','Tourism','Hospitality','Marketing'],
   employmentTypes: ['Fulltime','Part-time','Contract','Freelance','Internship'],
   industries: ['Perbankan & Keuangan','Asuransi','Teknologi & IT','E-Commerce','Retail & Consumer Goods','Hospitality & Pariwisata','Properti & Real Estate','Konstruksi & Infrastruktur','Manufaktur','FMCG','Energi & Pertambangan','Telekomunikasi','Transportasi & Logistik','Kesehatan','Pendidikan','Pemerintahan / BUMN','Konsultan & Professional Services','Media & Entertainment','Food & Beverage'],

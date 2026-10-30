@@ -3,8 +3,8 @@ import { Injectable } from '@angular/core';
 import { Observable, of, shareReplay, catchError, map } from 'rxjs';
 
 /**
- * Daftar acuan statis: perguruan tinggi (PDDikti) dan program studi, dalam bahasa Inggris.
- * Tiap entri berupa pasangan [nama Inggris, nama asli Indonesia]; nama asli hanya dipakai agar pencarian tetap menemukan.
+ * Daftar acuan statis: perguruan tinggi (PDDikti, nama asli) dan program studi (bahasa Inggris).
+ * Tiap entri berupa pasangan [nama tampil, nama asli Indonesia]; nama asli ikut dicari agar pencarian tetap menemukan.
  * Dimuat sekali, saat pertama dibutuhkan.
  */
 export type RefEntry = [string, string];
@@ -17,7 +17,7 @@ export class ReferenceDataService {
   constructor(private http: HttpClient) {}
 
   campuses(): Observable<RefEntry[]> {
-    return this.campuses$ ||= this.http.get<RefEntry[]>('data/kampus.json').pipe(catchError(() => of([] as RefEntry[])), shareReplay(1));
+    return this.campuses$ ||= this.http.get<string[]>('data/kampus.json').pipe(map((l) => l.map((n): RefEntry => [n, n])), catchError(() => of([] as RefEntry[])), shareReplay(1));
   }
 
   majors(): Observable<RefEntry[]> {
