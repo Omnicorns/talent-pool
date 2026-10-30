@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output } from '@angular/core';
-import { ReferenceDataService } from '../core/service/api/reference-data.service';
+import { ReferenceDataService, RefEntry } from '../core/service/api/reference-data.service';
 
 let nextId = 0;
 
@@ -52,20 +52,29 @@ export class SearchSelectComponent implements OnInit, OnChanges {
   query = '';
   total = 0;
   private list: string[] = [];
+  /** Teks pencarian (huruf kecil): nama Inggris + nama asli Indonesia. */
+  private hay: string[] = [];
   private top: string[] = [];
 
   constructor(private data: ReferenceDataService, private host: ElementRef<HTMLElement>, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     if (this.source === 'campus') {
-      this.data.campuses().subscribe((list) => { this.list = list; this.total = list.length; this.refresh(); });
+      this.data.campuses().subscribe((list) => this.load(list));
     } else {
-      this.data.majors().subscribe((list) => { this.list = list; this.total = list.length; this.refresh(); });
+      this.data.majors().subscribe((list) => this.load(list));
       this.data.topMajors().subscribe((top) => { this.top = top; this.refresh(); });
     }
   }
 
   ngOnChanges(): void { this.refresh(); }
+
+  private load(entries: RefEntry[]): void {
+    this.list = entries.map((e) => e[0]);
+    this.hay = entries.map((e) => (e[0] + ' | ' + e[1]).toLowerCase());
+    this.total = entries.length;
+    this.refresh();
+  }
 
   onFocus(): void { this.query = ''; this.open = true; this.refresh(); this.cdr.detectChanges(); }
 
@@ -108,11 +117,13 @@ export class SearchSelectComponent implements OnInit, OnChanges {
     }
     const tokens = q.split(/\s+/).filter(Boolean);
     const prefix: string[] = [], word: string[] = [], rest: string[] = [];
-    for (const item of this.list) {
-      const low = item.toLowerCase();
+    for (let i = 0; i < this.list.length; i++) {
+      const low = this.hay[i];
       if (!tokens.every((t) => low.includes(t))) continue;
-      if (low.startsWith(q)) prefix.push(item);
-      else if (low.split(/[\s(]+/).some((w) => w.startsWith(tokens[0]))) word.push(item);
+      const item = this.list[i];
+      const en = item.toLowerCase();
+      if (en.startsWith(q)) prefix.push(item);
+      else if (en.split(/[\s(]+/).some((w) => w.startsWith(tokens[0]))) word.push(item);
       else rest.push(item);
     }
     this.shown = [...prefix, ...word, ...rest].slice(0, 8);
