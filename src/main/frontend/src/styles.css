@@ -1118,7 +1118,7 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 
 /* Carousel (desktop): tinggi panel dikunci minimal 480px agar keterangan dan 4 thumbnail muat utuh dan halaman tidak bergeser saat slide berganti. */
 @media (min-width: 901px) {
-  .lc-main { max-height: none; }
+  .lc-main { max-height: none; aspect-ratio: auto; min-height: 480px; align-self: stretch; }
   .lc-stage { min-height: 480px; }
   .lc-side { padding: 24px 24px 22px; }
   .lc-side h3 { font-size: 24px; }
