@@ -1149,3 +1149,14 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 .pw-match.ok { color: #1f7a3d; }
 .pw-match.bad { color: var(--red); }
 .pw-generate { margin-top: 8px; }
+
+/* Editor deskripsi lowongan (backoffice) */
+.desc-field > span { display: block; }
+.desc-tools { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 6px; }
+.desc-tools button { font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 10px; border: 1px solid var(--line, #e5e0db); border-radius: 8px; background: var(--white, #fff); color: var(--ink-2, #3a3430); cursor: pointer; }
+.desc-tools button:hover { background: var(--surface, #f5f3f1); }
+.desc-tools .desc-preview-toggle { margin-left: auto; color: var(--brand, #b3121d); }
+.desc-field > textarea { margin-top: 0; }
+.desc-field > small { display: block; margin-top: 6px; font-weight: 400; }
+.desc-preview { margin-top: 10px; padding: 14px 16px; border: 1px dashed var(--line, #e5e0db); border-radius: 12px; background: var(--surface, #faf8f6); font-weight: 400; font-size: 14.5px; }
+.desc-tools .desc-preview-toggle[aria-pressed=true] { background: var(--surface, #f5f3f1); }

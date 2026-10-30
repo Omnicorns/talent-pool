@@ -8,6 +8,7 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
 import { FMT } from '../../shared/labels';
 import { IconComponent } from '../../shared/icon.component';
 import { TALENT_OPTIONS } from '../../shared/talent-options';
+import { RichTextComponent } from '../../shared/rich-text.component';
 import { PaginationComponent } from '../../shared/pagination.component';
 import { ColumnFilterComponent, SortDir } from '../../shared/column-filter.component';
 
@@ -16,7 +17,7 @@ type AppKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review' | 'penilaia
 @Component({
   selector: 'app-backoffice-job-listings',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, BackofficeLayoutComponent, BackofficeOverlayDirective, IconComponent, PaginationComponent, ColumnFilterComponent],
+  imports: [CommonModule, FormsModule, RouterLink, BackofficeLayoutComponent, BackofficeOverlayDirective, IconComponent, PaginationComponent, ColumnFilterComponent, RichTextComponent],
   template: `
     <app-backoffice-layout active="jobs">
       <div class="bo-head">
@@ -119,7 +120,20 @@ type AppKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review' | 'penilaia
                   </select>
                 </label>
               </div>
-              <label class="field">Deskripsi<textarea rows="10" [(ngModel)]="form.description" placeholder="Tanggung jawab, kualifikasi, dan informasi lain untuk pelamar"></textarea></label>
+              <div class="field desc-field">
+                <span>Deskripsi</span>
+                <div class="desc-tools" role="toolbar" aria-label="Format deskripsi">
+                  <button type="button" (click)="insertText(desc, 'Tanggung Jawab:\n', true)">Tanggung Jawab</button>
+                  <button type="button" (click)="insertText(desc, 'Kualifikasi:\n', true)">Kualifikasi</button>
+                  <button type="button" (click)="insertText(desc, 'Benefit:\n', true)">Benefit</button>
+                  <button type="button" (click)="insertText(desc, '- ')">&bull; Poin</button>
+                  <button type="button" (click)="insertText(desc, '1. ')">1. Daftar</button>
+                  <button type="button" class="desc-preview-toggle" [attr.aria-pressed]="showPreview" (click)="showPreview = !showPreview">Pratinjau</button>
+                </div>
+                <textarea #desc rows="10" name="description" [(ngModel)]="form.description" placeholder="Tanggung Jawab:&#10;- Merancang dan menganalisa permintaan layanan umum&#10;&#10;Kualifikasi:&#10;1. Sarjana (S1) Manajemen atau terkait&#10;2. Pengalaman min. 3 tahun"></textarea>
+                <small class="muted">Baris yang berakhiran ":" menjadi sub-judul; baris berawalan "-" atau "1." menjadi daftar di halaman lowongan.</small>
+                <div class="desc-preview prose" *ngIf="showPreview"><app-rich-text [text]="form.description"></app-rich-text></div>
+              </div>
               <div class="alert alert-error" *ngIf="error" role="alert"><app-icon name="alert"></app-icon><span>{{ error }}</span></div>
             </div>
           </div>
@@ -211,6 +225,25 @@ type AppKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review' | 'penilaia
   `,
 })
 export class BackofficeJobListingsComponent implements OnInit {
+  showPreview = false;
+
+  /** Sisipkan potongan teks di posisi kursor deskripsi; sub-judul diberi baris kosong di depan bila perlu. */
+  insertText(el: HTMLTextAreaElement, snippet: string, heading = false): void {
+    const value = this.form.description || '';
+    const start = el.selectionStart ?? value.length;
+    const end = el.selectionEnd ?? start;
+    const before = value.slice(0, start);
+    let prefix = '';
+    if (before && !before.endsWith('\n')) prefix = '\n';
+    if (heading && before.trim()) prefix = before.endsWith('\n\n') ? '' : (before.endsWith('\n') ? '\n' : '\n\n');
+    const text = prefix + snippet;
+    const caret = start + text.length;
+    el.value = before + text + value.slice(end);
+    el.focus();
+    el.setSelectionRange(caret, caret);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
   readonly fmt = FMT;
   rows: any[] = [];
   q = '';
