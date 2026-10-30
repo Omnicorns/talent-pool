@@ -8,11 +8,12 @@ import { PublicJobService } from '../../core/service/api/public-job.service';
 import { TalentAuthService } from '../../core/service/api/talent-auth.service';
 import { JobListing } from '../../core/models/talent.models';
 import { FMT } from '../../shared/labels';
+import { RichTextComponent } from '../../shared/rich-text.component';
 
 @Component({
   selector: 'app-job-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, CareerHeaderComponent, CareerFooterComponent, IconComponent],
+  imports: [CommonModule, RouterLink, CareerHeaderComponent, CareerFooterComponent, IconComponent, RichTextComponent],
   template: `
     <div class="site">
       <app-career-header active="open"></app-career-header>
@@ -39,10 +40,10 @@ import { FMT } from '../../shared/labels';
           <div class="job-layout">
             <article class="prose">
               <h2>Tentang posisi</h2>
-              <p>{{ job.description || 'Deskripsi lowongan belum tersedia.' }}</p>
+              <app-rich-text [text]="job.description || 'Deskripsi lowongan belum tersedia.'"></app-rich-text>
               <ng-container *ngIf="job.requirements">
                 <h2>Kualifikasi</h2>
-                <p>{{ job.requirements }}</p>
+                <app-rich-text [text]="job.requirements"></app-rich-text>
               </ng-container>
             </article>
 
