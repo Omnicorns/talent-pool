@@ -82,7 +82,7 @@
             </div>
             <div class="form-grid">
               <label class="field">Jenjang *<app-choice-field [options]="options.educationLevels" [allowOther]="false" label="Jenjang" [(value)]="edu.level"></app-choice-field></label>
-              <label class="field">Institusi *<app-search-select source="campus" [popular]="options.institutions" label="Institusi" placeholder="Ketik nama kampus, mis. Universitas Indonesia" [(value)]="edu.institution"></app-search-select></label>
+              <label class="field">Institusi *<app-search-select source="campus" [popular]="options.institutions" label="Institusi" placeholder="Ketik nama kampus, mis. University of Indonesia" [(value)]="edu.institution"></app-search-select></label>
               <label class="field">Jurusan *<app-search-select source="major" [popular]="options.majors" label="Jurusan" placeholder="Ketik nama jurusan / program studi" [(value)]="edu.major"></app-search-select></label>
               <label class="field">IPK / nilai akhir *<input type="number" min="0" step="0.01" [ngModel]="edu.ipk" (ngModelChange)="edu.ipk = $event === null ? null : '' + $event" required></label>
               <label class="field">Tahun masuk *<input type="number" min="1900" [max]="currentYear" [(ngModel)]="edu.startYear" required></label>

@@ -332,7 +332,7 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
             </div>
 
             <div class="form-stack" *ngIf="drawerSection === 'education' && editEducation">
-              <label class="field">Institusi<app-search-select source="campus" [popular]="options.institutions" label="Institusi" placeholder="Ketik nama kampus, mis. Universitas Indonesia" [(value)]="editEducation.institution"></app-search-select></label>
+              <label class="field">Institusi<app-search-select source="campus" [popular]="options.institutions" label="Institusi" placeholder="Ketik nama kampus, mis. University of Indonesia" [(value)]="editEducation.institution"></app-search-select></label>
               <label class="field">Jurusan<app-search-select source="major" [popular]="options.majors" label="Jurusan" placeholder="Ketik nama jurusan / program studi" [(value)]="editEducation.major"></app-search-select></label>
               <div class="form-grid">
                 <label class="field">Jenjang<app-choice-field [options]="educationLevelOptions" [allowOther]="false" label="Jenjang" [(value)]="editEducation.level"></app-choice-field></label>
