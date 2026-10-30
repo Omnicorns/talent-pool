@@ -1,3 +1,4 @@
+import { OnboardingDraft } from '../../../shared/onboarding-draft';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -86,6 +87,7 @@ export class TalentAuthService {
 
   logout(): void {
     sessionStorage.removeItem(SESSION_KEY);
+    OnboardingDraft.clearAll();
     this.router.navigateByUrl('/');
   }
 
