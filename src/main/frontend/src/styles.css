@@ -188,7 +188,7 @@ app-choice-field, app-tag-select { display: grid; gap: 8px; }
 .site-nav a:hover, .site-nav button:hover { color: var(--ink); background: var(--surface); }
 .site-nav .active { color: var(--red); }
 .site-actions { display: flex; align-items: center; gap: 16px; flex: none; }
-.site-actions .sarinah-mark { height: 30px; width: auto; }
+.site-actions .sarinah-mark { height: 34px; width: auto; }
 .menu-toggle { display: none; }
 
 .account { position: relative; }
@@ -512,7 +512,7 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 .bo { min-height: 100vh; display: grid; grid-template-columns: 248px minmax(0, 1fr); background: var(--surface); }
 .bo-sidebar { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; gap: 24px; padding: 20px 14px; background: var(--white); border-right: 1px solid var(--line); }
 .bo-brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 16px; border-bottom: 1px solid var(--line); }
-.bo-brand img { height: 26px; width: auto; }
+.bo-brand img { height: 36px; width: auto; max-width: 150px; object-fit: contain; }
 .bo-brand span { font-size: 13px; color: var(--muted); font-weight: 600; padding-left: 10px; border-left: 1px solid var(--line); line-height: 1.2; }
 .bo-brand .icon-btn { margin-left: auto; display: none; }
 .bo-nav { display: grid; gap: 2px; }
@@ -621,7 +621,7 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 /* Back office login */
 .bo-login { min-height: 100vh; display: grid; place-items: center; padding: 40px 16px; background: var(--surface); }
 .bo-login-card { width: 100%; max-width: 400px; background: var(--white); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 32px; display: grid; gap: 22px; }
-.bo-login-card .logo { height: 28px; width: auto; }
+.bo-login-card .logo { height: 48px; width: auto; max-width: 220px; object-fit: contain; }
 .bo-login-card h1 { font-size: 22px; }
 .bo-login-card h1 + p { color: var(--muted); margin-top: 4px; font-size: 14.5px; }
 .bo-login-foot { text-align: center; font-size: 14px; }
@@ -640,7 +640,7 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 @media (max-width: 1024px) {
   .bo { grid-template-columns: minmax(0, 1fr); }
   .bo-topbar { display: flex; position: sticky; top: 0; z-index: 40; align-items: center; justify-content: space-between; gap: 12px; height: 60px; padding: 0 16px; background: var(--white); border-bottom: 1px solid var(--line); }
-  .bo-topbar img { height: 24px; width: auto; }
+  .bo-topbar img { height: 32px; width: auto; max-width: 140px; object-fit: contain; }
   .bo-topbar strong { font-size: 15px; }
   .bo-sidebar { position: fixed; inset: 0 auto 0 0; z-index: 70; width: 280px; transform: translateX(-100%); transition: transform .2s; box-shadow: var(--shadow-pop); }
   .bo-sidebar.open { transform: none; }
@@ -789,7 +789,7 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 /* ---- Tampilan ponsel mengikuti desain: header dua logo, hero foto, kartu form menumpuk ---- */
 @media (max-width: 640px) {
   .site-header .container { gap: 8px; }
-  .site-actions .sarinah-mark { display: block; height: 26px; }
+  .site-actions .sarinah-mark { display: block; height: 28px; }
   .site-actions .desktop-only { display: none; }
   .site-nav .nav-signin { display: block; padding: 12px 8px; font-weight: 650; color: var(--red); }
   .menu-toggle { margin-right: -8px; }
@@ -885,7 +885,7 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
   .site-brand { min-width: 0; flex: 0 1 auto; }
   .site-brand img { height: 24px; max-width: 100%; }
   .site-actions { gap: 6px; min-width: 0; }
-  .site-actions .sarinah-mark { height: 20px; }
+  .site-actions .sarinah-mark { height: 24px; }
   .account-chip { gap: 2px; padding: 2px 4px 2px 2px; }
   .account-chip .avatar { width: 30px; height: 30px; }
   .account-chip .icon { width: 14px; }

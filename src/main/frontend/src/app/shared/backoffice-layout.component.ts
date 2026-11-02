@@ -3,6 +3,8 @@ import { Component, HostListener, Input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { BackofficeAuthService } from '../core/service/api/backoffice-auth.service';
 import { BackofficeOverlayDirective } from './backoffice-overlay.directive';
+import { DEFAULT_BRAND_LOGO } from '../features/public/site-defaults';
+import { SiteContentService } from '../core/service/api/site-content.service';
 import { IconComponent } from './icon.component';
 
 type Section = 'dashboard' | 'candidates' | 'jobs' | 'applications' | 'interviews' | 'banners' | 'site';
@@ -19,7 +21,7 @@ type Section = 'dashboard' | 'candidates' | 'jobs' | 'applications' | 'interview
           <app-icon name="menu" [size]="22"></app-icon>
         </button>
         <strong>{{ pageTitle }}</strong>
-        <img src="images/sarinah.png" alt="Sarinah">
+        <img [src]="brandLogo" alt="Sarinah">
       </header>
 
       <div class="bo-scrim" *ngIf="mobileMenuOpen" (click)="mobileMenuOpen = false"></div>
@@ -28,7 +30,7 @@ type Section = 'dashboard' | 'candidates' | 'jobs' | 'applications' | 'interview
         [boOverlay]="mobileMenuOpen" (overlayClose)="mobileMenuOpen = false"
         [attr.inert]="isMobile && !mobileMenuOpen ? '' : null" aria-label="Menu back office">
         <div class="bo-brand">
-          <img src="images/sarinah.png" alt="Sarinah">
+          <img [src]="brandLogo" alt="Sarinah">
           <span>Human<br>Capital</span>
           <button type="button" class="icon-btn" (click)="mobileMenuOpen = false" aria-label="Tutup menu"><app-icon name="x"></app-icon></button>
         </div>
@@ -76,7 +78,12 @@ export class BackofficeLayoutComponent {
     if (!this.isMobile) this.mobileMenuOpen = false;
   }
 
-  constructor(public auth: BackofficeAuthService) {}
+  /** Logo Sarinah (injourney retail) yang diatur HC di Banner, sama dengan header portal kandidat. */
+  brandLogo = DEFAULT_BRAND_LOGO;
+
+  constructor(public auth: BackofficeAuthService, site: SiteContentService) {
+    site.branding().subscribe((branding) => (this.brandLogo = branding.brandLogo));
+  }
 
   get pageTitle(): string {
     return this.nav.find((item) => item.id === this.active)?.label || '';
