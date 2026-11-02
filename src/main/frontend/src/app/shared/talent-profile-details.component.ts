@@ -83,6 +83,14 @@ export class TalentProfileDetailsComponent {
       const cert = this.profile.profileDetails?.trainingCertifications.find((c) => c.key && key.includes(c.key));
       return 'Sertifikat ' + (cert?.name || '');
     }
+    if (key.startsWith('project:')) {
+      const item = this.profile.profileDetails?.projects?.find((x) => x.key && key.includes(x.key));
+      return 'Lampiran proyek ' + (item?.name || '');
+    }
+    if (key.startsWith('award:')) {
+      const item = this.profile.profileDetails?.awards?.find((x) => x.key && key.includes(x.key));
+      return 'Bukti penghargaan ' + (item?.name || '');
+    }
     const edu = this.profile.educations.find((e) => e.clientKey && key.includes(e.clientKey));
     return (key.endsWith(':diploma') ? 'Ijazah' : 'Transkrip') + ' ' + (edu?.institution || '');
   }

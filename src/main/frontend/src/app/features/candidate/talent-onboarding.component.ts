@@ -11,11 +11,12 @@ import { TALENT_OPTIONS } from '../../shared/talent-options';
 import { IconComponent } from '../../shared/icon.component';
 import { OnboardingDraft } from '../../shared/onboarding-draft';
 import { WordLimitDirective, wordCount } from '../../shared/word-limit.directive';
+import { AchievementsEditorComponent, achievementsError } from '../../shared/achievements-editor.component';
 import { SearchSelectComponent } from '../../shared/search-select.component';
 import { PostalRegionFieldComponent } from '../../shared/postal-region-field.component';
 import { SocialAccountsFieldComponent } from '../../shared/social-accounts-field.component';
 import { cleanSocial, socialError } from '../../shared/social-accounts';
-@Component({selector:'app-talent-onboarding',standalone:true,imports:[CommonModule,FormsModule,RouterLink,ChoiceFieldComponent,TagSelectComponent,IconComponent,SearchSelectComponent,WordLimitDirective,PostalRegionFieldComponent,SocialAccountsFieldComponent],templateUrl:'./talent-onboarding.component.html'})
+@Component({selector:'app-talent-onboarding',standalone:true,imports:[CommonModule,FormsModule,RouterLink,ChoiceFieldComponent,TagSelectComponent,IconComponent,SearchSelectComponent,WordLimitDirective,PostalRegionFieldComponent,SocialAccountsFieldComponent,AchievementsEditorComponent],templateUrl:'./talent-onboarding.component.html'})
 export class TalentOnboardingComponent implements OnInit, OnDestroy {
   profile!:CandidateProfile; details!:TalentProfileDetails; options=TALENT_OPTIONS;
   draft!:OnboardingDraft; draftRestored=false; private autosaveTimer:ReturnType<typeof setInterval>|null=null; private lastSig=''; private lastFileSig=''; private draftReady=false;
@@ -36,7 +37,7 @@ export class TalentOnboardingComponent implements OnInit, OnDestroy {
     this.portal.profile().subscribe({next:profile=>{
       this.profile={...profile,educations:profile.educations||[],workExperiences:profile.workExperiences||[],portfolios:profile.portfolios||[],relatedIndustries:profile.relatedIndustries||[],relatedJobPositions:profile.relatedJobPositions||[],tools:profile.tools||[],jobInterests:profile.jobInterests||[],preferredLocations:profile.preferredLocations||[]};
       if(this.profile.profilePictureOriginalName)this.loadExistingProfilePicture();
-      this.details={gender:'',postalCode:'',region:'',linkedinUrl:'',socialPlatform:'',socialUsername:'',expectedSalaryMax:null,noExperience:false,noTraining:false,noCertification:false,noLanguage:false,languageSkills:[],trainingCertifications:[],residentialPostalCode:'',residentialRegion:'',socialAccounts:[],...profile.profileDetails};this.details.socialAccounts ||= [];this.details.languageSkills ||= [];this.details.trainingCertifications ||= [];this.profile.profileDetails=this.details;
+      this.details={gender:'',postalCode:'',region:'',linkedinUrl:'',socialPlatform:'',socialUsername:'',expectedSalaryMax:null,noExperience:false,noTraining:false,noCertification:false,noLanguage:false,languageSkills:[],trainingCertifications:[],projects:[],awards:[],residentialPostalCode:'',residentialRegion:'',socialAccounts:[],...profile.profileDetails};this.details.socialAccounts ||= [];this.details.languageSkills ||= [];this.details.trainingCertifications ||= [];this.profile.profileDetails=this.details;
       if(['Talent Portal','Website'].includes(this.profile.source||'')) this.profile.source='';
       this.formalEducations.forEach(edu=>edu.clientKey ||= crypto.randomUUID());this.profile.workExperiences.forEach(exp=>this.workDetails(exp));
       if(!this.formalEducations.length)this.addEducation();if(!this.details.noExperience && !this.profile.workExperiences.length)this.addExperience();if(!this.details.noLanguage && !this.details.languageSkills.length)this.addLanguage();
@@ -109,8 +110,9 @@ export class TalentOnboardingComponent implements OnInit, OnDestroy {
   toggleNoLanguage():void{if(this.details.noLanguage){this.details.languageSkills.forEach(l=>this.removeUploads('language:'+l.key+':'));this.details.languageSkills=[];}else if(!this.details.languageSkills.length)this.addLanguage();}
   certificateKey(cert:{key?:string|null}):string{return 'certification:'+cert.key+':certificate';}
   removeLanguage(i:number):void{const [language]=this.details.languageSkills.splice(i,1);this.removeUploads('language:'+language.key+':');}
-  private removeUploads(prefix:string):void{this.supportingUploads=this.supportingUploads.filter(u=>!u.key.startsWith(prefix));}
+  removeUploads(prefix:string):void{this.supportingUploads=this.supportingUploads.filter(u=>!u.key.startsWith(prefix));}
   educationKey(edu:EducationItem,kind:string):string{return 'education:'+edu.clientKey+':'+kind;}
+  documentNameFn=(key:string):string=>this.documentName(key);
   documentName(key:string):string{return this.supportingUploads.find(u=>u.key===key)?.file.name || this.profile.supportingDocuments?.find(d=>d.key===key)?.originalName || '';}
   postalCodeChanged(code:string):void{this.details.postalCode=code;this.details.region='';this.postalRegions=[];this.postalError='';if(/^\d{5}$/.test(code))this.loadPostalRegions(code,true);else this.postalLoading=false;}
   private loadPostalRegions(code:string,changed:boolean):void {
@@ -145,7 +147,7 @@ export class TalentOnboardingComponent implements OnInit, OnDestroy {
       cleanSocial(d);const socialProblem=socialError(d);if(socialProblem)return socialProblem;
       if(d.linkedinUrl && !this.url(d.linkedinUrl))return 'URL LinkedIn harus diawali https:// atau http://.';
     }
-    if(step===2){if(!this.formalEducations.length)return 'Tambahkan pendidikan terakhir.';for(const e of this.formalEducations){
+    if(step===2){const achievements=achievementsError(d,this.today);if(achievements)return achievements;if(!this.formalEducations.length)return 'Tambahkan pendidikan terakhir.';for(const e of this.formalEducations){
       if(wordCount(e.description)>80)return 'Proyek atau penghargaan maksimal 80 kata.';
       if(!e.level || !this.text(e.institution) || !this.text(e.major) || !this.number(e.ipk))return 'Jenjang, institusi, jurusan, dan IPK / nilai wajib diisi.';
       if(!Number.isInteger(e.startYear) || !Number.isInteger(e.endYear) || Number(e.startYear)<1900 || Number(e.endYear)<Number(e.startYear) || Number(e.endYear)>this.currentYear)return 'Tahun pendidikan harus valid dan tahun selesai tidak boleh sebelum tahun mulai.';

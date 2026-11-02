@@ -16,6 +16,9 @@ export interface TalentProfileDetails {
   noTraining?: boolean; noCertification?: boolean; noLanguage?: boolean;
   languageSkills: Array<{key:string;name:string;proficiency:string}>;
   trainingCertifications: TrainingCertification[];
+  /** My Achievements (opsional). Lampiran disimpan sebagai dokumen pendukung. */
+  projects?: ProjectItem[];
+  awards?: AwardItem[];
   residentialPostalCode?: string | null;
   residentialRegion?: string | null;
   /** Media sosial tambahan (opsional, maksimal 2); yang wajib tetap di socialPlatform/socialUsername. */
@@ -29,6 +32,25 @@ export interface TrainingCertification {
   expiryDate: string;
   credentialId: string;
   credentialUrl: string;
+}
+export interface ProjectItem {
+  key?: string | null;
+  name: string;
+  description: string;
+  category: string;
+  role: string;
+  organization: string;
+  startDate: string;
+  endDate: string;
+}
+export interface AwardItem {
+  key?: string | null;
+  name: string;
+  description: string;
+  category: string;
+  level: string;
+  institution: string;
+  achievementDate: string;
 }
 export interface WorkDetails { employmentType:string;industry:string;skills:string[];tools:string[];resignReason:string; }
 export interface SupportingUpload {key:string;file:File;}
