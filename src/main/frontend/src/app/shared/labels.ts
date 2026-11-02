@@ -3,7 +3,7 @@ const LABELS: Record<string, string> = {
   // candidate status
   AVAILABLE: 'Tersedia', SCREENED: 'Sudah disaring', UNKNOWN: 'Belum ditentukan',
   POTENTIAL: 'Potensial', ARCHIVED: 'Diarsipkan',
-  REJECTED: 'Tidak lanjut', SPAM: 'Spam', BLOCKED: 'Diblokir', WITHDRAWN: 'Mengundurkan diri', HIRED: 'Diterima',
+  REJECTED: 'Ditolak', SPAM: 'Spam', BLOCKED: 'Diblokir', WITHDRAWN: 'Mengundurkan Diri', HIRED: 'Diterima',
   // hiring stage
   NEW_CANDIDATE: 'Baru', SCREENING: 'Screening', INTERVIEW: 'Interview', OFFER: 'Penawaran',
   // application status
@@ -28,7 +28,7 @@ export function tone(value: string | null | undefined): string {
   switch (value) {
     case 'AVAILABLE': case 'HIRED': case 'PUBLISHED': case 'PASSED': case 'COMPLETED': return 'positive';
     case 'POTENTIAL': case 'OFFER': case 'HOLD': case 'RESCHEDULED': case 'DRAFT': return 'warning';
-    case 'REJECTED': case 'SPAM': case 'BLOCKED': case 'FAILED': case 'CANCELLED': return 'negative';
+    case 'REJECTED': case 'WITHDRAWN': case 'SPAM': case 'BLOCKED': case 'FAILED': case 'CANCELLED': return 'negative';
     case 'SCREENED': case 'SCREENING': case 'INTERVIEW': case 'SCHEDULED': case 'ACTIVE': return 'info';
     default: return 'neutral';
   }

@@ -17,9 +17,11 @@ import { socialList } from './social-accounts';
     <dl class="facts" [class.one]="!backoffice" [class.two]="backoffice">
       <div><dt>Jenis kelamin</dt><dd>{{ details.gender || '-' }}</dd></div>
       <div><dt>Agama</dt><dd>{{ profile.religion || '-' }}</dd></div>
-      <div><dt>Alamat KTP</dt><dd>{{ profile.citizenIdAddress || '-' }}</dd></div>
-      <div><dt>Wilayah dan kode pos</dt><dd>{{ joinParts(details.region, details.postalCode) }}</dd></div>
-      <div><dt>Alamat domisili</dt><dd>{{ profile.sameAsCitizenIdAddress ? 'Sama dengan alamat KTP' : joinParts(profile.residentialAddress, details.residentialRegion, details.residentialPostalCode) }}</dd></div>
+      <div><dt>Alamat KTP</dt><dd>{{ joinParts(profile.citizenIdAddress, details.region, details.postalCode) }}</dd></div>
+      <div><dt>Alamat domisili</dt><dd>
+        <ng-container *ngIf="profile.sameAsCitizenIdAddress; else ownResidence">{{ joinParts(profile.citizenIdAddress, details.region, details.postalCode) }} <small class="muted">(sama dengan alamat KTP)</small></ng-container>
+        <ng-template #ownResidence>{{ joinParts(profile.residentialAddress, details.residentialRegion, details.residentialPostalCode) }}</ng-template>
+      </dd></div>
       <div><dt>Tahu Sarinah dari</dt><dd>{{ profile.source || '-' }}</dd></div>
     </dl>
 
@@ -38,11 +40,12 @@ import { socialList } from './social-accounts';
     <ng-container *ngIf="showEducationInformation">
       <p class="subhead">Dokumen pendidikan</p>
       <div class="doc-list" *ngIf="profile.supportingDocuments?.length; else noDocs">
-        <button type="button" class="doc" *ngFor="let doc of profile.supportingDocuments" (click)="download(doc.key, doc.originalName)" [disabled]="downloading">
+        <div class="doc" *ngFor="let doc of profile.supportingDocuments">
           <app-icon name="file"></app-icon>
           <span><strong>{{ label(doc.key) }}</strong><small>{{ doc.originalName }}</small></span>
-          <app-icon name="download" [size]="16"></app-icon>
-        </button>
+          <button type="button" class="btn btn-ghost btn-sm" (click)="open(doc.key, doc.originalName, false)" [disabled]="downloading" [attr.aria-label]="'Lihat ' + label(doc.key)"><app-icon name="eye" [size]="16"></app-icon> Lihat</button>
+          <button type="button" class="btn btn-ghost btn-sm" (click)="open(doc.key, doc.originalName, true)" [disabled]="downloading" [attr.aria-label]="'Unduh ' + label(doc.key)"><app-icon name="download" [size]="16"></app-icon> Unduh</button>
+        </div>
       </div>
       <ng-template #noDocs><p class="muted" style="font-size: 14px">Belum ada dokumen pendukung.</p></ng-template>
     </ng-container>
@@ -95,8 +98,9 @@ export class TalentProfileDetailsComponent {
     return (key.endsWith(':diploma') ? 'Ijazah' : 'Transkrip') + ' ' + (edu?.institution || '');
   }
 
-  download(key: string, name: string): void {
+  open(key: string, name: string, save: boolean): void {
     this.error = '';
+    const tab = save ? null : window.open('', '_blank');
     this.downloading = true;
     const url = this.backoffice ? `/backoffice/candidates/${this.profile.id}/documents/` : '/talent/profile/documents/';
     const headers = this.backoffice ? new HttpHeaders({ Authorization: this.backofficeAuth.authorization || '' }) : new HttpHeaders();
@@ -105,6 +109,11 @@ export class TalentProfileDetailsComponent {
         this.downloading = false;
         const href = URL.createObjectURL(blob);
         const link = document.createElement('a');
+        if (!save && tab) {
+          tab.location.href = href;
+          setTimeout(() => URL.revokeObjectURL(href), 60000);
+          return;
+        }
         link.href = href;
         link.download = name;
         link.click();
@@ -112,7 +121,8 @@ export class TalentProfileDetailsComponent {
       },
       error: () => {
         this.downloading = false;
-        this.error = 'Dokumen belum bisa diunduh. Coba lagi beberapa saat lagi.';
+        tab?.close();
+        this.error = 'Dokumen belum bisa dibuka. Coba lagi beberapa saat lagi.';
       },
     });
   }

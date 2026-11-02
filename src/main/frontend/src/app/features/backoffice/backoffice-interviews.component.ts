@@ -44,7 +44,7 @@ import { TableFilters } from '../../shared/table-filters';
             <tbody>
               <tr *ngFor="let item of paged">
                 <td><strong>{{ fmt.fullDate(item.scheduledAt) }}</strong><small>{{ fmt.time(item.scheduledAt) }} · {{ item.durationMinutes }} menit</small></td>
-                <td><strong>{{ item.candidateName }}</strong><small>{{ item.jobTitle || 'Talent Pool' }}</small></td>
+                <td><strong>{{ item.candidateName }}</strong><small>{{ item.jobTitle || 'Explore Interview / Initial Interview' }}</small></td>
                 <td style="max-width: 240px"><strong>{{ fmt.label(item.mode) }}</strong><small style="overflow-wrap: anywhere">{{ item.locationOrLink || '-' }}</small></td>
                 <td>{{ item.interviewer }}</td>
                 <td>
@@ -70,7 +70,7 @@ import { TableFilters } from '../../shared/table-filters';
         <div class="cards">
           <article *ngFor="let item of paged">
             <div class="card-head">
-              <div><strong>{{ item.candidateName }}</strong><small>{{ item.jobTitle || 'Talent Pool' }}</small></div>
+              <div><strong>{{ item.candidateName }}</strong><small>{{ item.jobTitle || 'Explore Interview / Initial Interview' }}</small></div>
               <span class="tag" [ngClass]="'tag-' + fmt.tone(item.status)">{{ fmt.label(item.status) }}</span>
             </div>
             <div class="card-meta">
@@ -118,7 +118,7 @@ import { TableFilters } from '../../shared/table-filters';
               </label>
               <label class="field">Untuk lowongan
                 <select [(ngModel)]="form.jobListingId" [disabled]="!!lockedJobId">
-                  <option [ngValue]="null">Talent Pool (tanpa lowongan)</option>
+                  <option [ngValue]="null">Explore Interview / Initial Interview (tanpa lowongan)</option>
                   <option *ngFor="let job of jobs" [ngValue]="job.id">{{ job.title }}</option>
                 </select>
               </label>

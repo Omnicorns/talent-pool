@@ -427,12 +427,12 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 
 .doc-list { display: grid; gap: 8px; margin-top: 16px; }
 .doc { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--white); text-align: left; }
-.doc:hover:not(:disabled) { border-color: var(--line-strong); background: var(--surface); }
+
 .doc > .icon:first-child { color: var(--red); }
 .doc span { flex: 1; min-width: 0; display: grid; }
 .doc strong { font-size: 14px; font-weight: 600; }
 .doc small { font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.doc > .icon:last-child { color: var(--subtle); }
+.doc .btn { flex: none; }
 .subhead { font-size: 14px; font-weight: 650; color: var(--ink-2); margin: 22px 0 8px; }
 
 .side-card { background: var(--white); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 20px 22px; }

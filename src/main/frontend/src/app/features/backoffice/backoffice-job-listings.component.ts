@@ -8,6 +8,7 @@ import { BackofficeApiService } from '../../core/service/api/backoffice-api.serv
 import { FMT } from '../../shared/labels';
 import { IconComponent } from '../../shared/icon.component';
 import { TALENT_OPTIONS } from '../../shared/talent-options';
+import { CandidateProfileSectionsComponent } from '../../shared/candidate-profile-sections.component';
 import { RichTextComponent } from '../../shared/rich-text.component';
 import { PaginationComponent } from '../../shared/pagination.component';
 import { ColumnFilterComponent, SortDir } from '../../shared/column-filter.component';
@@ -17,7 +18,7 @@ type AppKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review' | 'penilaia
 @Component({
   selector: 'app-backoffice-job-listings',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, BackofficeLayoutComponent, BackofficeOverlayDirective, IconComponent, PaginationComponent, ColumnFilterComponent, RichTextComponent],
+  imports: [CommonModule, FormsModule, RouterLink, BackofficeLayoutComponent, BackofficeOverlayDirective, IconComponent, PaginationComponent, ColumnFilterComponent, RichTextComponent, CandidateProfileSectionsComponent],
   template: `
     <app-backoffice-layout active="jobs">
       <div class="bo-head">
@@ -149,12 +150,24 @@ type AppKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review' | 'penilaia
         <aside class="drawer xwide" [boOverlay]="true" (overlayClose)="closeApplicants()" role="dialog" aria-modal="true" aria-labelledby="applicants-title">
           <header class="drawer-head">
             <div>
-              <h2 id="applicants-title">Pelamar {{ applicantsJob.title }}</h2>
-              <p>{{ applicants.length }} pelamar · {{ potentialCount }} ditandai potensial</p>
+              <h2 id="applicants-title">{{ reviewing ? reviewing.candidateName : 'Pelamar ' + applicantsJob.title }}</h2>
+              <p *ngIf="!reviewing">{{ applicants.length }} pelamar · {{ potentialCount }} ditandai potensial</p>
+              <p *ngIf="reviewing">Review pelamar · {{ applicantsJob.title }}</p>
             </div>
             <button type="button" class="icon-btn" (click)="closeApplicants()" aria-label="Tutup"><app-icon name="x"></app-icon></button>
           </header>
-          <div class="drawer-body">
+          <div class="drawer-body" *ngIf="reviewing">
+            <div class="alert alert-error" *ngIf="reviewError" role="alert"><app-icon name="alert"></app-icon><span>{{ reviewError }}</span></div>
+            <p class="muted" *ngIf="!reviewDetail && !reviewError">Memuat profil kandidat…</p>
+            <ng-container *ngIf="reviewDetail">
+              <div class="drawer-actions" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px">
+                <button class="btn btn-primary btn-sm" (click)="api.downloadCv(reviewDetail.id, 'CV-' + reviewDetail.fullName + '.pdf')" [disabled]="!reviewDetail.cvOriginalName"><app-icon name="download" [size]="16"></app-icon> {{ reviewDetail.cvOriginalName ? 'Unduh CV' : 'CV belum ada' }}</button>
+                <button class="btn btn-secondary btn-sm" (click)="api.viewCv(reviewDetail.id)" [disabled]="!reviewDetail.cvOriginalName"><app-icon name="eye" [size]="16"></app-icon> Lihat CV</button>
+              </div>
+              <app-candidate-profile-sections [selected]="reviewDetail"></app-candidate-profile-sections>
+            </ng-container>
+          </div>
+          <div class="drawer-body" *ngIf="!reviewing">
             <div class="segmented applicant-filter" role="tablist" aria-label="Filter pelamar" *ngIf="applicants.length">
               <button type="button" role="tab" [class.active]="!onlyPotential" [attr.aria-selected]="!onlyPotential" (click)="onlyPotential = false">Semua ({{ applicants.length }})</button>
               <button type="button" role="tab" [class.active]="onlyPotential" [attr.aria-selected]="onlyPotential" (click)="onlyPotential = true">Potensial ({{ potentialCount }})</button>
@@ -192,7 +205,7 @@ type AppKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review' | 'penilaia
                     </td>
                     <td class="actions">
                       <div class="row-actions">
-                        <a class="icon-btn" routerLink="/backoffice/candidates" [queryParams]="{ candidateId: a.candidateId }" (click)="closeApplicants()" [attr.aria-label]="'Lihat profil ' + a.candidateName" title="Lihat profil kandidat"><app-icon name="eye" [size]="16"></app-icon></a>
+                        <button type="button" class="icon-btn" (click)="reviewApplicant(a)" [attr.aria-label]="'Review profil ' + a.candidateName" title="Review profil kandidat"><app-icon name="eye" [size]="16"></app-icon></button>
                         <button class="icon-btn" (click)="api.downloadCv(a.candidateId, 'CV-' + a.candidateName + '.pdf')" [disabled]="!a.candidate?.hasCv" [attr.aria-label]="'Unduh CV ' + a.candidateName" title="Unduh CV"><app-icon name="download" [size]="16"></app-icon></button>
                       </div>
                     </td>
@@ -201,7 +214,10 @@ type AppKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review' | 'penilaia
               </table>
             </div>
           </div>
-          <footer class="drawer-foot">
+          <footer class="drawer-foot" *ngIf="reviewing">
+            <button class="btn btn-secondary" (click)="backToApplicants()"><app-icon name="arrow-left" [size]="16"></app-icon> Kembali ke daftar pelamar</button>
+          </footer>
+          <footer class="drawer-foot" *ngIf="!reviewing">
             <button class="btn btn-secondary" (click)="closeApplicants()">Tutup</button>
             <a class="btn btn-primary" routerLink="/backoffice/applications" (click)="closeApplicants()">Kelola tahap di Pipeline</a>
           </footer>
@@ -342,6 +358,27 @@ export class BackofficeJobListingsComponent implements OnInit {
     });
   }
 
+  reviewing: any = null;
+  reviewDetail: any = null;
+  reviewError = '';
+
+  /** Tampilkan profil pelamar langsung di panel ini, tanpa pindah ke menu Kandidat. */
+  reviewApplicant(a: any): void {
+    this.reviewing = a;
+    this.reviewDetail = null;
+    this.reviewError = '';
+    this.api.candidateDetail(a.candidateId).subscribe({
+      next: (detail) => this.reviewDetail = detail,
+      error: () => this.reviewError = 'Profil kandidat belum bisa dimuat. Coba lagi.',
+    });
+  }
+
+  backToApplicants(): void {
+    this.reviewing = null;
+    this.reviewDetail = null;
+    this.reviewError = '';
+  }
+
   onlyPotential = false;
   deleteTarget: any = null;
   deleteError = '';
@@ -461,6 +498,7 @@ export class BackofficeJobListingsComponent implements OnInit {
 
   closeApplicants(): void {
     this.applicantsJob = null;
+    this.backToApplicants();
   }
 
   closeApplicantsOnBackdrop(event: MouseEvent): void {
