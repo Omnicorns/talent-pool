@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TalentProfileDetailsComponent } from '../../shared/talent-profile-details.component';
 import { CareerHeaderComponent } from '../../shared/career-header.component';
+import { OrganizationsEditorComponent, organizationsError } from '../../shared/organizations-editor.component';
 import { AchievementsEditorComponent, achievementsError, awardDocKey, projectDocKey } from '../../shared/achievements-editor.component';
 import { CandidateProfile, EducationItem, JobApplication, SupportingUpload, TrainingCertification, WorkExperienceItem } from '../../core/models/talent.models';
 import { TalentAuthService } from '../../core/service/api/talent-auth.service';
@@ -20,12 +21,12 @@ import { TagSelectComponent } from '../../shared/tag-select.component';
 import { TALENT_OPTIONS } from '../../shared/talent-options';
 import { translate } from '../../core/i18n/translator';
 
-type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience' | 'education' | 'training' | 'certification' | 'achievements' | 'additional';
+type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience' | 'education' | 'training' | 'certification' | 'achievements' | 'organizations' | 'additional';
 
 @Component({
   selector: 'app-candidate-portal',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, CareerHeaderComponent, TalentProfileDetailsComponent, IconComponent, ChoiceFieldComponent, SearchSelectComponent, WordLimitDirective, TagSelectComponent, PostalRegionFieldComponent, SocialAccountsFieldComponent, AchievementsEditorComponent],
+  imports: [CommonModule, FormsModule, RouterLink, CareerHeaderComponent, TalentProfileDetailsComponent, IconComponent, ChoiceFieldComponent, SearchSelectComponent, WordLimitDirective, TagSelectComponent, PostalRegionFieldComponent, SocialAccountsFieldComponent, AchievementsEditorComponent, OrganizationsEditorComponent],
   template: `
     <div class="site" *ngIf="profile; else loadingTpl">
       <app-career-header active="portal" [profilePictureUrl]="profilePictureUrl"></app-career-header>
@@ -95,6 +96,22 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
                   <ng-template #emptyExperience>
                     <p class="muted">{{ profile.profileDetails?.noExperience ? 'Belum memiliki pengalaman kerja.' : 'Belum ada pengalaman kerja yang ditambahkan.' }}</p>
                   </ng-template>
+                </section>
+
+                <section id="organizations" class="profile-section">
+                  <div class="section-title"><h2>Pengalaman organisasi</h2><button class="btn btn-ghost btn-sm" (click)="openDrawer('organizations')"><app-icon [name]="organizations.length ? 'edit' : 'plus'" [size]="16"></app-icon> {{ organizations.length ? 'Ubah' : 'Tambah' }}</button></div>
+                  <div class="timeline" *ngIf="organizations.length; else emptyOrganizations">
+                    <article class="timeline-item" *ngFor="let item of organizations">
+                      <span class="timeline-mark"><app-icon name="users"></app-icon></span>
+                      <div>
+                        <h3>{{ item.name }}</h3>
+                        <p class="org">{{ joinParts(item.role, item.level, item.type) }}</p>
+                        <p class="desc" *ngIf="item.description">{{ item.description }}</p>
+                      </div>
+                      <time>{{ organizationPeriod(item) }}</time>
+                    </article>
+                  </div>
+                  <ng-template #emptyOrganizations><p class="muted">Belum ada pengalaman organisasi.</p></ng-template>
                 </section>
 
                 <section id="education" class="profile-section">
@@ -393,6 +410,10 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
               <label class="file-field">Upload sertifikat <input type="file" accept=".pdf,application/pdf" aria-label="Upload sertifikat" (change)="selectDocument($event, certDocKey())"><small class="field-hint">{{ documentName(certDocKey()) || 'PDF, maksimal 2 MB' }}</small></label>
             </div>
 
+            <div class="form-stack" *ngIf="drawerSection === 'organizations'">
+              <app-organizations-editor [details]="achievementDetails" [today]="today"></app-organizations-editor>
+            </div>
+
             <div class="form-stack" *ngIf="drawerSection === 'achievements'">
               <app-achievements-editor [details]="achievementDetails" [today]="today" [docName]="documentNameFn" (attach)="selectDocument($event.event, $event.key)" (dropDocs)="dropPendingUploads($event)"></app-achievements-editor>
             </div>
@@ -466,6 +487,7 @@ export class CandidatePortalComponent implements OnInit {
   readonly tabs = [
     { id: 'about', label: 'Tentang' },
     { id: 'experiences', label: 'Pengalaman' },
+    { id: 'organizations', label: 'Organisasi' },
     { id: 'education', label: 'Pendidikan' },
     { id: 'training', label: 'Pelatihan' },
     { id: 'certification', label: 'Sertifikasi' },
@@ -474,7 +496,7 @@ export class CandidatePortalComponent implements OnInit {
   ];
   activeSection = 'about';
   private tabClickedAt = 0;
-  private readonly profileSectionIds = ['about', 'experiences', 'education', 'training', 'certification', 'achievements', 'additional'];
+  private readonly profileSectionIds = ['about', 'experiences', 'organizations', 'education', 'training', 'certification', 'achievements', 'additional'];
   applicationSubmitted = false;
   applicationHistoryOpen = false;
   applicationHistoryLoading = false;
@@ -739,6 +761,11 @@ export class CandidatePortalComponent implements OnInit {
   get educationDocuments(): Array<{ key: string; originalName: string }> {
     return (this.profile?.supportingDocuments || []).filter((doc) => !/^(certification|project|award):/.test(doc.key));
   }
+  get organizations() { return this.profile?.profileDetails?.organizations || []; }
+  organizationPeriod(item: { startDate: string; endDate: string; currentlyActive: boolean }): string {
+    const fmt = (v?: string | null) => (v ? this.fmt.fullDate(v) : '');
+    return `${fmt(item.startDate)} – ${item.currentlyActive ? 'sekarang' : fmt(item.endDate)}`;
+  }
   get projects() { return this.profile?.profileDetails?.projects || []; }
   get awards() { return this.profile?.profileDetails?.awards || []; }
   get achievementDetails() { return this.ensureDetails(); }
@@ -826,6 +853,7 @@ export class CandidatePortalComponent implements OnInit {
       training: this.drawerIndex == null ? 'Tambah pelatihan' : 'Ubah pelatihan',
       certification: this.drawerIndex == null ? 'Tambah sertifikasi' : 'Ubah sertifikasi',
       achievements: 'My Achievements',
+      organizations: 'Pengalaman organisasi',
       additional: 'Informasi tambahan',
     };
     return this.drawerSection ? map[this.drawerSection] : '';
@@ -954,6 +982,7 @@ export class CandidatePortalComponent implements OnInit {
       if (!this.documentName(this.certDocKey())) return 'Upload sertifikat wajib diisi (PDF, maks. 2 MB).';
     }
     if (this.drawerSection === 'achievements') return achievementsError(this.ensureDetails(), this.today);
+    if (this.drawerSection === 'organizations') return organizationsError(this.ensureDetails(), this.today);
     if (this.drawerSection === 'additional') {
       const d = this.ensureDetails();
       const min = Number(p.expectedSalary), max = Number(d.expectedSalaryMax);

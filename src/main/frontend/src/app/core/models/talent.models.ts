@@ -19,6 +19,8 @@ export interface TalentProfileDetails {
   /** My Achievements (opsional). Lampiran disimpan sebagai dokumen pendukung. */
   projects?: ProjectItem[];
   awards?: AwardItem[];
+  /** Pengalaman organisasi (opsional). */
+  organizations?: OrganizationItem[];
   residentialPostalCode?: string | null;
   residentialRegion?: string | null;
   /** Media sosial tambahan (opsional, maksimal 2); yang wajib tetap di socialPlatform/socialUsername. */
@@ -42,6 +44,17 @@ export interface ProjectItem {
   organization: string;
   startDate: string;
   endDate: string;
+}
+export interface OrganizationItem {
+  key?: string | null;
+  role: string;
+  name: string;
+  level: string;
+  type: string;
+  currentlyActive: boolean;
+  startDate: string;
+  endDate: string;
+  description: string;
 }
 export interface AwardItem {
   key?: string | null;
