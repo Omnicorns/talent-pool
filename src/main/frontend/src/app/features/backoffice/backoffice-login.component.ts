@@ -3,6 +3,8 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { BackofficeAuthService } from '../../core/service/api/backoffice-auth.service';
+import { DEFAULT_BRAND_LOGO } from '../public/site-defaults';
+import { SiteContentService } from '../../core/service/api/site-content.service';
 import { IconComponent } from '../../shared/icon.component';
 
 @Component({
@@ -12,7 +14,7 @@ import { IconComponent } from '../../shared/icon.component';
   template: `
     <main class="bo-login">
       <section class="bo-login-card">
-        <img src="images/sarinah.png" alt="Sarinah" class="logo">
+        <img [src]="brandLogo" alt="Sarinah" class="logo">
         <div>
           <h1>Masuk ke back office</h1>
           <p>Khusus tim Human Capital dan recruiter Sarinah.</p>
@@ -42,7 +44,11 @@ export class BackofficeLoginComponent {
   loading = false;
   error = '';
 
-  constructor(private auth: BackofficeAuthService, private router: Router) {}
+  brandLogo = DEFAULT_BRAND_LOGO;
+
+  constructor(private auth: BackofficeAuthService, private router: Router, site: SiteContentService) {
+    site.branding().subscribe((branding) => (this.brandLogo = branding.brandLogo));
+  }
 
   login(): void {
     this.loading = true;
