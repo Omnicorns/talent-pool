@@ -27,12 +27,26 @@ public record TalentProfileDetails(
     boolean noLanguage,
     /** My Achievements: proyek dan penghargaan (opsional). Lampiran diunggah sebagai dokumen pendukung. */
     @Size(max=20) List<@Valid Project> projects,
-    @Size(max=20) List<@Valid Award> awards
+    @Size(max=20) List<@Valid Award> awards,
+    /** Pengalaman organisasi (opsional). */
+    @Size(max=20) List<@Valid Organization> organizations
 ) {
     public TalentProfileDetails {
         socialAccounts = socialAccounts == null ? List.of() : socialAccounts;
         projects = projects == null ? List.of() : projects;
         awards = awards == null ? List.of() : awards;
+        organizations = organizations == null ? List.of() : organizations;
+    }
+
+    /** Konstruktor tanpa pengalaman organisasi. */
+    public TalentProfileDetails(String gender, String postalCode, String region, String linkedinUrl,
+            String socialPlatform, String socialUsername, BigDecimal expectedSalaryMax, boolean noExperience,
+            List<LanguageSkill> languageSkills, List<TrainingCertification> trainingCertifications,
+            String residentialPostalCode, String residentialRegion, List<SocialAccount> socialAccounts,
+            boolean noTraining, boolean noCertification, boolean noLanguage, List<Project> projects, List<Award> awards) {
+        this(gender, postalCode, region, linkedinUrl, socialPlatform, socialUsername, expectedSalaryMax,
+                noExperience, languageSkills, trainingCertifications, residentialPostalCode, residentialRegion,
+                socialAccounts, noTraining, noCertification, noLanguage, projects, awards, List.of());
     }
 
     /** Konstruktor tanpa My Achievements. */
@@ -86,6 +100,9 @@ public record TalentProfileDetails(
         @Size(max=1000) @Pattern(regexp="^$|https?://.+") String credentialUrl
     ) {}
 
+    public static final List<String> ORG_ROLES = List.of("Ketua", "Sekretaris", "Bendahara", "Anggota");
+    public static final List<String> ORG_LEVELS = List.of("Internasional", "Nasional", "Daerah", "Universitas/sekolah", "Komunitas");
+    public static final List<String> ORG_TYPES = List.of("Seni/Olahraga", "Kemahasiswaan", "Sosial Kemasyarakatan", "Keagamaan", "Komunitas");
     public static final List<String> PROJECT_CATEGORIES = List.of("Academic Project", "Research Project", "Business Project",
         "Social Project", "Technology / Innovation Project", "Entrepreneurship Project");
     public static final List<String> AWARD_CATEGORIES = List.of("Academic Achievement", "Competition", "Scholarship",
@@ -112,5 +129,17 @@ public record TalentProfileDetails(
         @NotBlank @Size(max=40) String level,
         @Size(max=200) String institution,
         LocalDate achievementDate
+    ) {}
+
+    public record Organization(
+        @Size(max=80) @Pattern(regexp="^$|[a-zA-Z0-9-]{1,80}") String key,
+        @NotBlank @Size(max=40) String role,
+        @NotBlank @Size(max=200) String name,
+        @Size(max=60) String level,
+        @Size(max=60) String type,
+        boolean currentlyActive,
+        LocalDate startDate,
+        LocalDate endDate,
+        @Size(max=2000) String description
     ) {}
 }

@@ -94,6 +94,13 @@ public class TalentProfileValidator {
             require(aw.achievementDate()==null || !aw.achievementDate().isAfter(LocalDate.now()),"Tanggal penghargaan tidak boleh di masa depan.");
             require(!blank(aw.key()) && achievementKeys.add("award:"+aw.key()),"Penghargaan tidak valid.");
         }
+        for(var org:d.organizations()) {
+            require(!blank(org.name()) && TalentProfileDetails.ORG_ROLES.contains(Objects.toString(org.role(),"")),"Peran dan nama organisasi wajib diisi.");
+            require(blank(org.level()) || TalentProfileDetails.ORG_LEVELS.contains(org.level()),"Tingkat organisasi tidak valid.");
+            require(blank(org.type()) || TalentProfileDetails.ORG_TYPES.contains(org.type()),"Jenis organisasi tidak valid.");
+            require(org.startDate()!=null && !org.startDate().isAfter(LocalDate.now()),"Tanggal mulai organisasi wajib diisi dan tidak boleh di masa depan.");
+            require(org.currentlyActive() || (org.endDate()!=null && !org.endDate().isBefore(org.startDate()) && !org.endDate().isAfter(LocalDate.now())),"Tanggal selesai organisasi wajib diisi dan tidak boleh sebelum tanggal mulai.");
+        }
         require(c.isTermsAccepted(),"Syarat dan ketentuan harus disetujui.");
     }
     private boolean empty(List<String> items) { return items==null || items.isEmpty() || items.stream().anyMatch(this::blank); }

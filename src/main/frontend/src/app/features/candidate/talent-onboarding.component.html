@@ -12,7 +12,7 @@
     <div class="onboard-intro">
       <h1>{{ editing ? 'Ubah Data Talent Pool' : 'Lengkapi Data Talent Pool' }}</h1>
       <p>Isi data diri Anda dengan lengkap dan benar untuk melanjutkan proses pendaftaran.</p>
-      <div class="progress" role="progressbar" [attr.aria-valuenow]="step" aria-valuemin="1" aria-valuemax="6"><span [style.width.%]="progress"></span></div>
+      <div class="progress" role="progressbar" [attr.aria-valuenow]="step" aria-valuemin="1" aria-valuemax="7"><span [style.width.%]="progress"></span></div>
     </div>
 
     <div class="alert alert-info draft-banner" *ngIf="draftRestored" role="status">
@@ -31,7 +31,7 @@
 
     <section class="onboard-card">
       <header>
-        <small>Langkah {{ step }} dari 6</small>
+        <small>Langkah {{ step }} dari 7</small>
         <h2>{{ stepTitle }}</h2>
         <p>{{ stepDescription }}</p>
       </header>
@@ -124,8 +124,13 @@
           </ng-container>
         </ng-container>
 
-        <!-- 4. Pelatihan & Sertifikasi -->
+        <!-- 4. Organisasi -->
         <ng-container *ngIf="step === 4">
+          <app-organizations-editor [details]="details" [today]="today"></app-organizations-editor>
+        </ng-container>
+
+        <!-- 5. Pelatihan & Sertifikasi -->
+        <ng-container *ngIf="step === 5">
           <h3>Pelatihan</h3>
           <label class="check"><input type="checkbox" [(ngModel)]="details.noTraining" (ngModelChange)="toggleNoTraining()"> Saya tidak memiliki pelatihan</label>
           <ng-container *ngIf="!details.noTraining">
@@ -171,7 +176,7 @@
         </ng-container>
 
         <!-- 5. Informasi tambahan -->
-        <ng-container *ngIf="step === 5">
+        <ng-container *ngIf="step === 6">
           <h3>Gaji</h3>
           <label class="field">Gaji terakhir per bulan <span class="opt">(opsional)</span><input type="number" min="0" step="1" [(ngModel)]="profile.currentSalary" placeholder="Rupiah"></label>
           <fieldset>
@@ -212,7 +217,7 @@
         </ng-container>
 
         <!-- 6. CV & portofolio -->
-        <ng-container *ngIf="step === 6">
+        <ng-container *ngIf="step === 7">
           <label class="upload">
             <input type="file" accept=".pdf,.doc,.docx" aria-label="Unggah CV" (change)="selectCv($event)">
             <app-icon name="file" [size]="28" [stroke]="1.5"></app-icon>
@@ -259,8 +264,8 @@
         <span class="hint">Perubahan disimpan saat Anda menyelesaikan langkah terakhir.</span>
         <div>
           <button type="button" class="btn btn-secondary" *ngIf="step > 1" [disabled]="saving" (click)="previous()">Sebelumnya</button>
-          <button type="button" class="btn btn-primary" *ngIf="step < 6" (click)="next()">Selanjutnya <app-icon name="arrow-up-right" [size]="16"></app-icon></button>
-          <button type="button" class="btn btn-primary" *ngIf="step === 6" [disabled]="saving" (click)="finish()">{{ saving ? 'Menyimpan…' : editing ? 'Simpan profil' : 'Selesai' }}</button>
+          <button type="button" class="btn btn-primary" *ngIf="step < 7" (click)="next()">Selanjutnya <app-icon name="arrow-up-right" [size]="16"></app-icon></button>
+          <button type="button" class="btn btn-primary" *ngIf="step === 7" [disabled]="saving" (click)="finish()">{{ saving ? 'Menyimpan…' : editing ? 'Simpan profil' : 'Selesai' }}</button>
         </div>
       </footer>
     </section>

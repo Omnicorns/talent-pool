@@ -234,6 +234,15 @@ type ColKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review';
               <p class="muted" style="font-size: 14px" *ngIf="!selected.workExperiences?.length">Belum ada pengalaman kerja.</p>
             </section>
 
+            <section class="drawer-section" *ngIf="selected.profileDetails?.organizations?.length">
+              <h3>Pengalaman organisasi</h3>
+              <article class="detail-item" *ngFor="let item of selected.profileDetails?.organizations || []">
+                <strong>{{ item.name }}</strong>
+                <span>{{ item.role }}{{ item.level ? ' · ' + item.level : '' }}{{ item.type ? ' · ' + item.type : '' }} · {{ item.startDate ? fmt.fullDate(item.startDate) : '-' }} – {{ item.currentlyActive ? 'sekarang' : (item.endDate ? fmt.fullDate(item.endDate) : '-') }}</span>
+                <p *ngIf="item.description">{{ item.description }}</p>
+              </article>
+            </section>
+
             <section class="drawer-section">
               <h3>Pendidikan dan pelatihan</h3>
               <article class="detail-item" *ngFor="let edu of selected.educations">
