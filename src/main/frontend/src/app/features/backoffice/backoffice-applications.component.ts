@@ -25,7 +25,7 @@ import { TableFilters } from '../../shared/table-filters';
 
       <div class="chips" role="tablist" aria-label="Filter tahap">
         <button type="button" role="tab" class="btn btn-sm" [class.btn-primary]="stageFilter === ''" [class.btn-secondary]="stageFilter !== ''" [attr.aria-selected]="stageFilter === ''" (click)="setStage('')">Semua ({{ allCount }})</button>
-        <button type="button" role="tab" class="btn btn-sm" *ngFor="let stage of stages" [class.btn-primary]="stageFilter === stage" [class.btn-secondary]="stageFilter !== stage" [attr.aria-selected]="stageFilter === stage" (click)="setStage(stage)">{{ fmt.label(stage) }} ({{ countFor(stage) }})</button>
+        <button type="button" role="tab" class="btn btn-sm" *ngFor="let stage of stageOptions" [class.btn-primary]="stageFilter === stage" [class.btn-secondary]="stageFilter !== stage" [attr.aria-selected]="stageFilter === stage" (click)="setStage(stage)">{{ fmt.label(stage) }} ({{ countFor(stage) }})</button>
       </div>
 
       <section class="table-card responsive">
@@ -41,13 +41,14 @@ import { TableFilters } from '../../shared/table-filters';
                 <td><strong>{{ item.candidateName }}</strong></td>
                 <td>{{ item.jobTitle }}</td>
                 <td>
-                  <select class="select-inline" [ngModel]="item.stage" (ngModelChange)="changeStage(item, $event)" [attr.aria-label]="'Tahap ' + item.candidateName">
-                    <option *ngFor="let stage of stages" [value]="stage">{{ fmt.label(stage) }}</option>
+                  <select class="select-inline" [ngModel]="viewStage(item)" (ngModelChange)="changeStage(item, $event)" [attr.aria-label]="'Tahap ' + item.candidateName">
+                    <option *ngFor="let stage of stageOptions" [value]="stage">{{ fmt.label(stage) }}</option>
                   </select>
                 </td>
                 <td><span class="tag" [ngClass]="'tag-' + fmt.tone(item.status)">{{ fmt.label(item.status) }}</span></td>
                 <td>{{ fmt.fullDate(item.appliedAt) }}</td>
                 <td class="actions">
+                  <button type="button" class="btn btn-ghost btn-sm" (click)="openHistory(item)" [attr.aria-label]="'Riwayat tahap ' + item.candidateName"><app-icon name="clock" [size]="15"></app-icon> Riwayat</button>
                   <a *ngIf="item.stage === 'INTERVIEW'" routerLink="/backoffice/interviews" [queryParams]="{ candidateId: item.candidateId, jobId: item.jobListingId }" class="btn btn-secondary btn-sm">
                     <app-icon name="calendar" [size]="15"></app-icon> Atur interview
                   </a>
@@ -66,8 +67,9 @@ import { TableFilters } from '../../shared/table-filters';
             </div>
             <div class="card-meta"><div><span>Tanggal melamar</span>{{ fmt.fullDate(item.appliedAt) }}</div></div>
             <div class="card-actions">
-              <select class="select-inline" [ngModel]="item.stage" (ngModelChange)="changeStage(item, $event)" [attr.aria-label]="'Tahap ' + item.candidateName">
-                <option *ngFor="let stage of stages" [value]="stage">{{ fmt.label(stage) }}</option>
+              <button type="button" class="btn btn-ghost btn-sm" (click)="openHistory(item)"><app-icon name="clock" [size]="15"></app-icon> Riwayat</button>
+              <select class="select-inline" [ngModel]="viewStage(item)" (ngModelChange)="changeStage(item, $event)" [attr.aria-label]="'Tahap ' + item.candidateName">
+                <option *ngFor="let stage of stageOptions" [value]="stage">{{ fmt.label(stage) }}</option>
               </select>
               <a *ngIf="item.stage === 'INTERVIEW'" routerLink="/backoffice/interviews" [queryParams]="{ candidateId: item.candidateId, jobId: item.jobListingId }" class="btn btn-secondary btn-sm">Atur interview</a>
             </div>
@@ -77,6 +79,30 @@ import { TableFilters } from '../../shared/table-filters';
 
         <app-pagination [page]="page" [size]="size" [total]="total" (pageChange)="goToPage($event)" (sizeChange)="changeSize($event)"></app-pagination>
       </section>
+          <div class="modal-backdrop" *ngIf="historyItem" (click)="closeHistory()">
+        <section class="modal" role="dialog" aria-modal="true" aria-labelledby="history-title" (click)="$event.stopPropagation()" style="max-width: 520px">
+          <header class="drawer-head">
+            <div><h2 id="history-title">Riwayat tahap</h2><p>{{ historyItem.candidateName }} · {{ historyItem.jobTitle }}</p></div>
+            <button type="button" class="icon-btn" (click)="closeHistory()" aria-label="Tutup"><app-icon name="x"></app-icon></button>
+          </header>
+          <div class="modal-body">
+            <p class="muted" *ngIf="historyLoading">Memuat riwayat…</p>
+            <div class="alert alert-error" *ngIf="historyError" role="alert"><app-icon name="alert"></app-icon><span>{{ historyError }}</span></div>
+            <ol class="history-list" *ngIf="!historyLoading && history.length">
+              <li *ngFor="let entry of history; let last = last" [class.current]="last">
+                <span class="history-dot" aria-hidden="true"></span>
+                <div>
+                  <strong>{{ stageText(entry) }}</strong>
+                  <span class="muted"> · {{ eventLabel(entry.eventType) }}</span>
+                  <small class="muted" style="display: block">{{ fmt.fullDate(entry.changedAt) }} · {{ fmt.time(entry.changedAt) }}</small>
+                  <p *ngIf="entry.notes" style="margin: 4px 0 0; font-size: 14px">{{ entry.notes }}</p>
+                </div>
+              </li>
+            </ol>
+          </div>
+          <footer class="modal-foot"><button class="btn btn-secondary" (click)="closeHistory()">Tutup</button></footer>
+        </section>
+      </div>
     </app-backoffice-layout>
   `,
 })
@@ -89,18 +115,52 @@ export class BackofficeApplicationsComponent implements OnInit {
 
   page = 0;
   size = 10;
-  stages = ['NEW_CANDIDATE','SCREENING','INTERVIEW','OFFER','HIRED','REJECTED'];
+  /** Tahap akhir "tidak lanjut" dipisah: Ditolak (REJECTED) dan Mengundurkan Diri (status WITHDRAWN). */
+  stageOptions = ['NEW_CANDIDATE','SCREENING','INTERVIEW','OFFER','HIRED','REJECTED','WITHDRAWN'];
+
+  viewStage(item: any): string {
+    return item.status === 'WITHDRAWN' ? 'WITHDRAWN' : item.stage;
+  }
+
+  historyItem: any = null;
+  history: any[] = [];
+  historyLoading = false;
+  historyError = '';
+
+  openHistory(item: any): void {
+    this.historyItem = item;
+    this.history = [];
+    this.historyError = '';
+    this.historyLoading = true;
+    this.api.applicationHistory(item.id).subscribe({
+      next: (list) => { this.history = list || []; this.historyLoading = false; },
+      error: () => { this.historyError = 'Riwayat belum bisa dimuat. Coba lagi.'; this.historyLoading = false; },
+    });
+  }
+
+  closeHistory(): void {
+    this.historyItem = null;
+  }
+
+  eventLabel(type: string): string {
+    return ({ APPLIED: 'Melamar', STAGE_CHANGED: 'Pindah tahap', WITHDRAWN: 'Mengundurkan diri', CURRENT_STATUS: 'Kondisi saat ini' } as Record<string, string>)[type] || type;
+  }
+
+  /** Nama tahap pada riwayat; "tidak lanjut" dibedakan oleh statusnya. */
+  stageText(entry: any): string {
+    return FMT.label(entry.status === 'WITHDRAWN' ? 'WITHDRAWN' : entry.stage);
+  }
 
   readonly tf = new TableFilters<any>([
     { key: 'kandidat', label: 'Kandidat', value: (r) => r.candidateName || '' },
     { key: 'lowongan', label: 'Lowongan', value: (r) => r.jobTitle || '' },
-    { key: 'tahap', label: 'Tahap', value: (r) => FMT.label(r.stage) },
+    { key: 'tahap', label: 'Tahap', value: (r) => FMT.label(r.status === 'WITHDRAWN' ? 'WITHDRAWN' : r.stage) },
     { key: 'status', label: 'Status', value: (r) => FMT.label(r.status) },
     { key: 'tanggal', label: 'Tanggal melamar', value: (r) => FMT.fullDate(r.appliedAt), sortValue: (r) => String(r.appliedAt) },
   ]);
 
   get byStage(): any[] {
-    return this.stageFilter ? this.all.filter((r) => r.stage === this.stageFilter) : this.all;
+    return this.stageFilter ? this.all.filter((r) => this.viewStage(r) === this.stageFilter) : this.all;
   }
 
   get filtered(): any[] {
@@ -123,7 +183,7 @@ export class BackofficeApplicationsComponent implements OnInit {
   }
 
   countFor(stage: string): number {
-    return this.all.filter((r) => r.stage === stage).length;
+    return this.all.filter((r) => this.viewStage(r) === stage).length;
   }
 
   constructor(private api: BackofficeApiService) {}
@@ -159,7 +219,8 @@ export class BackofficeApplicationsComponent implements OnInit {
   }
 
   changeStage(item: any, stage: string): void {
-    this.api.updateApplicationStage(item.id, stage).subscribe({
+    const withdrawn = stage === 'WITHDRAWN';
+    this.api.updateApplicationStage(item.id, withdrawn ? 'REJECTED' : stage, withdrawn ? 'WITHDRAWN' : null).subscribe({
       next: (updated) => {
         item.stage = updated.stage;
         item.status = updated.status;

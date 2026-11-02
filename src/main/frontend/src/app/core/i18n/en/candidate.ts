@@ -151,6 +151,12 @@ export const EN_CANDIDATE: Record<string, string> = {
   'Wilayah dan kode pos': 'Area and postal code', 'Alamat KTP': 'ID card address', 'Alamat domisili': 'Residential address', 'Tahu Sarinah dari': 'Heard about Sarinah from',
   'Ekspektasi gaji per bulan': 'Expected monthly salary', 'Fungsi yang diminati': 'Preferred functions', 'Lokasi yang diminati': 'Preferred locations', 'Kemampuan bahasa': 'Language skills',
   'Dokumen pendidikan': 'Education documents', 'Belum ada dokumen pendukung.': 'No supporting documents yet.', 'Sama dengan alamat KTP': 'Same as ID card address',
+  'Explore Interview / Initial Interview (tanpa lowongan)': 'Explore Interview / Initial Interview (no job)',
+  'Kembali ke daftar pelamar': 'Back to applicants', 'Review pelamar': 'Applicant review', 'Profil kandidat belum bisa dimuat. Coba lagi.': 'Candidate profile could not be loaded. Please try again.',
+  'Lihat': 'View', 'Unduh': 'Download', '(sama dengan alamat KTP)': '(same as ID card address)',
+  'Dokumen belum bisa dibuka. Coba lagi beberapa saat lagi.': 'The document could not be opened. Please try again shortly.',
+  'Riwayat tahap': 'Stage history', 'Melamar': 'Applied', 'Pindah tahap': 'Stage changed', 'Kondisi saat ini': 'Current status',
+  'Riwayat belum bisa dimuat. Coba lagi.': 'History could not be loaded. Please try again.',
   'Tidak memiliki keahlian berbahasa': 'No language skills', 'Dokumen belum bisa diunduh. Coba lagi beberapa saat lagi.': 'The document could not be downloaded. Please try again shortly.',
   // My Achievements (proyek dan penghargaan)
   'My Achievements': 'My Achievements',

@@ -92,8 +92,8 @@ export const EN_PUBLIC: Record<string, string> = {
 
   // Status & tipe (labels.ts)
   'Tersedia': 'Available', 'Sudah disaring': 'Screened', 'Belum ditentukan': 'Not set',
-  'Potensial': 'Potential', 'Diarsipkan': 'Archived', 'Tidak lanjut': 'Not proceeding', 'Diblokir': 'Blocked',
-  'Mengundurkan diri': 'Withdrawn', 'Diterima': 'Hired', 'Baru': 'New', 'Penawaran': 'Offer', 'Diproses': 'In process',
+  'Potensial': 'Potential', 'Diarsipkan': 'Archived', 'Ditolak': 'Rejected', 'Diblokir': 'Blocked',
+  'Mengundurkan Diri': 'Withdrawn', 'Diterima': 'Hired', 'Baru': 'New', 'Penawaran': 'Offer', 'Diproses': 'In process',
   'Private': 'Private', 'Dibuka': 'Open', 'Ditutup': 'Closed', 'Penuh waktu': 'Full-time', 'Paruh waktu': 'Part-time',
   'Kontrak': 'Contract', 'Magang': 'Internship', 'Sementara': 'Temporary', 'Terjadwal': 'Scheduled',
   'Dijadwal ulang': 'Rescheduled', 'Selesai': 'Completed', 'Dibatalkan': 'Cancelled', 'Menunggu': 'Pending',

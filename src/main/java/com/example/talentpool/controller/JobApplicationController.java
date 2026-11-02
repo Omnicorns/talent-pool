@@ -34,6 +34,11 @@ public class JobApplicationController {
         return service.listByCandidate(candidateId);
     }
 
+    @GetMapping("/{id}/history")
+    public java.util.List<com.example.talentpool.dto.TalentApplicationHistoryResponse> history(@PathVariable UUID id) {
+        return service.history(id);
+    }
+
     @GetMapping("/stage-counts")
     public java.util.Map<String, Long> stageCounts() {
         return service.stageCounts();

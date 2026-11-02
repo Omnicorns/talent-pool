@@ -2,6 +2,7 @@ package com.example.talentpool.service;
 
 import com.example.talentpool.domain.*;
 import com.example.talentpool.dto.JobApplicationResponse;
+import com.example.talentpool.dto.TalentApplicationHistoryResponse;
 import com.example.talentpool.dto.JobApplicationStageRequest;
 import com.example.talentpool.dto.JobApplicationUpsertRequest;
 import com.example.talentpool.exception.BadRequestException;
@@ -73,7 +74,7 @@ public class JobApplicationService {
             application.setNotes(trimToNull(request.notes()));
         }
 
-        syncCandidate(candidate, job, stage);
+        syncCandidate(candidate, job, stage, application.getStatus());
         candidateRepository.save(candidate);
         JobApplication saved = repository.save(application);
         if (newApplication) {
@@ -92,7 +93,7 @@ public class JobApplicationService {
         if (request.notes() != null) {
             application.setNotes(trimToNull(request.notes()));
         }
-        syncCandidate(application.getCandidate(), application.getJobListing(), request.stage());
+        syncCandidate(application.getCandidate(), application.getJobListing(), request.stage(), application.getStatus());
         candidateRepository.save(application.getCandidate());
         JobApplication saved = repository.save(application);
         recordHistory(saved, "STAGE_CHANGED", request.notes());
@@ -152,12 +153,12 @@ public class JobApplicationService {
         repository.flush();
 
         repository.findFirstByCandidateIdOrderByUpdatedAtDesc(candidate.getId()).ifPresentOrElse(
-                remaining -> syncCandidate(candidate, remaining.getJobListing(), remaining.getStage()),
+                remaining -> syncCandidate(candidate, remaining.getJobListing(), remaining.getStage(), remaining.getStatus()),
                 () -> {
                     candidate.setMovedToJobListing(false);
                     candidate.setJobPosition(null);
                     candidate.setHiringStage(null);
-                    if (candidate.getStatus() == CandidateStatus.HIRED || candidate.getStatus() == CandidateStatus.REJECTED) {
+                    if (candidate.getStatus() == CandidateStatus.HIRED || candidate.getStatus() == CandidateStatus.REJECTED || candidate.getStatus() == CandidateStatus.WITHDRAWN) {
                         candidate.setStatus(null);
                     }
                 }
@@ -172,6 +173,24 @@ public class JobApplicationService {
                 application.getStatus(), application.getNotes(), application.getAppliedAt(), application.getUpdatedAt(),
                 application.isPotential(), application.isAddedByHr(), candidateMapper.toListItem(application.getCandidate())
         );
+    }
+
+    /** Riwayat perpindahan tahap sebuah lamaran (terlama lebih dulu), untuk Pipeline di back office. */
+    @Transactional
+    public java.util.List<TalentApplicationHistoryResponse> history(UUID id) {
+        JobApplication application = getEntity(id);
+        java.util.List<TalentApplicationHistoryResponse> items = historyRepository.findByApplicationIdOrderByChangedAtAsc(id).stream()
+                .map(item -> new TalentApplicationHistoryResponse(item.getId(), item.getStage(), item.getStatus(),
+                        item.getEventType(), item.getNotes(), item.getChangedAt()))
+                .toList();
+        if (!items.isEmpty()) return items;
+        // Lamaran lama sebelum riwayat dicatat: tampilkan titik awal dan kondisi sekarang.
+        java.util.List<TalentApplicationHistoryResponse> fallback = new java.util.ArrayList<>();
+        fallback.add(new TalentApplicationHistoryResponse(null, HiringStage.NEW_CANDIDATE, ApplicationStatus.ACTIVE, "APPLIED", null, application.getAppliedAt()));
+        if (application.getStage() != HiringStage.NEW_CANDIDATE || application.getStatus() != ApplicationStatus.ACTIVE) {
+            fallback.add(new TalentApplicationHistoryResponse(null, application.getStage(), application.getStatus(), "CURRENT_STATUS", null, application.getUpdatedAt()));
+        }
+        return fallback;
     }
 
     public void recordHistory(JobApplication application, String eventType, String notes) {
@@ -190,6 +209,10 @@ public class JobApplicationService {
     }
 
     private void syncCandidate(Candidate candidate, JobListing job, HiringStage stage) {
+        syncCandidate(candidate, job, stage, null);
+    }
+
+    private void syncCandidate(Candidate candidate, JobListing job, HiringStage stage, ApplicationStatus applicationStatus) {
         candidate.setMovedToJobListing(true);
         candidate.setJobPosition(job.getTitle());
         candidate.setHiringStage(stage.name());
@@ -197,17 +220,18 @@ public class JobApplicationService {
         candidate.setStatus(switch (stage) {
             // Lamaran baru tidak otomatis "Potensial"; status itu ditentukan recruiter. Status lama
             // yang sudah final (diterima/ditolak) dikosongkan lagi agar lamaran baru dinilai ulang.
-            case NEW_CANDIDATE -> current == CandidateStatus.HIRED || current == CandidateStatus.REJECTED ? null : current;
+            case NEW_CANDIDATE -> current == CandidateStatus.HIRED || current == CandidateStatus.REJECTED || current == CandidateStatus.WITHDRAWN ? null : current;
             case SCREENING -> CandidateStatus.SCREENED;
             case INTERVIEW, OFFER -> CandidateStatus.AVAILABLE;
             case HIRED -> CandidateStatus.HIRED;
-            case REJECTED -> CandidateStatus.REJECTED;
+            case REJECTED -> applicationStatus == ApplicationStatus.WITHDRAWN ? CandidateStatus.WITHDRAWN : CandidateStatus.REJECTED;
         });
     }
 
     private ApplicationStatus statusFor(HiringStage stage, ApplicationStatus requested) {
         if (stage == HiringStage.HIRED) return ApplicationStatus.HIRED;
-        if (stage == HiringStage.REJECTED) return ApplicationStatus.REJECTED;
+        // Tahap akhir "tidak lanjut" punya dua alasan: ditolak HC, atau kandidat mengundurkan diri.
+        if (stage == HiringStage.REJECTED) return requested == ApplicationStatus.WITHDRAWN ? ApplicationStatus.WITHDRAWN : ApplicationStatus.REJECTED;
         return requested == ApplicationStatus.WITHDRAWN ? ApplicationStatus.WITHDRAWN : ApplicationStatus.ACTIVE;
     }
 

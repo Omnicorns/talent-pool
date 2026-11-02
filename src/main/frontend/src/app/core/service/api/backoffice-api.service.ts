@@ -159,6 +159,10 @@ export class BackofficeApiService {
     return this.http.get<Record<string, number>>(`${API_BASE}/backoffice/applications/stage-counts`, { headers: this.headers });
   }
 
+  applicationHistory(id: string) {
+    return this.http.get<any[]>(`${API_BASE}/backoffice/applications/${id}/history`, { headers: this.headers });
+  }
+
   updateApplicationStage(id: string, stage: string, status?: string | null) {
     return this.http.patch<any>(
       `${API_BASE}/backoffice/applications/${id}/stage`,
