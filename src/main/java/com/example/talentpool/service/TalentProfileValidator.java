@@ -83,6 +83,17 @@ public class TalentProfileValidator {
                 require(!blank(cert.key()) && certKeys.add(cert.key()) && documents.contains("certification:"+cert.key()+":certificate"),"Upload sertifikat wajib diisi untuk setiap sertifikasi.");
             }
         }
+        Set<String> achievementKeys=new HashSet<>();
+        for(var pr:d.projects()) {
+            require(!blank(pr.name()) && TalentProfileDetails.PROJECT_CATEGORIES.contains(Objects.toString(pr.category(),"")),"Nama dan kategori proyek wajib diisi.");
+            require(pr.startDate()==null || pr.endDate()==null || !pr.endDate().isBefore(pr.startDate()),"Tanggal selesai proyek tidak boleh sebelum tanggal mulai.");
+            require(!blank(pr.key()) && achievementKeys.add("project:"+pr.key()),"Proyek tidak valid.");
+        }
+        for(var aw:d.awards()) {
+            require(!blank(aw.name()) && TalentProfileDetails.AWARD_CATEGORIES.contains(Objects.toString(aw.category(),"")) && TalentProfileDetails.AWARD_LEVELS.contains(Objects.toString(aw.level(),"")),"Nama, kategori, dan tingkat penghargaan wajib diisi.");
+            require(aw.achievementDate()==null || !aw.achievementDate().isAfter(LocalDate.now()),"Tanggal penghargaan tidak boleh di masa depan.");
+            require(!blank(aw.key()) && achievementKeys.add("award:"+aw.key()),"Penghargaan tidak valid.");
+        }
         require(c.isTermsAccepted(),"Syarat dan ketentuan harus disetujui.");
     }
     private boolean empty(List<String> items) { return items==null || items.isEmpty() || items.stream().anyMatch(this::blank); }

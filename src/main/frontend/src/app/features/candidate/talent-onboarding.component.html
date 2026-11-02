@@ -90,9 +90,9 @@
               <label class="file-field">Ijazah * <input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Ijazah ' + (i + 1)" (change)="selectDocument($event, educationKey(edu, 'diploma'))"><small class="field-hint">{{ documentName(educationKey(edu, 'diploma')) || 'PDF, maksimal 2 MB' }}</small></label>
               <label class="file-field">Transkrip nilai * <input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Transkrip ' + (i + 1)" (change)="selectDocument($event, educationKey(edu, 'transcript'))"><small class="field-hint">{{ documentName(educationKey(edu, 'transcript')) || 'PDF, maksimal 2 MB' }}</small></label>
             </div>
-            <label class="field">Proyek atau penghargaan <span class="opt">(opsional)</span><textarea [(ngModel)]="edu.description" [wordLimit]="80" rows="3" placeholder="Proyek akademik, prestasi, atau penghargaan"></textarea></label>
           </article>
           <button type="button" class="btn btn-secondary add-row" (click)="addEducation()"><app-icon name="plus" [size]="16"></app-icon> Tambah pendidikan</button>
+          <app-achievements-editor [details]="details" [today]="today" [docName]="documentNameFn" (attach)="selectDocument($event.event, $event.key)" (dropDocs)="removeUploads($event)"></app-achievements-editor>
         </ng-container>
 
         <!-- 3. Pengalaman kerja -->

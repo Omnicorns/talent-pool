@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TalentProfileDetailsComponent } from '../../shared/talent-profile-details.component';
 import { CareerHeaderComponent } from '../../shared/career-header.component';
+import { AchievementsEditorComponent, achievementsError, awardDocKey, projectDocKey } from '../../shared/achievements-editor.component';
 import { CandidateProfile, EducationItem, JobApplication, SupportingUpload, TrainingCertification, WorkExperienceItem } from '../../core/models/talent.models';
 import { TalentAuthService } from '../../core/service/api/talent-auth.service';
 import { TalentPortalService } from '../../core/service/api/talent-portal.service';
@@ -19,12 +20,12 @@ import { TagSelectComponent } from '../../shared/tag-select.component';
 import { TALENT_OPTIONS } from '../../shared/talent-options';
 import { translate } from '../../core/i18n/translator';
 
-type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience' | 'education' | 'training' | 'certification' | 'additional';
+type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience' | 'education' | 'training' | 'certification' | 'achievements' | 'additional';
 
 @Component({
   selector: 'app-candidate-portal',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, CareerHeaderComponent, TalentProfileDetailsComponent, IconComponent, ChoiceFieldComponent, SearchSelectComponent, WordLimitDirective, TagSelectComponent, PostalRegionFieldComponent, SocialAccountsFieldComponent],
+  imports: [CommonModule, FormsModule, RouterLink, CareerHeaderComponent, TalentProfileDetailsComponent, IconComponent, ChoiceFieldComponent, SearchSelectComponent, WordLimitDirective, TagSelectComponent, PostalRegionFieldComponent, SocialAccountsFieldComponent, AchievementsEditorComponent],
   template: `
     <div class="site" *ngIf="profile; else loadingTpl">
       <app-career-header active="portal" [profilePictureUrl]="profilePictureUrl"></app-career-header>
@@ -154,6 +155,33 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
                     </article>
                   </div>
                   <ng-template #emptyCertification><p class="muted">{{ profile.profileDetails?.noCertification ? 'Tidak memiliki sertifikasi.' : 'Belum ada sertifikasi.' }}</p></ng-template>
+                </section>
+
+                <section id="achievements" class="profile-section">
+                  <div class="section-title"><h2>My Achievements</h2><button class="btn btn-ghost btn-sm" (click)="openDrawer('achievements')"><app-icon name="edit" [size]="16"></app-icon> {{ projects.length || awards.length ? 'Ubah' : 'Tambah' }}</button></div>
+                  <div class="timeline" *ngIf="projects.length || awards.length; else emptyAchievements">
+                    <article class="timeline-item" *ngFor="let item of projects">
+                      <span class="timeline-mark"><app-icon name="folder"></app-icon></span>
+                      <div>
+                        <h3>{{ item.name }}</h3>
+                        <p class="org">{{ joinParts(item.category, item.role, item.organization) }}</p>
+                        <p class="desc" *ngIf="item.startDate || item.endDate">{{ achievementDates(item.startDate, item.endDate) }}</p>
+                        <p class="desc" *ngIf="item.description">{{ item.description }}</p>
+                        <button type="button" class="link" *ngIf="achievementDocument('project', item) as doc" style="font-size: 14px; margin-top: 6px; border: 0; background: none; padding: 0; cursor: pointer" (click)="downloadSupportingDocument(doc.key, doc.originalName)">Lihat lampiran <app-icon name="download" [size]="14"></app-icon></button>
+                      </div>
+                    </article>
+                    <article class="timeline-item" *ngFor="let item of awards">
+                      <span class="timeline-mark"><app-icon name="award"></app-icon></span>
+                      <div>
+                        <h3>{{ item.name }}</h3>
+                        <p class="org">{{ joinParts(item.category, item.level, item.institution) }}</p>
+                        <p class="desc" *ngIf="item.achievementDate">{{ achievementDates(item.achievementDate, '') }}</p>
+                        <p class="desc" *ngIf="item.description">{{ item.description }}</p>
+                        <button type="button" class="link" *ngIf="achievementDocument('award', item) as doc" style="font-size: 14px; margin-top: 6px; border: 0; background: none; padding: 0; cursor: pointer" (click)="downloadSupportingDocument(doc.key, doc.originalName)">Lihat bukti <app-icon name="download" [size]="14"></app-icon></button>
+                      </div>
+                    </article>
+                  </div>
+                  <ng-template #emptyAchievements><p class="muted">Belum ada proyek atau penghargaan.</p></ng-template>
                 </section>
 
                 <section id="additional" class="profile-section">
@@ -344,7 +372,6 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
               </div>
               <label class="file-field">Ijazah <input type="file" accept=".pdf,application/pdf" aria-label="Ijazah" (change)="selectDocument($event, educationDocKey('diploma'))"><small class="field-hint">{{ documentName(educationDocKey('diploma')) || 'PDF, maksimal 2 MB' }}</small></label>
               <label class="file-field">Transkrip nilai <input type="file" accept=".pdf,application/pdf" aria-label="Transkrip" (change)="selectDocument($event, educationDocKey('transcript'))"><small class="field-hint">{{ documentName(educationDocKey('transcript')) || 'PDF, maksimal 2 MB' }}</small></label>
-              <label class="field">Proyek atau penghargaan<textarea [(ngModel)]="editEducation.description" [wordLimit]="80" placeholder="Proyek akademik, prestasi, atau penghargaan"></textarea></label>
             </div>
 
             <div class="form-stack" *ngIf="drawerSection === 'training' && editEducation">
@@ -364,6 +391,10 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
                 <label class="field">Masa berlaku: sampai<input type="date" [(ngModel)]="editCert.expiryDate"></label>
               </div>
               <label class="file-field">Upload sertifikat <input type="file" accept=".pdf,application/pdf" aria-label="Upload sertifikat" (change)="selectDocument($event, certDocKey())"><small class="field-hint">{{ documentName(certDocKey()) || 'PDF, maksimal 2 MB' }}</small></label>
+            </div>
+
+            <div class="form-stack" *ngIf="drawerSection === 'achievements'">
+              <app-achievements-editor [details]="achievementDetails" [today]="today" [docName]="documentNameFn" (attach)="selectDocument($event.event, $event.key)" (dropDocs)="dropPendingUploads($event)"></app-achievements-editor>
             </div>
 
             <div class="form-stack" *ngIf="drawerSection === 'additional'">
@@ -438,11 +469,12 @@ export class CandidatePortalComponent implements OnInit {
     { id: 'education', label: 'Pendidikan' },
     { id: 'training', label: 'Pelatihan' },
     { id: 'certification', label: 'Sertifikasi' },
+    { id: 'achievements', label: 'Pencapaian' },
     { id: 'additional', label: 'Info tambahan' },
   ];
   activeSection = 'about';
   private tabClickedAt = 0;
-  private readonly profileSectionIds = ['about', 'experiences', 'education', 'training', 'certification', 'additional'];
+  private readonly profileSectionIds = ['about', 'experiences', 'education', 'training', 'certification', 'achievements', 'additional'];
   applicationSubmitted = false;
   applicationHistoryOpen = false;
   applicationHistoryLoading = false;
@@ -705,7 +737,21 @@ export class CandidatePortalComponent implements OnInit {
   }
 
   get educationDocuments(): Array<{ key: string; originalName: string }> {
-    return (this.profile?.supportingDocuments || []).filter((doc) => !doc.key.startsWith('certification:'));
+    return (this.profile?.supportingDocuments || []).filter((doc) => !/^(certification|project|award):/.test(doc.key));
+  }
+  get projects() { return this.profile?.profileDetails?.projects || []; }
+  get awards() { return this.profile?.profileDetails?.awards || []; }
+  get achievementDetails() { return this.ensureDetails(); }
+  today = new Date().toLocaleDateString('en-CA');
+  documentNameFn = (key: string): string => this.documentName(key);
+  dropPendingUploads(prefix: string): void { this.pendingUploads = this.pendingUploads.filter((u) => !u.key.startsWith(prefix)); }
+  achievementDocument(kind: 'project' | 'award', item: { key?: string | null }): { key: string; originalName: string } | null {
+    const key = kind === 'project' ? projectDocKey(item) : awardDocKey(item);
+    return (this.profile.supportingDocuments || []).find((doc) => doc.key === key) || null;
+  }
+  achievementDates(from: string | null | undefined, to: string | null | undefined): string {
+    const fmt = (v?: string | null) => (v ? this.fmt.fullDate(v) : '');
+    return [fmt(from), fmt(to)].filter(Boolean).join(' – ');
   }
   get certifications(): TrainingCertification[] { return this.profile?.profileDetails?.trainingCertifications || []; }
   get expDetails() {
@@ -779,6 +825,7 @@ export class CandidatePortalComponent implements OnInit {
       education: this.drawerIndex == null ? 'Tambah pendidikan' : 'Ubah pendidikan',
       training: this.drawerIndex == null ? 'Tambah pelatihan' : 'Ubah pelatihan',
       certification: this.drawerIndex == null ? 'Tambah sertifikasi' : 'Ubah sertifikasi',
+      achievements: 'My Achievements',
       additional: 'Informasi tambahan',
     };
     return this.drawerSection ? map[this.drawerSection] : '';
@@ -906,6 +953,7 @@ export class CandidatePortalComponent implements OnInit {
       if (c.expiryDate < c.issueDate) return 'Masa berlaku sertifikasi: tanggal akhir tidak boleh sebelum tanggal mulai.';
       if (!this.documentName(this.certDocKey())) return 'Upload sertifikat wajib diisi (PDF, maks. 2 MB).';
     }
+    if (this.drawerSection === 'achievements') return achievementsError(this.ensureDetails(), this.today);
     if (this.drawerSection === 'additional') {
       const d = this.ensureDetails();
       const min = Number(p.expectedSalary), max = Number(d.expectedSalaryMax);

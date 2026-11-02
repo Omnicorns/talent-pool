@@ -247,6 +247,20 @@ type ColKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review';
               </article>
             </section>
 
+            <section class="drawer-section" *ngIf="selected.profileDetails?.projects?.length || selected.profileDetails?.awards?.length">
+              <h3>My Achievements</h3>
+              <article class="detail-item" *ngFor="let item of selected.profileDetails?.projects || []">
+                <strong>{{ item.name }}</strong>
+                <span>Proyek · {{ item.category }}{{ item.role ? ' · ' + item.role : '' }}{{ item.organization ? ' · ' + item.organization : '' }}</span>
+                <p *ngIf="item.description">{{ item.description }}</p>
+              </article>
+              <article class="detail-item" *ngFor="let item of selected.profileDetails?.awards || []">
+                <strong>{{ item.name }}</strong>
+                <span>Penghargaan · {{ item.category }} · {{ item.level }}{{ item.institution ? ' · ' + item.institution : '' }}</span>
+                <p *ngIf="item.description">{{ item.description }}</p>
+              </article>
+            </section>
+
             <section class="drawer-section">
               <h3>Data pribadi</h3>
               <app-talent-profile-details [profile]="selected" [backoffice]="true"></app-talent-profile-details>

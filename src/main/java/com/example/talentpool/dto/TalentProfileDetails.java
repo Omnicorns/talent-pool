@@ -24,10 +24,26 @@ public record TalentProfileDetails(
     /** Kandidat menyatakan tidak memiliki pelatihan, sertifikasi, atau keahlian bahasa. */
     boolean noTraining,
     boolean noCertification,
-    boolean noLanguage
+    boolean noLanguage,
+    /** My Achievements: proyek dan penghargaan (opsional). Lampiran diunggah sebagai dokumen pendukung. */
+    @Size(max=20) List<@Valid Project> projects,
+    @Size(max=20) List<@Valid Award> awards
 ) {
     public TalentProfileDetails {
         socialAccounts = socialAccounts == null ? List.of() : socialAccounts;
+        projects = projects == null ? List.of() : projects;
+        awards = awards == null ? List.of() : awards;
+    }
+
+    /** Konstruktor tanpa My Achievements. */
+    public TalentProfileDetails(String gender, String postalCode, String region, String linkedinUrl,
+            String socialPlatform, String socialUsername, BigDecimal expectedSalaryMax, boolean noExperience,
+            List<LanguageSkill> languageSkills, List<TrainingCertification> trainingCertifications,
+            String residentialPostalCode, String residentialRegion, List<SocialAccount> socialAccounts,
+            boolean noTraining, boolean noCertification, boolean noLanguage) {
+        this(gender, postalCode, region, linkedinUrl, socialPlatform, socialUsername, expectedSalaryMax,
+                noExperience, languageSkills, trainingCertifications, residentialPostalCode, residentialRegion,
+                socialAccounts, noTraining, noCertification, noLanguage, List.of(), List.of());
     }
 
     /** Konstruktor lama (tanpa penanda "tidak memiliki"); pelatihan dan sertifikasi dianggap tidak ada. */
@@ -68,5 +84,33 @@ public record TalentProfileDetails(
         @NotNull LocalDate expiryDate,
         @NotBlank @Size(max=100) String credentialId,
         @Size(max=1000) @Pattern(regexp="^$|https?://.+") String credentialUrl
+    ) {}
+
+    public static final List<String> PROJECT_CATEGORIES = List.of("Academic Project", "Research Project", "Business Project",
+        "Social Project", "Technology / Innovation Project", "Entrepreneurship Project");
+    public static final List<String> AWARD_CATEGORIES = List.of("Academic Achievement", "Competition", "Scholarship",
+        "Leadership", "Research & Innovation", "Organizational Achievement");
+    public static final List<String> AWARD_LEVELS = List.of("University", "Regional", "National", "International");
+
+    public record Project(
+        /** Kunci tetap; dipakai untuk mengaitkan lampiran (project:KEY:attachment). */
+        @Size(max=80) @Pattern(regexp="^$|[a-zA-Z0-9-]{1,80}") String key,
+        @NotBlank @Size(max=200) String name,
+        @Size(max=2000) String description,
+        @NotBlank @Size(max=80) String category,
+        @Size(max=200) String role,
+        @Size(max=200) String organization,
+        LocalDate startDate,
+        LocalDate endDate
+    ) {}
+
+    public record Award(
+        @Size(max=80) @Pattern(regexp="^$|[a-zA-Z0-9-]{1,80}") String key,
+        @NotBlank @Size(max=200) String name,
+        @Size(max=2000) String description,
+        @NotBlank @Size(max=80) String category,
+        @NotBlank @Size(max=40) String level,
+        @Size(max=200) String institution,
+        LocalDate achievementDate
     ) {}
 }

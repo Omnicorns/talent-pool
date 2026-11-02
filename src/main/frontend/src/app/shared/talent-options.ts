@@ -18,6 +18,9 @@ export const TALENT_OPTIONS = {
   languages: ['Bahasa Indonesia','Bahasa Inggris','Mandarin','Jepang','Korea','Arab','Prancis','Jerman'],
   proficiency: ['Dasar','Menengah','Mahir','Fasih / Native'],
   jenisPelatihan : ['Pelatihan','Sertifikasi'],
+  projectCategories: ['Academic Project','Research Project','Business Project','Social Project','Technology / Innovation Project','Entrepreneurship Project'],
+  awardCategories: ['Academic Achievement','Competition','Scholarship','Leadership','Research & Innovation','Organizational Achievement'],
+  awardLevels: ['University','Regional','National','International'],
 };
 
 /** Daftar Fungsi dan Lokasi yang diminati bisa diubah HC dari back office (Konten). Dipanggil sekali saat aplikasi mulai. */

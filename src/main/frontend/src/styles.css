@@ -1160,3 +1160,19 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 .desc-field > small { display: block; margin-top: 6px; font-weight: 400; }
 .desc-preview { margin-top: 10px; padding: 14px 16px; border: 1px dashed var(--line, #e5e0db); border-radius: 12px; background: var(--surface, #faf8f6); font-weight: 400; font-size: 14.5px; }
 .desc-tools .desc-preview-toggle[aria-pressed=true] { background: var(--surface, #f5f3f1); }
+
+/* My Achievements (Projects / Awards) */
+.ach { margin-top: 28px; padding: 22px; border: 1px solid var(--line, #e5e0db); border-radius: 18px; background: var(--surface, #faf8f6); }
+.ach-head h3 { margin: 0 0 4px; font-size: 18px; }
+.ach-head p { margin: 0 0 16px; color: var(--muted, #6b645e); font-size: 14px; }
+.ach-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 4px; border-radius: 999px; background: var(--white, #fff); border: 1px solid var(--line, #e5e0db); }
+.ach-tabs button { font: inherit; font-weight: 600; font-size: 14px; padding: 9px 12px; border: 1.5px solid transparent; border-radius: 999px; background: transparent; color: var(--muted, #6b645e); cursor: pointer; }
+.ach-tabs button.on { border-color: var(--brand, #b3121d); color: var(--ink, #1f1b18); background: var(--white, #fff); }
+.ach-count { display: inline-block; min-width: 20px; margin-left: 4px; padding: 1px 7px; border-radius: 999px; background: var(--surface, #f0ece8); font-size: 12px; }
+.ach-sub { display: flex; align-items: center; justify-content: space-between; margin: 18px 0 10px; font-size: 14px; }
+.ach-pill { padding: 2px 10px; border-radius: 999px; background: var(--white, #fff); border: 1px solid var(--line, #e5e0db); font-size: 12px; color: var(--muted, #6b645e); }
+.ach-empty { display: grid; justify-items: center; gap: 6px; padding: 26px 16px; text-align: center; border: 1px dashed var(--line, #d9d3cd); border-radius: 14px; background: var(--white, #fff); color: var(--muted, #6b645e); font-size: 14px; }
+.ach-empty strong { color: var(--ink, #1f1b18); font-size: 15px; }
+.ach-empty .btn { margin-top: 8px; }
+.ach .repeat { background: var(--white, #fff); }
+.ach select { width: 100%; }
