@@ -95,6 +95,7 @@ export class TalentProfileDetailsComponent {
       return 'Bukti penghargaan ' + (item?.name || '');
     }
     const edu = this.profile.educations.find((e) => e.clientKey && key.includes(e.clientKey));
+    if (key.endsWith(':certificate')) return 'Sertifikat pelatihan ' + (edu?.major || '');
     return (key.endsWith(':diploma') ? 'Ijazah' : 'Transkrip') + ' ' + (edu?.institution || '');
   }
 

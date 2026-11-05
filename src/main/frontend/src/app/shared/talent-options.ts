@@ -1,5 +1,8 @@
 export const DEFAULT_FUNCTIONS = ['Asset Management','Business Development','Corporate Planning & Subsidiary','Corporate Secretary','Customer Experience','Finance & Accounting','Governance & Risk','Human Capital','Internal Audit','Marketing, Promotion, & Events','Retail','Technology','Ekspor/Import'];
-export const DEFAULT_LOCATIONS = ['Jakarta','Malang','Bali'];
+export const ANYWHERE_LOCATION = 'Bersedia ditempatkan dimana saja';
+export const DEFAULT_LOCATIONS = ['Jakarta','Jabodetabek','Malang','Bali',ANYWHERE_LOCATION];
+/** Dua pilihan ini selalu tersedia walau daftar lokasi di back office sudah pernah diubah. */
+const REQUIRED_LOCATIONS = ['Jabodetabek',ANYWHERE_LOCATION];
 
 export const TALENT_OPTIONS = {
   genders: ['Laki-laki','Perempuan'],
@@ -35,5 +38,6 @@ export function applyManagedOptions(contents: Record<string, any> | null | undef
     return result.length ? result : fallback;
   };
   TALENT_OPTIONS.functions = names('OPTION_FUNCTIONS', [...DEFAULT_FUNCTIONS]);
-  TALENT_OPTIONS.locations = names('OPTION_LOCATIONS', [...DEFAULT_LOCATIONS]);
+  const locations = names('OPTION_LOCATIONS', [...DEFAULT_LOCATIONS]);
+  TALENT_OPTIONS.locations = [...locations, ...REQUIRED_LOCATIONS.filter((item) => !locations.includes(item))];
 }

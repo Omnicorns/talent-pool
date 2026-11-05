@@ -14,7 +14,7 @@ export interface TalentProfileDetails {
   noExperience: boolean;
   /** Kandidat menyatakan tidak memiliki pelatihan, sertifikasi, atau keahlian bahasa. */
   noTraining?: boolean; noCertification?: boolean; noLanguage?: boolean;
-  languageSkills: Array<{key:string;name:string;proficiency:string}>;
+  languageSkills: Array<{key:string;name:string;proficiency:string;hasCertificate?:boolean}>;
   trainingCertifications: TrainingCertification[];
   /** My Achievements (opsional). Lampiran disimpan sebagai dokumen pendukung. */
   projects?: ProjectItem[];
