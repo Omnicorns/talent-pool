@@ -396,6 +396,7 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
               <label class="field">Nama pelatihan<input [(ngModel)]="editEducation.major"></label>
               <label class="field">Penyelenggara<input [(ngModel)]="editEducation.institution"></label>
               <label class="field">Tahun<input type="number" [(ngModel)]="editEducation.startYear"></label>
+              <label class="file-field">Upload sertifikat pelatihan <span class="opt">(opsional)</span> <input type="file" accept=".pdf,application/pdf" aria-label="Upload sertifikat pelatihan" (change)="selectDocument($event, educationDocKey('certificate'))"><small class="field-hint">{{ documentName(educationDocKey('certificate')) || 'PDF, maksimal 2 MB' }}</small></label>
               <label class="field">Keterangan<textarea [(ngModel)]="editEducation.description" [wordLimit]="80"></textarea></label>
             </div>
 
@@ -439,7 +440,8 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
                     <div class="form-grid">
                       <label class="field">Bahasa<app-choice-field [options]="options.languages" label="Bahasa" [(value)]="language.name"></app-choice-field></label>
                       <label class="field">Tingkat penguasaan<app-choice-field [options]="options.proficiency" [allowOther]="false" label="Tingkat" [(value)]="language.proficiency"></app-choice-field></label>
-                      <label class="file-field span-2">Sertifikat bahasa <input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Sertifikat bahasa ' + (i + 1)" (change)="selectDocument($event, languageDocKey(language))"><small class="field-hint">{{ documentName(languageDocKey(language)) || 'PDF, maksimal 2 MB' }}</small></label>
+                      <label class="check span-2"><input type="checkbox" [ngModel]="hasLanguageCertificate(language)" (ngModelChange)="setLanguageCertificate(language, $event)"> Saya memiliki sertifikat bahasa ini</label>
+                      <label class="file-field span-2" *ngIf="hasLanguageCertificate(language)">Sertifikat bahasa * <input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Sertifikat bahasa ' + (i + 1)" (change)="selectDocument($event, languageDocKey(language))"><small class="field-hint">{{ documentName(languageDocKey(language)) || 'PDF, maksimal 2 MB' }}</small></label>
                     </div>
                   </article>
                   <button type="button" class="btn btn-secondary add-row" (click)="addLanguage()"><app-icon name="plus" [size]="16"></app-icon> Tambah bahasa</button>
@@ -482,7 +484,7 @@ export class CandidatePortalComponent implements OnInit {
   drawerError = '';
   showAllApplications = false;
   readonly applicationPreview = 2;
-  readonly trainingKinds = ['Workshop', 'Webinar', 'Seminar'];
+  readonly trainingKinds = ['Training', 'Workshop', 'Webinar', 'Seminar'];
   readonly options = TALENT_OPTIONS;
   readonly tabs = [
     { id: 'about', label: 'Tentang' },
@@ -699,6 +701,7 @@ export class CandidatePortalComponent implements OnInit {
       return `Sertifikat ${cert?.name || ''}`.trim();
     }
     const education = this.profile.educations.find(item => item.clientKey && key.includes(item.clientKey));
+    if (key.endsWith(':certificate')) return `Sertifikat pelatihan ${education?.major || ''}`.trim();
     return `${key.endsWith(':diploma') ? 'Ijazah' : 'Transkrip'} ${education?.institution || ''}`.trim();
   }
 
@@ -790,7 +793,16 @@ export class CandidatePortalComponent implements OnInit {
     return (this.profile.supportingDocuments || []).find((doc) => doc.key === `certification:${item.key}:certificate`) || null;
   }
 
-  educationDocKey(kind: 'diploma' | 'transcript'): string { return `education:${this.editEducation?.clientKey}:${kind}`; }
+  educationDocKey(kind: 'diploma' | 'transcript' | 'certificate'): string { return `education:${this.editEducation?.clientKey}:${kind}`; }
+  hasLanguageCertificate(language: { key: string; hasCertificate?: boolean }): boolean {
+    return language.hasCertificate ?? !!this.documentName(this.languageDocKey(language));
+  }
+
+  setLanguageCertificate(language: { key: string; hasCertificate?: boolean }, checked: boolean): void {
+    language.hasCertificate = checked;
+    if (!checked) this.pendingUploads = this.pendingUploads.filter((u) => !u.key.startsWith(`language:${language.key}:`));
+  }
+
   languageDocKey(language: { key: string }): string { return `language:${language.key}:certificate`; }
 
   get languageSkills() { return this.ensureDetails().languageSkills ||= []; }
@@ -991,7 +1003,7 @@ export class CandidatePortalComponent implements OnInit {
       if (!d.noLanguage) {
         const skills = d.languageSkills || [];
         if (!skills.length || skills.some((l) => !text(l.name) || !l.proficiency)) return 'Bahasa dan tingkat penguasaan wajib diisi, atau centang tidak memiliki keahlian berbahasa.';
-        if (skills.some((l) => !this.documentName(this.languageDocKey(l)))) return 'Sertifikat bahasa wajib diunggah untuk setiap bahasa (PDF, maks. 2 MB). Bila tidak memiliki sertifikat, centang tidak memiliki keahlian berbahasa.';
+        if (skills.some((l) => this.hasLanguageCertificate(l) && !this.documentName(this.languageDocKey(l)))) return 'Upload sertifikat bahasa untuk bahasa yang dicentang memiliki sertifikat (PDF, maks. 2 MB), atau hilangkan centangnya.';
       }
       cleanSocial(d);
       if (!(d.socialPlatform || '').trim() || !(d.socialUsername || '').trim()) return 'Media sosial dan username wajib diisi.';

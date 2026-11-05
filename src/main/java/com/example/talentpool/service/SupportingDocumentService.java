@@ -33,7 +33,7 @@ public class SupportingDocumentService {
         if (keys.size()!=files.size() || keys.size()>60 || new HashSet<>(keys).size()!=keys.size())
             throw new BadRequestException("Daftar dokumen tidak valid");
         for (int i=0;i<keys.size();i++) {
-            if (!keys.get(i).matches("(education:[a-zA-Z0-9-]{1,80}:(diploma|transcript)|language:[a-zA-Z0-9-]{1,80}:certificate|certification:[a-zA-Z0-9-]{1,80}:certificate|project:[a-zA-Z0-9-]{1,80}:attachment|award:[a-zA-Z0-9-]{1,80}:proof)"))
+            if (!keys.get(i).matches("(education:[a-zA-Z0-9-]{1,80}:(diploma|transcript|certificate)|language:[a-zA-Z0-9-]{1,80}:certificate|certification:[a-zA-Z0-9-]{1,80}:certificate|project:[a-zA-Z0-9-]{1,80}:attachment|award:[a-zA-Z0-9-]{1,80}:proof)"))
                 throw new BadRequestException("Jenis dokumen tidak valid");
             storage.validateSupportingDocument(files.get(i));
         }

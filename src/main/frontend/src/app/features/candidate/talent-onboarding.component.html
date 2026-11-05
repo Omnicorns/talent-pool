@@ -43,7 +43,7 @@
             <label class="field">Nama lengkap *<input [(ngModel)]="profile.fullName" maxlength="200" autocomplete="name" required></label>
             <label class="field">Email<input type="email" [ngModel]="profile.email" disabled></label>
             <label class="field">Nomor WhatsApp *<input type="tel" [(ngModel)]="profile.phone" inputmode="numeric" maxlength="15" placeholder="08xxxxxxxxxx" required></label>
-            <label class="field">Nomor KTP <span class="opt">(opsional)</span><input [(ngModel)]="profile.identityNumber" inputmode="numeric" pattern="[0-9]+" maxlength="100"></label>
+            <label class="field">Nomor KTP (NIK) *<input [(ngModel)]="profile.identityNumber" inputmode="numeric" pattern="[0-9]{16}" maxlength="16" placeholder="16 digit NIK"></label>
             <label class="field">Jenis kelamin *<app-choice-field [options]="options.genders" [allowOther]="false" label="Jenis kelamin" [(value)]="details.gender"></app-choice-field></label>
             <label class="field">Agama *<app-choice-field [options]="options.religions" [allowOther]="false" label="Agama" [(value)]="profile.religion"></app-choice-field></label>
             <label class="field">Tanggal lahir *<input type="date" [(ngModel)]="profile.birthDate" [max]="today" required><small *ngIf="age !== null">Usia {{ age }} tahun</small></label>
@@ -149,6 +149,7 @@
                 <label class="field">Nama pelatihan *<input [(ngModel)]="t.major" maxlength="200" placeholder="Contoh: Retail Merchandising Basics"></label>
                 <label class="field">Penyelenggara *<input [(ngModel)]="t.institution" maxlength="200" placeholder="Contoh: APRINDO"></label>
                 <label class="field">Tahun *<input type="number" min="1900" [max]="currentYear" [ngModel]="t.startYear" (ngModelChange)="t.startYear = $event; t.endYear = $event"></label>
+                <label class="file-field span-2">Upload sertifikat pelatihan <span class="opt">(opsional)</span> <input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Upload sertifikat pelatihan ' + (i + 1)" (change)="selectDocument($event, educationKey(t, 'certificate'))"><small class="field-hint">{{ documentName(educationKey(t, 'certificate')) || 'PDF, maksimal 2 MB' }}</small></label>
               </div>
             </article>
             <button type="button" class="btn btn-secondary add-row" (click)="addTraining()"><app-icon name="plus" [size]="16"></app-icon> Tambah pelatihan</button>
@@ -165,7 +166,7 @@
               <div class="form-grid">
                 <label class="field span-2">Nama sertifikasi *<input [(ngModel)]="cert.name" maxlength="200" placeholder="Contoh: Certified Retail Professional"></label>
                 <label class="field">Nomor sertifikat *<input [(ngModel)]="cert.credentialId" maxlength="100"></label>
-                <label class="field">Penyelenggara / institusi yang mengeluarkan *<input [(ngModel)]="cert.issuingOrganization" maxlength="200" placeholder="Contoh: APRINDO"></label>
+                <label class="field">Penyelenggara / institusi yang mengeluarkan *<input [(ngModel)]="cert.issuingOrganization" maxlength="200" placeholder="Contoh: BNSP"></label>
                 <label class="field">Masa berlaku: mulai *<input type="date" [(ngModel)]="cert.issueDate" [max]="today"></label>
                 <label class="field">Masa berlaku: sampai *<input type="date" [(ngModel)]="cert.expiryDate" [min]="cert.issueDate || null"></label>
                 <label class="file-field span-2">Upload sertifikat * <input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Upload sertifikat ' + (i + 1)" (change)="selectDocument($event, certificateKey(cert))"><small class="field-hint">{{ documentName(certificateKey(cert)) || 'PDF, maksimal 2 MB' }}</small></label>
@@ -177,23 +178,6 @@
 
         <!-- 5. Informasi tambahan -->
         <ng-container *ngIf="step === 6">
-          <h3>Gaji</h3>
-          <label class="field">Gaji terakhir per bulan <span class="opt">(opsional)</span><input type="number" min="0" step="1" [(ngModel)]="profile.currentSalary" placeholder="Rupiah"></label>
-          <fieldset>
-            <legend>Ekspektasi gaji per bulan *</legend>
-            <div class="form-grid">
-              <label class="field">Minimum<input type="number" min="0" step="1" [(ngModel)]="profile.expectedSalary" placeholder="Contoh: 8000000" required></label>
-              <label class="field">Maksimum<input type="number" [min]="profile.expectedSalary || 0" step="1" [(ngModel)]="details.expectedSalaryMax" placeholder="Contoh: 10000000" required></label>
-            </div>
-          </fieldset>
-
-          <h3>Minat kerja</h3>
-          <div class="form-grid">
-            <label class="field">Fungsi yang diminati *<app-tag-select [options]="options.functions" [limit]="3" label="Fungsi" [(value)]="profile.jobInterests"></app-tag-select></label>
-            <label class="field">Lokasi kerja yang diminati *<app-tag-select [options]="options.locations" [limit]="3" [allowOther]="false" label="Lokasi" [(value)]="profile.preferredLocations"></app-tag-select></label>
-            <label class="field">Dari mana Anda tahu lowongan ini? *<app-choice-field [options]="options.sources" label="Sumber" [(value)]="profile.source"></app-choice-field></label>
-          </div>
-
           <h3>Bahasa</h3>
           <label class="check"><input type="checkbox" [(ngModel)]="details.noLanguage" (ngModelChange)="toggleNoLanguage()"> Saya tidak memiliki keahlian berbahasa</label>
           <ng-container *ngIf="!details.noLanguage">
@@ -205,14 +189,32 @@
             <div class="form-grid">
               <label class="field">Bahasa *<app-choice-field [options]="options.languages" label="Bahasa" [(value)]="language.name"></app-choice-field></label>
               <label class="field">Tingkat penguasaan *<app-choice-field [options]="options.proficiency" [allowOther]="false" label="Tingkat" [(value)]="language.proficiency"></app-choice-field></label>
-              <label class="file-field span-2">Sertifikat bahasa * <input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Sertifikat bahasa ' + (i + 1)" (change)="selectDocument($event, 'language:' + language.key + ':certificate')"><small class="field-hint">{{ documentName('language:' + language.key + ':certificate') || 'PDF, maksimal 2 MB' }}</small></label>
+              <label class="check span-2"><input type="checkbox" [ngModel]="hasLanguageCertificate(language)" (ngModelChange)="setLanguageCertificate(language, $event)"> Saya memiliki sertifikat bahasa ini</label>
+              <label class="file-field span-2" *ngIf="hasLanguageCertificate(language)">Sertifikat bahasa * <input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Sertifikat bahasa ' + (i + 1)" (change)="selectDocument($event, 'language:' + language.key + ':certificate')"><small class="field-hint">{{ documentName('language:' + language.key + ':certificate') || 'PDF, maksimal 2 MB' }}</small></label>
             </div>
           </article>
           <button type="button" class="btn btn-secondary add-row" (click)="addLanguage()"><app-icon name="plus" [size]="16"></app-icon> Tambah bahasa</button>
           </ng-container>
 
+          <h3>Minat kerja</h3>
+          <div class="form-grid">
+            <label class="field">Fungsi yang diminati *<app-tag-select [options]="options.functions" [limit]="3" label="Fungsi" [(value)]="profile.jobInterests"></app-tag-select></label>
+            <label class="field">Lokasi kerja yang diminati *<app-tag-select [options]="options.locations" [limit]="3" [allowOther]="false" label="Lokasi" [(value)]="profile.preferredLocations"></app-tag-select></label>
+          </div>
+
+          <h3>Gaji</h3>
+          <label class="field">Gaji terakhir per bulan <span class="opt">(opsional)</span><input type="number" min="0" step="1" [(ngModel)]="profile.currentSalary" placeholder="Rupiah"></label>
+          <fieldset>
+            <legend>Ekspektasi gaji per bulan *</legend>
+            <div class="form-grid">
+              <label class="field">Minimum<input type="number" min="0" step="1" [(ngModel)]="profile.expectedSalary" placeholder="Contoh: 8000000" required></label>
+              <label class="field">Maksimum<input type="number" [min]="profile.expectedSalary || 0" step="1" [(ngModel)]="details.expectedSalaryMax" placeholder="Contoh: 10000000" required></label>
+            </div>
+          </fieldset>
+
           <h3>Tentang Anda</h3>
           <label class="field">Ringkasan profil <span class="opt">(opsional)</span><textarea rows="4" [(ngModel)]="profile.about" [wordLimit]="150" maxlength="4000" placeholder="Ceritakan pengalaman dan tujuan karier Anda dalam beberapa kalimat"></textarea></label>
+          <label class="field">Dari mana Anda tahu lowongan ini? *<app-choice-field [options]="options.sources" label="Sumber" [(value)]="profile.source"></app-choice-field></label>
           <label class="check"><input type="checkbox" [(ngModel)]="profile.termsAccepted"> Saya menyetujui syarat dan ketentuan Talent Pool Sarinah. *</label>
         </ng-container>
 
@@ -230,7 +232,7 @@
               <input type="file" accept=".jpg,.jpeg,.png" aria-label="Foto profil" (change)="selectProfilePicture($event)">
               <img *ngIf="profilePicturePreviewUrl; else photoIcon" class="preview" [src]="profilePicturePreviewUrl" alt="Pratinjau foto profil">
               <ng-template #photoIcon><app-icon name="users" [size]="28" [stroke]="1.5"></app-icon></ng-template>
-              <strong>{{ profilePicture?.name || (profilePicturePreviewUrl ? 'Foto profil' : 'Foto profil (opsional)') }}</strong>
+              <strong>{{ profilePicture?.name || (profilePicturePreviewUrl ? 'Foto profil' : 'Foto profil *') }}</strong>
               <small>{{ profilePicturePreviewUrl ? 'Klik untuk mengganti' : 'JPG atau PNG · maksimal 10 MB' }}</small>
             </label>
             <label class="upload">
@@ -250,7 +252,6 @@
 
           <h3>Tautan portofolio</h3>
           <div class="link-row" *ngFor="let item of portfolioLinks; let i = index">
-            <label class="field">Judul<input [(ngModel)]="item.title" maxlength="200"></label>
             <label class="field">URL<input type="url" [(ngModel)]="item.url" placeholder="https://…"></label>
             <button type="button" class="icon-btn" [style.visibility]="portfolioLinks.length > 1 ? 'visible' : 'hidden'" (click)="portfolioLinks.splice(i, 1)" aria-label="Hapus tautan"><app-icon name="trash"></app-icon></button>
           </div>
