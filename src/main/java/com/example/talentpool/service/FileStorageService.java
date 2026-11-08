@@ -105,6 +105,7 @@ public class FileStorageService {
         if (originalName.contains("..")) {
             throw new BadRequestException("Nama file tidak valid");
         }
+        verifyContent(file, extension);
 
         try {
             Path targetFolder = root.resolve(folder).normalize();
@@ -120,6 +121,36 @@ public class FileStorageService {
         } catch (IOException ex) {
             throw new IllegalStateException("Gagal menyimpan file", ex);
         }
+    }
+
+    /** Isi file harus cocok dengan ekstensinya (magic bytes), bukan sekadar namanya. */
+    private void verifyContent(MultipartFile file, String extension) {
+        byte[] head;
+        try (var stream = file.getInputStream()) {
+            head = stream.readNBytes(12);
+        } catch (IOException ex) {
+            throw new BadRequestException("File tidak dapat dibaca");
+        }
+        boolean valid = switch (extension) {
+            case "pdf" -> startsWith(head, 0, 0x25, 0x50, 0x44, 0x46, 0x2D);
+            case "jpg", "jpeg" -> startsWith(head, 0, 0xFF, 0xD8, 0xFF);
+            case "png" -> startsWith(head, 0, 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A);
+            case "webp" -> startsWith(head, 0, 0x52, 0x49, 0x46, 0x46) && startsWith(head, 8, 0x57, 0x45, 0x42, 0x50);
+            case "docx", "zip" -> startsWith(head, 0, 0x50, 0x4B, 0x03, 0x04);
+            case "doc" -> startsWith(head, 0, 0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1);
+            default -> false;
+        };
+        if (!valid) {
+            throw new BadRequestException("Isi file tidak sesuai dengan format ." + extension);
+        }
+    }
+
+    private static boolean startsWith(byte[] data, int offset, int... expected) {
+        if (data.length < offset + expected.length) return false;
+        for (int i = 0; i < expected.length; i++) {
+            if ((data[offset + i] & 0xFF) != expected[i]) return false;
+        }
+        return true;
     }
 
     private String extensionOf(String name) {

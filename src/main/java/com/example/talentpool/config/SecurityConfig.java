@@ -65,6 +65,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/public/talents").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/public/talents/*/status").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/public/job-listings", "/api/public/job-listings/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/public/site", "/api/public/site/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/public/postal-codes").permitAll()
 
                         .requestMatchers(HttpMethod.POST,
                                 "/api/talent/auth/register",
@@ -80,6 +82,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/backoffice/**")
                         .hasAnyRole("ADMIN", "RECRUITER")
 
+                        // Default-deny untuk seluruh API: endpoint baru di bawah /api tidak
+                        // terbuka sampai diberi aturan eksplisit di atas.
+                        .requestMatchers("/api/**").denyAll()
+
+                        // Sisanya hanya halaman SPA dan file statis frontend (rute Angular,
+                        // font, data/*.json, dsb.) yang memang publik.
                         .anyRequest().permitAll()
                 )
                 .oauth2ResourceServer(oauth -> oauth.jwt(jwt ->

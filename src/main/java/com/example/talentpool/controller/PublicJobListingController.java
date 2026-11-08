@@ -10,7 +10,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.talentpool.domain.JobListing;
+import com.example.talentpool.domain.JobListingStatus;
 import com.example.talentpool.repository.JobListingRepository;
+import jakarta.persistence.criteria.Predicate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import com.example.talentpool.exception.ResourceNotFoundException;
 
 import java.time.LocalDate;
@@ -70,114 +77,42 @@ public class PublicJobListingController {
         int safePage = Math.max(page, 0);
         int safeSize = Math.min(Math.max(size, 1), 100);
 
-        /*
-         * Ambil seluruh Job Listing yang sudah ada.
-         *
-         * Kita filter PUBLISHED di sini supaya tidak tergantung
-         * tipe enum/status pada repository.
-         *
-         * Nanti kalau ingin lebih optimal bisa dibuat query khusus:
-         * findByStatus(...)
-         */
-        List<?> allJobs = jobListingRepository.findAll();
+        // Filter status, deadline, dan pencarian dijalankan di PostgreSQL (bukan di memory),
+        // lalu hasilnya dipaginasi oleh database.
+        LocalDate today = LocalDate.now();
+        String keyword = q == null ? "" : q.trim().toLowerCase(Locale.ROOT);
 
-        List<Map<String, Object>> result = new ArrayList<>();
-
-        for (Object job : allJobs) {
-
-            Map<String, Object> item = toPublicResponse(job);
-
-            // =====================================================
-            // FILTER STATUS
-            // =====================================================
-
-            String status = stringValue(item.get("status"));
-
-            if (!"PUBLISHED".equalsIgnoreCase(status)) {
-                continue;
-            }
-
-            // =====================================================
-            // FILTER DEADLINE
-            // =====================================================
-
-            if (!isApplicationStillOpen(
-                    item.get("applicationDeadline")
-            )) {
-                continue;
-            }
-
-            // =====================================================
-            // SEARCH
-            // =====================================================
-
-            if (q != null && !q.isBlank()) {
-
-                String keyword =
-                        q.trim().toLowerCase(Locale.ROOT);
-
-                String searchable = String.join(
-                        " ",
-                        stringValue(item.get("title")),
-                        stringValue(item.get("department")),
-                        stringValue(item.get("location")),
-                        stringValue(item.get("employmentType")),
-                        stringValue(item.get("description"))
-                ).toLowerCase(Locale.ROOT);
-
-                if (!searchable.contains(keyword)) {
-                    continue;
+        Specification<JobListing> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.equal(root.get("status"), JobListingStatus.PUBLISHED));
+            predicates.add(cb.or(
+                    cb.isNull(root.get("applicationDeadline")),
+                    cb.greaterThanOrEqualTo(root.<LocalDate>get("applicationDeadline"), today)
+            ));
+            if (!keyword.isEmpty()) {
+                String like = "%" + keyword.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%";
+                List<Predicate> any = new ArrayList<>();
+                for (String field : List.of("title", "department", "location", "description")) {
+                    any.add(cb.like(cb.lower(root.<String>get(field)), like, '\\'));
                 }
+                any.add(cb.like(cb.lower(root.get("employmentType").as(String.class)), like, '\\'));
+                predicates.add(cb.or(any.toArray(new Predicate[0])));
             }
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
 
-            result.add(item);
+        Page<JobListing> found = jobListingRepository.findAll(
+                spec,
+                PageRequest.of(safePage, safeSize, sortFrom(sort))
+        );
+
+        List<Map<String, Object>> content = new ArrayList<>();
+        for (JobListing job : found.getContent()) {
+            content.add(toPublicResponse(job));
         }
 
-        // =========================================================
-        // SORT
-        // =========================================================
-
-        applySorting(result, sort);
-
-        // =========================================================
-        // PAGINATION
-        // =========================================================
-
-        long totalElements = result.size();
-
-        int totalPages =
-                totalElements == 0
-                        ? 0
-                        : (int) Math.ceil(
-                        (double) totalElements / safeSize
-                );
-
-        int fromIndex = safePage * safeSize;
-
-        List<Map<String, Object>> content;
-
-        if (fromIndex >= result.size()) {
-
-            content = List.of();
-
-        } else {
-
-            int toIndex = Math.min(
-                    fromIndex + safeSize,
-                    result.size()
-            );
-
-            content = new ArrayList<>(
-                    result.subList(
-                            fromIndex,
-                            toIndex
-                    )
-            );
-        }
-
-        // =========================================================
-        // SPRING PAGE STYLE RESPONSE
-        // =========================================================
+        long totalElements = found.getTotalElements();
+        int totalPages = found.getTotalPages();
 
         Map<String, Object> response =
                 new LinkedHashMap<>();
@@ -212,6 +147,25 @@ public class PublicJobListingController {
         return response;
     }
 
+
+    private static final java.util.Set<String> SORTABLE_FIELDS = java.util.Set.of(
+            "updatedAt", "createdAt", "title", "applicationDeadline", "openings", "department", "location");
+
+    /** Hanya kolom yang diizinkan yang boleh dipakai mengurutkan; nilai lain jatuh ke updatedAt. */
+    private Sort sortFrom(String sort) {
+        String field = "updatedAt";
+        Sort.Direction direction = Sort.Direction.DESC;
+        if (sort != null && !sort.isBlank()) {
+            String[] parts = sort.split(",");
+            if (parts.length >= 1 && SORTABLE_FIELDS.contains(parts[0].trim())) {
+                field = parts[0].trim();
+            }
+            if (parts.length >= 2 && "asc".equalsIgnoreCase(parts[1].trim())) {
+                direction = Sort.Direction.ASC;
+            }
+        }
+        return Sort.by(direction, field);
+    }
 
     @GetMapping("/{id}")
     public Map<String, Object> getPublicJobListing(@PathVariable UUID id) {

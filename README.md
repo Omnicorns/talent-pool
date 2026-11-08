@@ -23,23 +23,21 @@ Backend Talent Pool untuk landing page kandidat dan back office Admin/Recruiter.
 ## Menjalankan
 
 ```bash
+cp .env.example .env   # lalu isi nilainya
 docker compose up -d
 mvn spring-boot:run
 ```
 
 API berjalan di `http://localhost:8080`.
 
-Akun demo:
-
-- Admin: `admin` / `Admin123!`
-- Recruiter: `recruiter` / `Recruiter123!`
+Kredensial admin dan recruiter tidak punya nilai bawaan. Set sendiri lewat environment variable `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `RECRUITER_USERNAME`, `RECRUITER_PASSWORD`, dan `TALENT_JWT_SECRET` (acak, minimal 32 karakter; contoh membuatnya: `openssl rand -base64 48`).
 
 Konfigurasi database dapat diubah dengan environment variable:
 
 ```bash
-DB_URL=jdbc:postgresql://localhost:5432/talent_pool
-DB_USERNAME=postgres
-DB_PASSWORD=secret
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/talent_pool
+SPRING_DATASOURCE_USERNAME=talent_pool
+SPRING_DATASOURCE_PASSWORD=<sama dengan POSTGRES_PASSWORD di .env>
 ```
 
 Secara default Hibernate memakai `ddl-auto=update`, sehingga tabel modul baru dibuat otomatis. Migration tambahan juga tersedia pada `V2__recruitment_modules.sql` bila Flyway akan digunakan.
