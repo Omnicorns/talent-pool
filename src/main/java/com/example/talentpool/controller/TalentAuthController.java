@@ -97,12 +97,17 @@ public class TalentAuthController {
     }
 
     @PatchMapping("/change-password")
-    public Map<String, String> changePassword(
+    public Map<String, Object> changePassword(
             @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody TalentChangePasswordRequest request
     ) {
-        service.changePassword(candidateId(jwt), request);
-        return Map.of("message", "Password berhasil diubah");
+        TalentAuthResponse fresh = service.changePassword(candidateId(jwt), request);
+        return Map.of(
+                "message", "Password berhasil diubah",
+                "accessToken", fresh.accessToken(),
+                "tokenType", fresh.tokenType(),
+                "expiresIn", fresh.expiresIn()
+        );
     }
 
     private UUID candidateId(Jwt jwt) {

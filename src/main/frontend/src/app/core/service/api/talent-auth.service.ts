@@ -62,10 +62,23 @@ export class TalentAuthService {
   }
 
   changePassword(currentPassword: string, newPassword: string) {
-    return this.http.patch(`${API_BASE}/talent/auth/change-password`, {
+    // Server menerbitkan token baru dan mencabut token lama, jadi sesi ini harus memakai token baru.
+    return this.http.patch<{ message: string; accessToken?: string; tokenType?: string; expiresIn?: number }>(`${API_BASE}/talent/auth/change-password`, {
       currentPassword,
       newPassword,
-    });
+    }).pipe(
+      tap((response) => {
+        const current = this.session;
+        if (current && response.accessToken) {
+          this.saveSession({
+            ...current,
+            accessToken: response.accessToken,
+            tokenType: response.tokenType ?? current.tokenType,
+            expiresIn: response.expiresIn ?? current.expiresIn,
+          });
+        }
+      })
+    );
   }
 
   get session(): TalentSession | null {

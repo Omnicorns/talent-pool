@@ -4,7 +4,9 @@ import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
@@ -34,9 +36,14 @@ public class JwtConfig {
     }
 
     @Bean
-    JwtDecoder jwtDecoder(SecretKey talentJwtSecret) {
-        return NimbusJwtDecoder.withSecretKey(talentJwtSecret)
+    JwtDecoder jwtDecoder(SecretKey talentJwtSecret, TalentTokenValidator talentTokenValidator) {
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(talentJwtSecret)
                 .macAlgorithm(MacAlgorithm.HS256)
                 .build();
+        decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(
+                JwtValidators.createDefault(),
+                talentTokenValidator
+        ));
+        return decoder;
     }
 }

@@ -36,13 +36,4 @@ public class PublicTalentController {
                 candidate.id(), "Profil berhasil ditambahkan ke Talent Pool", candidate.status()
         );
     }
-
-    @GetMapping("/{id}/status")
-    public Map<String, Object> status(@PathVariable UUID id) {
-        CandidateStatus status = service.publicStatus(id);
-        Map<String, Object> body = new java.util.LinkedHashMap<>();
-        body.put("candidateId", id);
-        body.put("status", status);
-        return body;
-    }
 }

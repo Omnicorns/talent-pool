@@ -27,6 +27,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private static final Rule UPLOAD = new Rule("upload", 10, 60 * 60_000L);
     private static final Rule AUTH = new Rule("auth", 30, 10 * 60_000L);
+    /** Login backoffice lebih ketat: akun admin/recruiter adalah target utama tebak password. */
+    private static final Rule BACKOFFICE_LOGIN = new Rule("backoffice-login", 10, 10 * 60_000L);
 
     private final Map<String, Deque<Long>> hits = new ConcurrentHashMap<>();
     private final boolean enabled;
@@ -39,6 +41,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         if (!"POST".equalsIgnoreCase(request.getMethod())) return null;
         String path = request.getRequestURI();
         if (path.endsWith("/api/public/talents")) return UPLOAD;
+        if (path.endsWith("/api/backoffice/auth/login")) return BACKOFFICE_LOGIN;
         if (path.contains("/api/talent/auth/")) return AUTH;
         return null;
     }

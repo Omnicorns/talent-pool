@@ -1,30 +1,56 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs';
 import { API_BASE } from './api-base';
 
 const BACKOFFICE_KEY = 'sarinahBackofficeAuth';
+const BACKOFFICE_EXPIRY_KEY = 'sarinahBackofficeAuthExpiry';
+
+interface BackofficeLoginResponse {
+  accessToken: string;
+  tokenType: string;
+  expiresIn: number;
+  username: string;
+  role: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class BackofficeAuthService {
   constructor(private http: HttpClient, private router: Router) {}
 
+  /**
+   * Menukar username dan password dengan token berumur pendek. Password tidak disimpan di browser;
+   * yang disimpan hanya token yang kedaluwarsa otomatis.
+   */
   login(username: string, password: string) {
-    const authorization = 'Basic ' + btoa(`${username}:${password}`);
-    const headers = new HttpHeaders({ Authorization: authorization });
-
-    return this.http.get(`${API_BASE}/backoffice/dashboard`, { headers }).pipe(
-      tap(() => sessionStorage.setItem(BACKOFFICE_KEY, authorization))
+    return this.http.post<BackofficeLoginResponse>(`${API_BASE}/backoffice/auth/login`, { username, password }).pipe(
+      tap((response) => {
+        sessionStorage.setItem(BACKOFFICE_KEY, `${response.tokenType} ${response.accessToken}`);
+        sessionStorage.setItem(BACKOFFICE_EXPIRY_KEY, String(Date.now() + response.expiresIn * 1000));
+      })
     );
   }
 
   get authorization(): string | null {
-    return sessionStorage.getItem(BACKOFFICE_KEY);
+    const value = sessionStorage.getItem(BACKOFFICE_KEY);
+    if (!value) return null;
+    const expiry = Number(sessionStorage.getItem(BACKOFFICE_EXPIRY_KEY));
+    // Sesi lama (HTTP Basic) tidak punya waktu kedaluwarsa dan tidak lagi diterima server.
+    if (!value.startsWith('Bearer ') || !expiry || Date.now() >= expiry) {
+      this.clear();
+      return null;
+    }
+    return value;
   }
 
   logout(): void {
-    sessionStorage.removeItem(BACKOFFICE_KEY);
+    this.clear();
     this.router.navigateByUrl('/backoffice/login');
+  }
+
+  private clear(): void {
+    sessionStorage.removeItem(BACKOFFICE_KEY);
+    sessionStorage.removeItem(BACKOFFICE_EXPIRY_KEY);
   }
 }

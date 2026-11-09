@@ -139,8 +139,9 @@ public class TalentAuthService {
         );
     }
 
+    /** Mengembalikan token baru; token lama (di perangkat lain) tidak berlaku lagi. */
     @Transactional
-    public void changePassword(UUID candidateId, TalentChangePasswordRequest request) {
+    public TalentAuthResponse changePassword(UUID candidateId, TalentChangePasswordRequest request) {
         TalentAccount account = accountRepository.findByCandidateId(candidateId)
                 .orElseThrow(() -> new BadRequestException("Akun kandidat tidak ditemukan"));
 
@@ -153,7 +154,9 @@ public class TalentAuthService {
 
         PasswordPolicy.require(request.newPassword(), account.getEmail(), account.getCandidate() == null ? null : account.getCandidate().getFullName());
         account.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        account.revokeTokens();
         accountRepository.save(account);
+        return issueToken(account);
     }
 
     private TalentAuthResponse issueToken(TalentAccount account) {
@@ -168,6 +171,7 @@ public class TalentAuthService {
                 .subject(account.getEmail())
                 .claim("candidateId", candidateId.toString())
                 .claim("role", "TALENT")
+                .claim("ver", account.getTokenVersion())
                 .build();
 
         String token = jwtEncoder.encode(
