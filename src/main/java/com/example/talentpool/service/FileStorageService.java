@@ -143,6 +143,65 @@ public class FileStorageService {
         if (!valid) {
             throw new BadRequestException("Isi file tidak sesuai dengan format ." + extension);
         }
+        if (extension.equals("docx") || extension.equals("zip")) {
+            inspectArchive(file, extension.equals("docx"));
+        }
+    }
+
+    private static final int MAX_ARCHIVE_ENTRIES = 2_000;
+    private static final long MAX_ARCHIVE_UNCOMPRESSED_BYTES = 200L * 1024 * 1024;
+    private static final Set<String> BLOCKED_ARCHIVE_EXTENSIONS = Set.of(
+            "exe", "dll", "bat", "cmd", "com", "scr", "msi", "ps1", "vbs", "vbe", "js", "jse", "wsf",
+            "jar", "sh", "lnk", "php", "jsp", "asp", "aspx", "hta", "reg");
+
+    /**
+     * Memeriksa struktur arsip: jumlah entri dan ukuran setelah diekstrak dibatasi (anti zip bomb), nama
+     * entri tidak boleh keluar dari folder (zip slip), dan file yang dapat dieksekusi ditolak. Untuk .docx,
+     * arsip harus berstruktur dokumen Word dan tidak boleh berisi makro VBA.
+     */
+    private void inspectArchive(MultipartFile file, boolean wordDocument) {
+        int entries = 0;
+        long uncompressed = 0;
+        boolean hasContentTypes = false;
+        boolean hasWordPart = false;
+        byte[] buffer = new byte[8192];
+        try (var zip = new java.util.zip.ZipInputStream(file.getInputStream())) {
+            java.util.zip.ZipEntry entry;
+            while ((entry = zip.getNextEntry()) != null) {
+                if (++entries > MAX_ARCHIVE_ENTRIES) {
+                    throw new BadRequestException("Arsip berisi terlalu banyak file");
+                }
+                String name = entry.getName().replace('\\', '/');
+                String lower = name.toLowerCase(Locale.ROOT);
+                if (name.startsWith("/") || name.contains("../") || name.equals("..") || name.contains(":")) {
+                    throw new BadRequestException("Arsip berisi nama file yang tidak valid");
+                }
+                if (!entry.isDirectory()) {
+                    int dot = lower.lastIndexOf('.');
+                    String ext = dot >= 0 ? lower.substring(dot + 1) : "";
+                    if (BLOCKED_ARCHIVE_EXTENSIONS.contains(ext) || lower.contains("vbaproject")) {
+                        throw new BadRequestException("Arsip berisi file yang tidak diizinkan");
+                    }
+                }
+                if (lower.equals("[content_types].xml")) hasContentTypes = true;
+                if (lower.startsWith("word/")) hasWordPart = true;
+                int read;
+                while ((read = zip.read(buffer)) != -1) {
+                    uncompressed += read;
+                    if (uncompressed > MAX_ARCHIVE_UNCOMPRESSED_BYTES) {
+                        throw new BadRequestException("Ukuran isi arsip terlalu besar");
+                    }
+                }
+            }
+        } catch (IOException | IllegalArgumentException ex) {
+            throw new BadRequestException("Arsip tidak dapat dibaca atau rusak");
+        }
+        if (wordDocument && !(hasContentTypes && hasWordPart)) {
+            throw new BadRequestException("Isi file tidak sesuai dengan dokumen Word (.docx)");
+        }
+        if (entries == 0) {
+            throw new BadRequestException("Arsip kosong");
+        }
     }
 
     private static boolean startsWith(byte[] data, int offset, int... expected) {

@@ -228,3 +228,30 @@ GET  /api/public/talents/{id}/status
 - Gunakan MinIO/S3 bila aplikasi dijalankan lebih dari satu instance.
 - Tambahkan antivirus scanning untuk file upload.
 - Jangan menggunakan password demo pada environment production.
+
+## Rate limiting di Nginx
+
+Aplikasi sudah punya pembatas laju sederhana di memory (`RateLimitFilter`) yang hanya berlaku per instance dan hilang saat restart. Untuk produksi, tambahkan juga pembatasan di Nginx supaya berlaku sebelum request sampai ke aplikasi (dan tetap bekerja bila instance lebih dari satu):
+
+```nginx
+# di blok http { }
+limit_req_zone $binary_remote_addr zone=auth:10m   rate=10r/m;
+limit_req_zone $binary_remote_addr zone=upload:10m rate=5r/m;
+
+# di blok server { }
+location ~ ^/sarinah-talent-pool/api/(talent/auth|backoffice/auth)/ {
+    limit_req zone=auth burst=10 nodelay;
+    limit_req_status 429;
+    proxy_pass http://127.0.0.1:8004;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
+
+location = /sarinah-talent-pool/api/public/talents {
+    limit_req zone=upload burst=5 nodelay;
+    limit_req_status 429;
+    client_max_body_size 30m;
+    proxy_pass http://127.0.0.1:8004;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
+```
+Sesuaikan path dengan konfigurasi proxy Anda. Redis hanya diperlukan bila aplikasi dijalankan di banyak instance dan limit harus dibagi di antaranya.

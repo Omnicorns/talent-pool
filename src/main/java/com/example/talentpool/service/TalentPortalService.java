@@ -104,7 +104,7 @@ public class TalentPortalService {
 
     @Transactional
     public Page<JobListingResponse> jobs(String q, Pageable pageable) {
-        return jobListingService.searchPublicOpen(q, pageable);
+        return jobListingService.searchPublicOpen(q, limited(pageable));
     }
 
     @Transactional
@@ -143,8 +143,15 @@ public class TalentPortalService {
 
     @Transactional
     public Page<JobApplicationResponse> applications(UUID candidateId, Pageable pageable) {
-        return applicationRepository.findByCandidateId(candidateId, pageable)
+        return applicationRepository.findByCandidateId(candidateId, limited(pageable))
                 .map(applicationService::toResponse);
+    }
+
+    /** Endpoint kandidat tidak boleh meminta halaman lebih dari 100 baris. */
+    private static Pageable limited(Pageable pageable) {
+        if (pageable == null || pageable.isUnpaged()) return org.springframework.data.domain.PageRequest.of(0, 100);
+        return org.springframework.data.domain.PageRequest.of(
+                pageable.getPageNumber(), Math.min(pageable.getPageSize(), 100), pageable.getSort());
     }
 
     @Transactional

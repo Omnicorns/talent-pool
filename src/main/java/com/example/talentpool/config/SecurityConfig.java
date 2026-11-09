@@ -63,7 +63,6 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
 
                         .requestMatchers(HttpMethod.POST, "/api/public/talents").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/public/talents/*/status").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/public/job-listings", "/api/public/job-listings/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/public/site", "/api/public/site/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/public/postal-codes").permitAll()
@@ -76,6 +75,8 @@ public class SecurityConfig {
                                 "/api/talent/auth/verify-email",
                                 "/api/talent/auth/resend-verification"
                         ).permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/api/backoffice/auth/login").permitAll()
 
                         .requestMatchers("/api/talent/**").hasRole("TALENT")
 
@@ -93,7 +94,6 @@ public class SecurityConfig {
                 .oauth2ResourceServer(oauth -> oauth.jwt(jwt ->
                         jwt.jwtAuthenticationConverter(talentJwtAuthenticationConverter)
                 ))
-                .httpBasic(Customizer.withDefaults())
                 .build();
     }
 

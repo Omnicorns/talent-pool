@@ -26,8 +26,11 @@ import java.util.Locale;
 @Service
 public class TalentPasswordResetService {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(TalentPasswordResetService.class);
+
+    /** Pesan yang sama dikirim untuk email terdaftar maupun tidak, agar email tidak bisa ditebak. */
     private static final String SENT_MESSAGE =
-            "Server email menerima link reset password. Periksa Inbox atau folder Spam.";
+            "Jika email terdaftar, link reset password sudah dikirim. Periksa Inbox atau folder Spam.";
 
     private final TalentAccountRepository accountRepository;
     private final TalentPasswordResetTokenRepository tokenRepository;
@@ -62,7 +65,7 @@ public class TalentPasswordResetService {
 
         var accountOptional = accountRepository.findByEmailIgnoreCase(email);
         if (accountOptional.isEmpty() || !accountOptional.get().isEnabled()) {
-            throw new BadRequestException("Email tidak terdaftar atau akun tidak aktif. Periksa kembali email yang dimasukkan.");
+            return new TalentForgotPasswordResponse(SENT_MESSAGE, null);
         }
 
         TalentAccount account = accountOptional.get();
@@ -86,12 +89,17 @@ public class TalentPasswordResetService {
                 .encode()
                 .toUriString();
 
-        mailService.sendResetLink(
-                account.getEmail(),
-                account.getCandidate().getFullName(),
-                resetUrl,
-                expirationMinutes
-        );
+        try {
+            mailService.sendResetLink(
+                    account.getEmail(),
+                    account.getCandidate().getFullName(),
+                    resetUrl,
+                    expirationMinutes
+            );
+        } catch (RuntimeException ex) {
+            // Kegagalan kirim email tidak boleh terlihat berbeda dari email yang tidak terdaftar.
+            log.error("Gagal mengirim email reset password: {}", ex.getMessage());
+        }
 
         return new TalentForgotPasswordResponse(
                 SENT_MESSAGE,
@@ -120,6 +128,7 @@ public class TalentPasswordResetService {
 
         PasswordPolicy.require(request.newPassword(), account.getEmail(), account.getCandidate() == null ? null : account.getCandidate().getFullName());
         account.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        account.revokeTokens();
         accountRepository.save(account);
 
         tokenRepository.findAllByAccountIdAndUsedAtIsNull(account.getId())

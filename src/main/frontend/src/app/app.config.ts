@@ -4,6 +4,7 @@ import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptor/auth.interceptor';
+import { backofficeSessionInterceptor } from './core/interceptor/backoffice-session.interceptor';
 import { I18nService } from './core/i18n/i18n.service';
 import { SiteContentService } from './core/service/api/site-content.service';
 import { applyManagedOptions } from './shared/talent-options';
@@ -27,7 +28,7 @@ export const appConfig: ApplicationConfig = {
         anchorScrolling: 'enabled',
       })
     ),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor, backofficeSessionInterceptor])),
     {
       // Bahasa situs diambil sebelum halaman pertama dirender agar tidak berkedip. Gagal/lambat -> Indonesia.
       provide: APP_INITIALIZER,

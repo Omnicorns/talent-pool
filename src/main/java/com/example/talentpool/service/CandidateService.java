@@ -188,11 +188,6 @@ public class CandidateService {
     }
 
     @Transactional
-    public CandidateStatus publicStatus(UUID id) {
-        return getEntity(id).getStatus();
-    }
-
-    @Transactional
     public DownloadedFile loadProfilePicture(UUID id) {
         Candidate candidate = getEntity(id);
         if (candidate.getProfilePictureStoredPath() == null) {

@@ -33,6 +33,10 @@ public class TalentAccount {
     @Column(name = "email_verified_at")
     private Instant emailVerifiedAt;
 
+    /** Dinaikkan saat password berubah agar token lama otomatis tidak berlaku lagi. */
+    @Column(name = "token_version")
+    private Integer tokenVersion;
+
     @Column(name = "onboarding_completed")
     private Boolean onboardingCompleted;
 
@@ -55,6 +59,8 @@ public class TalentAccount {
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
     public Instant getEmailVerifiedAt() { return emailVerifiedAt; }
     public void setEmailVerifiedAt(Instant emailVerifiedAt) { this.emailVerifiedAt = emailVerifiedAt; }
+    public int getTokenVersion() { return tokenVersion == null ? 0 : tokenVersion; }
+    public void revokeTokens() { this.tokenVersion = getTokenVersion() + 1; }
     public boolean isEmailVerified() { return emailVerifiedAt != null; }
     public boolean isOnboardingCompleted() { return onboardingCompleted == null || onboardingCompleted; }
     public void setOnboardingCompleted(boolean onboardingCompleted) { this.onboardingCompleted = onboardingCompleted; }

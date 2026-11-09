@@ -4,6 +4,13 @@ server:
 spring:
   application:
     name: talent-pool-api
+  data:
+    web:
+      pageable:
+        default-page-size: 20
+        # Batas ukuran halaman untuk semua endpoint yang memakai Pageable.
+        # (Endpoint kandidat dan lowongan publik dibatasi lebih ketat, 100, di kodenya.)
+        max-page-size: 500
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
