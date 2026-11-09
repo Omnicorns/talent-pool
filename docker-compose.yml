@@ -3,15 +3,17 @@ services:
     image: postgres:16-alpine
     container_name: talent-pool-postgres
     environment:
-      POSTGRES_DB: talent_pool
-      POSTGRES_USER: talent_pool
-      POSTGRES_PASSWORD: talent_pool
+      POSTGRES_DB: ${POSTGRES_DB:-talent_pool}
+      POSTGRES_USER: ${POSTGRES_USER:-talent_pool}
+      # Wajib diisi lewat file .env (lihat .env.example); tidak ada nilai bawaan.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD di file .env}
     ports:
-      - "5432:5432"
+      # Hanya bisa diakses dari mesin ini, tidak dari jaringan luar.
+      - "127.0.0.1:5432:5432"
     volumes:
       - talent_pool_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U talent_pool -d talent_pool"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-talent_pool} -d $${POSTGRES_DB:-talent_pool}"]
       interval: 5s
       timeout: 5s
       retries: 10

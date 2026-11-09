@@ -22,6 +22,9 @@ public class JwtConfig {
         if (secret == null || secret.length() < 32) {
             throw new IllegalStateException("app.jwt.secret minimal 32 karakter");
         }
+        if (secret.chars().distinct().count() < 12) {
+            throw new IllegalStateException("app.jwt.secret terlalu mudah ditebak; gunakan nilai acak, mis. `openssl rand -base64 48`");
+        }
         return new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
     }
 

@@ -1,0 +1,13 @@
+# Build
+target/
+node_modules/
+.angular/
+*.log
+
+# Data kandidat (CV, dokumen pendukung) tidak boleh masuk repo
+uploads/
+
+# Secret lokal
+.env
+.env.*
+!.env.example
