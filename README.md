@@ -222,6 +222,16 @@ POST /api/public/talents
 GET  /api/public/talents/{id}/status
 ```
 
+## Email lowongan baru ke anggota talent pool
+
+Saat sebuah lowongan **pertama kali** berstatus `PUBLISHED`, aplikasi mengirim email otomatis ke semua akun talent pool yang aktif (dan sudah verifikasi email bila `EMAIL_VERIFICATION_REQUIRED=true`).
+
+- Dikirim async setelah transaksi commit, satu email per penerima, dengan jeda `JOB_ALERTS_DELAY_MS` (default 200 ms) agar tidak melebihi batas SMTP.
+- Satu lowongan hanya diemail sekali (kolom `new_job_notified_at`). Mengedit lowongan yang sudah `PUBLISHED` atau mempublikasikan ulang tidak mengirim ulang.
+- Setiap email memuat tautan **berhenti berlangganan** (`/api/public/job-alerts/unsubscribe?token=...`) dan header `List-Unsubscribe`.
+- Syarat: `APP_MAIL_ENABLED=true` dan SMTP terkonfigurasi. Matikan fitur ini dengan `JOB_ALERTS_ENABLED=false`.
+- Kolom baru (`job_alerts_enabled`, `job_alert_token`, `new_job_notified_at`) dibuat otomatis oleh `ddl-auto=update`.
+
 ## Catatan production
 
 - Ganti HTTP Basic dengan Keycloak/OIDC atau JWT.

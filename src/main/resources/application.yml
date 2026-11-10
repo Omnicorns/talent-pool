@@ -61,6 +61,12 @@ app:
     # Aktifkan dari environment deployment setelah MAIL_PASSWORD disimpan sebagai secret.
     enabled: ${APP_MAIL_ENABLED:false}
     from: ${APP_MAIL_FROM:talentpool@sarinah.co.id}
+  job-alerts:
+    # Email otomatis ke anggota talent pool saat lowongan baru dipublikasikan (perlu app.mail.enabled=true).
+    enabled: ${JOB_ALERTS_ENABLED:true}
+    batch-size: ${JOB_ALERTS_BATCH_SIZE:100}
+    # Jeda antar email (ms) agar tidak melebihi batas kirim SMTP.
+    delay-ms: ${JOB_ALERTS_DELAY_MS:200}
   email-verification:
     # false = akun baru langsung aktif tanpa email (mis. lingkungan lokal tanpa SMTP).
     required: ${EMAIL_VERIFICATION_REQUIRED:true}
