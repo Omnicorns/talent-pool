@@ -7,9 +7,9 @@ import com.example.talentpool.exception.BadRequestException;
 import com.example.talentpool.exception.ResourceNotFoundException;
 import com.example.talentpool.repository.SiteBannerRepository;
 import com.example.talentpool.repository.SiteContentRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -210,10 +210,10 @@ public class SiteService {
     }
 
     private JsonNode parse(String json) {
-        try { return mapper.readTree(json); } catch (JsonProcessingException ex) { return null; }
+        try { return mapper.readTree(json); } catch (JacksonException ex) { return null; }
     }
 
     private String write(JsonNode node) {
-        try { return mapper.writeValueAsString(node); } catch (JsonProcessingException ex) { throw new BadRequestException("Isi konten tidak valid"); }
+        try { return mapper.writeValueAsString(node); } catch (JacksonException ex) { throw new BadRequestException("Isi konten tidak valid"); }
     }
 }

@@ -4,7 +4,7 @@ import com.example.talentpool.domain.*;
 import com.example.talentpool.dto.*;
 import com.example.talentpool.exception.*;
 import com.example.talentpool.repository.CandidateRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.mock.web.MockMultipartFile;
@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 class TalentProfileReferenceTest {
     @TempDir Path root;
-    final ProfileJson json=new ProfileJson(new ObjectMapper().findAndRegisterModules());
+    final ProfileJson json=new ProfileJson(JsonMapper.builder().build());
     FileStorageService storage;
     @BeforeEach void setup(){storage=new FileStorageService(new StorageProperties(root));}
     MockMultipartFile pdf(String name){return new MockMultipartFile("supportingFiles",name,"application/pdf","%PDF-1.7\nTest".getBytes());}
@@ -39,7 +39,7 @@ class TalentProfileReferenceTest {
     @Test void nonexistentPostalCodeIsRejected(){Candidate c=candidate();var d=json.read(c.getProfileDetails(),TalentProfileDetails.class);c.setProfileDetails(json.write(new TalentProfileDetails(d.gender(),"00000","Unknown","",d.socialPlatform(),d.socialUsername(),d.expectedSalaryMax(),true,d.languageSkills())));assertThatThrownBy(()->new TalentProfileValidator(json,new PostalCodeService()).validate(c)).hasMessageContaining("kode pos");}
     @Test void mapperRoundTripAndOldEditorPreserveNewDetails() throws Exception {
         Candidate c=candidate();c.setIdentityNumber("0012345678901234");CandidateMapper mapper=new CandidateMapper(json);
-        var request=new ObjectMapper().findAndRegisterModules().readValue("""
+        var request=JsonMapper.builder().build().readValue("""
             {"fullName":"Test Kandidat","email":"test@example.com","phone":"081234567890","identityNumber":"0012345678901234","termsAccepted":true,"educations":[{"type":"FORMAL","level":"S1","institution":"Universitas Indonesia","major":"Manajemen","startYear":2018,"endYear":2022,"ipk":"3.7"}],"workExperiences":[],"portfolioLinks":[]}
             """,CandidateUpsertRequest.class);
         mapper.apply(c,request);var response=mapper.toDetail(c);assertThat(response.identityNumber()).startsWith("00");assertThat(response.profileDetails().socialUsername()).isEqualTo("@test");assertThat(response.educations().get(0).clientKey()).isEqualTo("edu-1");assertThat(json.write(response)).doesNotContain("storedPath");
