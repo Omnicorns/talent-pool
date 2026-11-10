@@ -5,7 +5,7 @@ import com.example.talentpool.dto.TalentProfileDetails;
 import com.example.talentpool.exception.BadRequestException;
 import com.example.talentpool.exception.ResourceNotFoundException;
 import com.example.talentpool.repository.CandidateRepository;
-import com.fasterxml.jackson.core.type.TypeReference;
+import tools.jackson.core.type.TypeReference;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;

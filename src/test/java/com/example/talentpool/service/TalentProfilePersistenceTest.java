@@ -2,11 +2,11 @@ package com.example.talentpool.service;
 import com.example.talentpool.domain.*;
 import com.example.talentpool.dto.*;
 import com.example.talentpool.repository.CandidateRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import java.time.LocalDate;
 import java.math.BigDecimal;
 import java.util.List;
@@ -16,7 +16,7 @@ class TalentProfilePersistenceTest {
     @Autowired CandidateRepository repository;
     @Autowired EntityManager em;
     @Test void newFieldsAndDocumentOwnershipSurviveReload() {
-        ProfileJson json=new ProfileJson(new ObjectMapper().findAndRegisterModules());
+        ProfileJson json=new ProfileJson(JsonMapper.builder().build());
         CandidateMapper mapper=new CandidateMapper(json);
         Candidate c=new Candidate();c.setFullName("Persistence Test");c.setEmail("persistence@test.example");
         c.setProfileDetails(json.write(new TalentProfileDetails("Perempuan","10350","Gondangdia","","Instagram","@test",new BigDecimal("7000000"),false,List.of(new TalentProfileDetails.LanguageSkill("language-1","Bahasa Indonesia","Mahir")))));
