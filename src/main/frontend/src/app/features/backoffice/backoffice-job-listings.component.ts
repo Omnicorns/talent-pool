@@ -61,7 +61,6 @@ type AppKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review' | 'penilaia
             <button class="btn btn-primary btn-sm" *ngIf="job.status === 'DRAFT'" (click)="changeStatus(job, 'PUBLISHED')">Buka lowongan</button>
             <button class="btn btn-secondary btn-sm" *ngIf="job.status === 'PUBLISHED'" (click)="changeStatus(job, 'CLOSED')">Tutup lowongan</button>
             <button class="btn btn-secondary btn-sm" *ngIf="job.status === 'CLOSED'" (click)="changeStatus(job, 'DRAFT')"><app-icon name="undo" [size]="15"></app-icon> Jadikan private</button>
-            <button class="btn btn-ghost btn-sm" style="margin-left: auto; color: var(--negative)" *ngIf="!job.applicationCount" (click)="deleteJob(job)" [attr.aria-label]="'Hapus ' + job.title"><app-icon name="trash" [size]="15"></app-icon> Hapus</button>
           </div>
         </article>
       </section>
@@ -571,20 +570,6 @@ export class BackofficeJobListingsComponent implements OnInit {
       },
       error: (err) => {
         window.alert(err?.error?.message || 'Status lowongan belum berubah. Coba lagi.');
-      },
-    });
-  }
-
-  deleteJob(job: any): void {
-    if (!window.confirm(`Hapus lowongan "${job.title}" secara permanen?`)) return;
-
-    this.api.deleteJobListing(job.id).subscribe({
-      next: () => this.load(),
-      error: (err) => {
-        window.alert(
-          err?.error?.message ||
-          'Lowongan yang sudah punya pelamar atau interview tidak bisa dihapus. Tutup lowongan sebagai gantinya.'
-        );
       },
     });
   }
