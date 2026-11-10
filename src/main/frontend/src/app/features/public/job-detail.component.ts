@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CareerHeaderComponent } from '../../shared/career-header.component';
@@ -11,68 +11,71 @@ import { FMT } from '../../shared/labels';
 import { RichTextComponent } from '../../shared/rich-text.component';
 
 @Component({
-  selector: 'app-job-detail',
-  standalone: true,
-  imports: [CommonModule, RouterLink, CareerHeaderComponent, CareerFooterComponent, IconComponent, RichTextComponent],
-  template: `
+    selector: 'app-job-detail',
+    imports: [RouterLink, CareerHeaderComponent, CareerFooterComponent, IconComponent, RichTextComponent],
+    template: `
     <div class="site">
       <app-career-header active="open"></app-career-header>
-
-      <main class="job-page" *ngIf="job; else loadingTpl">
-        <div class="container">
-          <a routerLink="/" fragment="open-positions" class="back-link"><app-icon name="arrow-left" [size]="16"></app-icon> Semua lowongan</a>
-
-          <header class="job-head">
-            <div>
-              <p class="dept">{{ job.department || 'Sarinah' }}</p>
-              <h1>{{ job.title }}</h1>
-              <div class="job-head-meta">
-                <span><app-icon name="pin" [size]="16"></app-icon>{{ job.location || 'Jakarta' }}</span>
-                <span *ngIf="job.employmentType"><app-icon name="briefcase" [size]="16"></app-icon>{{ fmt.label(job.employmentType) }}</span>
-                <span *ngIf="job.applicationDeadline"><app-icon name="calendar" [size]="16"></app-icon>Lamar sebelum {{ fmt.fullDate(job.applicationDeadline) }}</span>
+    
+      @if (job) {
+        <main class="job-page">
+          <div class="container">
+            <a routerLink="/" fragment="open-positions" class="back-link"><app-icon name="arrow-left" [size]="16"></app-icon> Semua lowongan</a>
+            <header class="job-head">
+              <div>
+                <p class="dept">{{ job.department || 'Sarinah' }}</p>
+                <h1>{{ job.title }}</h1>
+                <div class="job-head-meta">
+                  <span><app-icon name="pin" [size]="16"></app-icon>{{ job.location || 'Jakarta' }}</span>
+                  @if (job.employmentType) {
+                    <span><app-icon name="briefcase" [size]="16"></app-icon>{{ fmt.label(job.employmentType) }}</span>
+                  }
+                  @if (job.applicationDeadline) {
+                    <span><app-icon name="calendar" [size]="16"></app-icon>Lamar sebelum {{ fmt.fullDate(job.applicationDeadline) }}</span>
+                  }
+                </div>
               </div>
+              <div class="job-head-cta">
+                <button class="btn btn-primary btn-lg" (click)="startApply()">Lamar posisi ini</button>
+              </div>
+            </header>
+            <div class="job-layout">
+              <article class="prose">
+                <h2>Tentang posisi</h2>
+                <app-rich-text [text]="job.description || 'Deskripsi lowongan belum tersedia.'"></app-rich-text>
+                @if (job.requirements) {
+                  <h2>Kualifikasi</h2>
+                  <app-rich-text [text]="job.requirements"></app-rich-text>
+                }
+              </article>
+              <aside class="job-aside" aria-label="Ringkasan lowongan">
+                <h2>Ringkasan</h2>
+                <dl class="facts">
+                  <div><dt>Departemen</dt><dd>{{ job.department || '-' }}</dd></div>
+                  <div><dt>Lokasi</dt><dd>{{ job.location || '-' }}</dd></div>
+                  <div><dt>Tipe pekerjaan</dt><dd>{{ job.employmentType ? fmt.label(job.employmentType) : '-' }}</dd></div>
+                  <div><dt>Batas lamaran</dt><dd>{{ job.applicationDeadline ? fmt.fullDate(job.applicationDeadline) : 'Tanpa batas' }}</dd></div>
+                </dl>
+                <button class="btn btn-primary btn-block" (click)="startApply()">Lamar posisi ini</button>
+              </aside>
             </div>
-            <div class="job-head-cta">
-              <button class="btn btn-primary btn-lg" (click)="startApply()">Lamar posisi ini</button>
-            </div>
-          </header>
-
-          <div class="job-layout">
-            <article class="prose">
-              <h2>Tentang posisi</h2>
-              <app-rich-text [text]="job.description || 'Deskripsi lowongan belum tersedia.'"></app-rich-text>
-              <ng-container *ngIf="job.requirements">
-                <h2>Kualifikasi</h2>
-                <app-rich-text [text]="job.requirements"></app-rich-text>
-              </ng-container>
-            </article>
-
-            <aside class="job-aside" aria-label="Ringkasan lowongan">
-              <h2>Ringkasan</h2>
-              <dl class="facts">
-                <div><dt>Departemen</dt><dd>{{ job.department || '-' }}</dd></div>
-                <div><dt>Lokasi</dt><dd>{{ job.location || '-' }}</dd></div>
-                <div><dt>Tipe pekerjaan</dt><dd>{{ job.employmentType ? fmt.label(job.employmentType) : '-' }}</dd></div>
-                <div><dt>Batas lamaran</dt><dd>{{ job.applicationDeadline ? fmt.fullDate(job.applicationDeadline) : 'Tanpa batas' }}</dd></div>
-              </dl>
-              <button class="btn btn-primary btn-block" (click)="startApply()">Lamar posisi ini</button>
-            </aside>
           </div>
-        </div>
-      </main>
-
-      <ng-template #loadingTpl>
+        </main>
+      } @else {
         <main class="full-loading">
-          <ng-container *ngIf="!error">Memuat lowongan…</ng-container>
-          <ng-container *ngIf="error">
+          @if (!error) {
+            Memuat lowongan…
+          }
+          @if (error) {
             <strong>{{ error }}</strong>
             <a routerLink="/" fragment="open-positions" class="btn btn-secondary">Lihat lowongan lain</a>
-          </ng-container>
+          }
         </main>
-      </ng-template>
+      }
+    
       <app-career-footer></app-career-footer>
     </div>
-  `,
+    `
 })
 export class JobDetailComponent implements OnInit {
   readonly fmt = FMT;

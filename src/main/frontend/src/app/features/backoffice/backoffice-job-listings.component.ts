@@ -16,10 +16,9 @@ import { ColumnFilterComponent, SortDir } from '../../shared/column-filter.compo
 type AppKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review' | 'penilaian';
 
 @Component({
-  selector: 'app-backoffice-job-listings',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, BackofficeLayoutComponent, BackofficeOverlayDirective, IconComponent, PaginationComponent, ColumnFilterComponent, RichTextComponent, CandidateProfileSectionsComponent],
-  template: `
+    selector: 'app-backoffice-job-listings',
+    imports: [CommonModule, FormsModule, RouterLink, BackofficeLayoutComponent, BackofficeOverlayDirective, IconComponent, PaginationComponent, ColumnFilterComponent, RichTextComponent, CandidateProfileSectionsComponent],
+    template: `
     <app-backoffice-layout active="jobs">
       <div class="bo-head">
         <div>
@@ -35,209 +34,273 @@ type AppKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review' | 'penilaia
           <button class="btn btn-primary" (click)="openCreate()"><app-icon name="plus" [size]="16"></app-icon> Buat lowongan</button>
         </div>
       </div>
-
-      <p class="muted" *ngIf="loading">Memuat lowongan…</p>
-
+    
+      @if (loading) {
+        <p class="muted">Memuat lowongan…</p>
+      }
+    
       <section class="job-cards">
-        <article class="job-card" *ngFor="let job of rows">
-          <div class="job-card-top">
-            <span class="tag" [ngClass]="'tag-' + fmt.tone(job.status)">{{ fmt.label(job.status) }}</span>
-            <button type="button" class="applicant-link" (click)="openApplicants(job)" [disabled]="!job.applicationCount" [attr.aria-label]="'Lihat ' + (job.applicationCount || 0) + ' pelamar untuk ' + job.title">
-              <app-icon name="users" [size]="14"></app-icon> {{ job.applicationCount || 0 }} pelamar
-            </button>
-          </div>
-          <div>
-            <h2><button type="button" class="job-title-link" (click)="openApplicants(job)">{{ job.title }}</button></h2>
-            <p class="dept">{{ job.department || 'Sarinah' }} · {{ job.location || '-' }}</p>
-          </div>
-          <dl class="facts">
-            <div><dt>Kebutuhan</dt><dd>{{ job.openings }} orang</dd></div>
-            <div><dt>Tipe</dt><dd>{{ fmt.label(job.employmentType) }}</dd></div>
-            <div><dt>Batas lamaran</dt><dd>{{ job.applicationDeadline ? fmt.fullDate(job.applicationDeadline) : '-' }}</dd></div>
-          </dl>
-          <div class="job-card-actions">
-            <button class="btn btn-ghost btn-sm danger-text" (click)="askDelete(job)" [attr.aria-label]="'Hapus ' + job.title"><app-icon name="trash" [size]="15"></app-icon> Hapus</button>
-            <button class="btn btn-secondary btn-sm" (click)="openEdit(job)"><app-icon name="edit" [size]="15"></app-icon> Ubah</button>
-            <button class="btn btn-primary btn-sm" *ngIf="job.status === 'DRAFT'" (click)="changeStatus(job, 'PUBLISHED')">Buka lowongan</button>
-            <button class="btn btn-secondary btn-sm" *ngIf="job.status === 'PUBLISHED'" (click)="changeStatus(job, 'CLOSED')">Tutup lowongan</button>
-            <button class="btn btn-secondary btn-sm" *ngIf="job.status === 'CLOSED'" (click)="changeStatus(job, 'DRAFT')"><app-icon name="undo" [size]="15"></app-icon> Jadikan private</button>
-          </div>
-        </article>
+        @for (job of rows; track job) {
+          <article class="job-card">
+            <div class="job-card-top">
+              <span class="tag" [ngClass]="'tag-' + fmt.tone(job.status)">{{ fmt.label(job.status) }}</span>
+              <button type="button" class="applicant-link" (click)="openApplicants(job)" [disabled]="!job.applicationCount" [attr.aria-label]="'Lihat ' + (job.applicationCount || 0) + ' pelamar untuk ' + job.title">
+                <app-icon name="users" [size]="14"></app-icon> {{ job.applicationCount || 0 }} pelamar
+              </button>
+            </div>
+            <div>
+              <h2><button type="button" class="job-title-link" (click)="openApplicants(job)">{{ job.title }}</button></h2>
+              <p class="dept">{{ job.department || 'Sarinah' }} · {{ job.location || '-' }}</p>
+            </div>
+            <dl class="facts">
+              <div><dt>Kebutuhan</dt><dd>{{ job.openings }} orang</dd></div>
+              <div><dt>Tipe</dt><dd>{{ fmt.label(job.employmentType) }}</dd></div>
+              <div><dt>Batas lamaran</dt><dd>{{ job.applicationDeadline ? fmt.fullDate(job.applicationDeadline) : '-' }}</dd></div>
+            </dl>
+            <div class="job-card-actions">
+              <button class="btn btn-ghost btn-sm danger-text" (click)="askDelete(job)" [attr.aria-label]="'Hapus ' + job.title"><app-icon name="trash" [size]="15"></app-icon> Hapus</button>
+              <button class="btn btn-secondary btn-sm" (click)="openEdit(job)"><app-icon name="edit" [size]="15"></app-icon> Ubah</button>
+              @if (job.status === 'DRAFT') {
+                <button class="btn btn-primary btn-sm" (click)="changeStatus(job, 'PUBLISHED')">Buka lowongan</button>
+              }
+              @if (job.status === 'PUBLISHED') {
+                <button class="btn btn-secondary btn-sm" (click)="changeStatus(job, 'CLOSED')">Tutup lowongan</button>
+              }
+              @if (job.status === 'CLOSED') {
+                <button class="btn btn-secondary btn-sm" (click)="changeStatus(job, 'DRAFT')"><app-icon name="undo" [size]="15"></app-icon> Jadikan private</button>
+              }
+            </div>
+          </article>
+        }
       </section>
-
-      <div class="empty" *ngIf="!rows.length && !loading">
-        <strong>{{ q.trim() ? 'Tidak ada lowongan yang cocok' : 'Belum ada lowongan' }}</strong>
-        {{ q.trim() ? 'Coba kata kunci lain.' : 'Buat lowongan pertama untuk mulai menerima pelamar.' }}
-      </div>
-
-      <div class="page-footer" *ngIf="total > 0">
-        <app-pagination [page]="page" [size]="size" [total]="total" [sizes]="[8, 16, 40]" (pageChange)="goToPage($event)" (sizeChange)="changeSize($event)"></app-pagination>
-      </div>
-
-      <div class="drawer-backdrop" *ngIf="drawerOpen" (click)="closeOnBackdrop($event)">
-        <aside class="drawer" [boOverlay]="true" (overlayClose)="closeDrawer()" role="dialog" aria-modal="true" aria-labelledby="job-form-title">
-          <header class="drawer-head">
-            <div>
-              <h2 id="job-form-title">{{ editingId ? 'Ubah lowongan' : 'Buat lowongan' }}</h2>
-              <p>Lowongan berstatus Dibuka langsung tampil di portal kandidat.</p>
-            </div>
-            <button type="button" class="icon-btn" (click)="closeDrawer()" aria-label="Tutup"><app-icon name="x"></app-icon></button>
-          </header>
-
-          <div class="drawer-body">
-            <div class="form-stack">
-              <label class="field">Nama posisi<input [(ngModel)]="form.title" placeholder="Contoh: Retail Operations Supervisor"></label>
-              <div class="form-grid">
-                <label class="field">Departemen
-                  <select [(ngModel)]="form.department">
-                    <option value="">Pilih departemen</option>
-                    <option *ngFor="let o of departmentOptions" [value]="o">{{ o }}</option>
-                  </select>
-                </label>
-                <label class="field">Lokasi
-                  <select [(ngModel)]="form.location">
-                    <option value="">Pilih lokasi</option>
-                    <option *ngFor="let o of locationOptions" [value]="o">{{ o }}</option>
-                  </select>
-                </label>
-                <label class="field">Tipe pekerjaan
-                  <select [(ngModel)]="form.employmentType">
-                    <option value="">Tidak ditentukan</option>
-                    <option value="FULL_TIME">Penuh waktu</option>
-                    <option value="PART_TIME">Paruh waktu</option>
-                    <option value="CONTRACT">Kontrak</option>
-                    <option value="INTERNSHIP">Magang</option>
-                    <option value="TEMPORARY">Sementara</option>
-                  </select>
-                </label>
-                <label class="field">Jumlah kebutuhan<input type="number" min="1" [(ngModel)]="form.openings"></label>
-                <label class="field">Batas lamaran<input type="date" [(ngModel)]="form.applicationDeadline"></label>
-                <label class="field">Status
-                  <select [(ngModel)]="form.status">
-                    <option value="DRAFT">Private</option>
-                    <option value="PUBLISHED">Dibuka</option>
-                    <option value="CLOSED">Ditutup</option>
-                  </select>
-                </label>
+    
+      @if (!rows.length && !loading) {
+        <div class="empty">
+          <strong>{{ q.trim() ? 'Tidak ada lowongan yang cocok' : 'Belum ada lowongan' }}</strong>
+          {{ q.trim() ? 'Coba kata kunci lain.' : 'Buat lowongan pertama untuk mulai menerima pelamar.' }}
+        </div>
+      }
+    
+      @if (total > 0) {
+        <div class="page-footer">
+          <app-pagination [page]="page" [size]="size" [total]="total" [sizes]="[8, 16, 40]" (pageChange)="goToPage($event)" (sizeChange)="changeSize($event)"></app-pagination>
+        </div>
+      }
+    
+      @if (drawerOpen) {
+        <div class="drawer-backdrop" (click)="closeOnBackdrop($event)">
+          <aside class="drawer" [boOverlay]="true" (overlayClose)="closeDrawer()" role="dialog" aria-modal="true" aria-labelledby="job-form-title">
+            <header class="drawer-head">
+              <div>
+                <h2 id="job-form-title">{{ editingId ? 'Ubah lowongan' : 'Buat lowongan' }}</h2>
+                <p>Lowongan berstatus Dibuka langsung tampil di portal kandidat.</p>
               </div>
-              <div class="field desc-field">
-                <span>Deskripsi</span>
-                <div class="desc-tools" role="toolbar" aria-label="Format deskripsi">
-                  <button type="button" (click)="insertText(desc, 'Tanggung Jawab:\n', true)">Tanggung Jawab</button>
-                  <button type="button" (click)="insertText(desc, 'Kualifikasi:\n', true)">Kualifikasi</button>
-                  <button type="button" (click)="insertText(desc, 'Benefit:\n', true)">Benefit</button>
-                  <button type="button" (click)="insertText(desc, '- ')">&bull; Poin</button>
-                  <button type="button" (click)="insertText(desc, '1. ')">1. Daftar</button>
-                  <button type="button" class="desc-preview-toggle" [attr.aria-pressed]="showPreview" (click)="showPreview = !showPreview">Pratinjau</button>
+              <button type="button" class="icon-btn" (click)="closeDrawer()" aria-label="Tutup"><app-icon name="x"></app-icon></button>
+            </header>
+            <div class="drawer-body">
+              <div class="form-stack">
+                <label class="field">Nama posisi<input [(ngModel)]="form.title" placeholder="Contoh: Retail Operations Supervisor"></label>
+                <div class="form-grid">
+                  <label class="field">Departemen
+                    <select [(ngModel)]="form.department">
+                      <option value="">Pilih departemen</option>
+                      @for (o of departmentOptions; track o) {
+                        <option [value]="o">{{ o }}</option>
+                      }
+                    </select>
+                  </label>
+                  <label class="field">Lokasi
+                    <select [(ngModel)]="form.location">
+                      <option value="">Pilih lokasi</option>
+                      @for (o of locationOptions; track o) {
+                        <option [value]="o">{{ o }}</option>
+                      }
+                    </select>
+                  </label>
+                  <label class="field">Tipe pekerjaan
+                    <select [(ngModel)]="form.employmentType">
+                      <option value="">Tidak ditentukan</option>
+                      <option value="FULL_TIME">Penuh waktu</option>
+                      <option value="PART_TIME">Paruh waktu</option>
+                      <option value="CONTRACT">Kontrak</option>
+                      <option value="INTERNSHIP">Magang</option>
+                      <option value="TEMPORARY">Sementara</option>
+                    </select>
+                  </label>
+                  <label class="field">Jumlah kebutuhan<input type="number" min="1" [(ngModel)]="form.openings"></label>
+                  <label class="field">Batas lamaran<input type="date" [(ngModel)]="form.applicationDeadline"></label>
+                  <label class="field">Status
+                    <select [(ngModel)]="form.status">
+                      <option value="DRAFT">Private</option>
+                      <option value="PUBLISHED">Dibuka</option>
+                      <option value="CLOSED">Ditutup</option>
+                    </select>
+                  </label>
                 </div>
-                <textarea #desc rows="10" name="description" [(ngModel)]="form.description" placeholder="Tanggung Jawab:&#10;- Merancang dan menganalisa permintaan layanan umum&#10;&#10;Kualifikasi:&#10;1. Sarjana (S1) Manajemen atau terkait&#10;2. Pengalaman min. 3 tahun"></textarea>
-                <small class="muted">Baris yang berakhiran ":" menjadi sub-judul; baris berawalan "-" atau "1." menjadi daftar di halaman lowongan.</small>
-                <div class="desc-preview prose" *ngIf="showPreview"><app-rich-text [text]="form.description"></app-rich-text></div>
+                <div class="field desc-field">
+                  <span>Deskripsi</span>
+                  <div class="desc-tools" role="toolbar" aria-label="Format deskripsi">
+                    <button type="button" (click)="insertText(desc, 'Tanggung Jawab:\n', true)">Tanggung Jawab</button>
+                    <button type="button" (click)="insertText(desc, 'Kualifikasi:\n', true)">Kualifikasi</button>
+                    <button type="button" (click)="insertText(desc, 'Benefit:\n', true)">Benefit</button>
+                    <button type="button" (click)="insertText(desc, '- ')">&bull; Poin</button>
+                    <button type="button" (click)="insertText(desc, '1. ')">1. Daftar</button>
+                    <button type="button" class="desc-preview-toggle" [attr.aria-pressed]="showPreview" (click)="showPreview = !showPreview">Pratinjau</button>
+                  </div>
+                  <textarea #desc rows="10" name="description" [(ngModel)]="form.description" placeholder="Tanggung Jawab:&#10;- Merancang dan menganalisa permintaan layanan umum&#10;&#10;Kualifikasi:&#10;1. Sarjana (S1) Manajemen atau terkait&#10;2. Pengalaman min. 3 tahun"></textarea>
+                  <small class="muted">Baris yang berakhiran ":" menjadi sub-judul; baris berawalan "-" atau "1." menjadi daftar di halaman lowongan.</small>
+                  @if (showPreview) {
+                    <div class="desc-preview prose"><app-rich-text [text]="form.description"></app-rich-text></div>
+                  }
+                </div>
+                @if (error) {
+                  <div class="alert alert-error" role="alert"><app-icon name="alert"></app-icon><span>{{ error }}</span></div>
+                }
               </div>
-              <div class="alert alert-error" *ngIf="error" role="alert"><app-icon name="alert"></app-icon><span>{{ error }}</span></div>
             </div>
-          </div>
-
-          <footer class="drawer-foot">
-            <button class="btn btn-secondary" (click)="closeDrawer()" [disabled]="saving">Batal</button>
-            <button class="btn btn-primary" (click)="save()" [disabled]="saving">{{ saving ? 'Menyimpan…' : (editingId ? 'Simpan perubahan' : 'Buat lowongan') }}</button>
-          </footer>
-        </aside>
-      </div>
-
-      <div class="drawer-backdrop" *ngIf="applicantsJob" (click)="closeApplicantsOnBackdrop($event)">
-        <aside class="drawer xwide" [boOverlay]="true" (overlayClose)="closeApplicants()" role="dialog" aria-modal="true" aria-labelledby="applicants-title">
-          <header class="drawer-head">
-            <div>
-              <h2 id="applicants-title">{{ reviewing ? reviewing.candidateName : 'Pelamar ' + applicantsJob.title }}</h2>
-              <p *ngIf="!reviewing">{{ applicants.length }} pelamar · {{ potentialCount }} ditandai potensial</p>
-              <p *ngIf="reviewing">Review pelamar · {{ applicantsJob.title }}</p>
-            </div>
-            <button type="button" class="icon-btn" (click)="closeApplicants()" aria-label="Tutup"><app-icon name="x"></app-icon></button>
-          </header>
-          <div class="drawer-body" *ngIf="reviewing">
-            <div class="alert alert-error" *ngIf="reviewError" role="alert"><app-icon name="alert"></app-icon><span>{{ reviewError }}</span></div>
-            <p class="muted" *ngIf="!reviewDetail && !reviewError">Memuat profil kandidat…</p>
-            <ng-container *ngIf="reviewDetail">
-              <div class="drawer-actions" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px">
-                <button class="btn btn-primary btn-sm" (click)="api.downloadCv(reviewDetail.id, 'CV-' + reviewDetail.fullName + '.pdf')" [disabled]="!reviewDetail.cvOriginalName"><app-icon name="download" [size]="16"></app-icon> {{ reviewDetail.cvOriginalName ? 'Unduh CV' : 'CV belum ada' }}</button>
-                <button class="btn btn-secondary btn-sm" (click)="api.viewCv(reviewDetail.id)" [disabled]="!reviewDetail.cvOriginalName"><app-icon name="eye" [size]="16"></app-icon> Lihat CV</button>
+            <footer class="drawer-foot">
+              <button class="btn btn-secondary" (click)="closeDrawer()" [disabled]="saving">Batal</button>
+              <button class="btn btn-primary" (click)="save()" [disabled]="saving">{{ saving ? 'Menyimpan…' : (editingId ? 'Simpan perubahan' : 'Buat lowongan') }}</button>
+            </footer>
+          </aside>
+        </div>
+      }
+    
+      @if (applicantsJob) {
+        <div class="drawer-backdrop" (click)="closeApplicantsOnBackdrop($event)">
+          <aside class="drawer xwide" [boOverlay]="true" (overlayClose)="closeApplicants()" role="dialog" aria-modal="true" aria-labelledby="applicants-title">
+            <header class="drawer-head">
+              <div>
+                <h2 id="applicants-title">{{ reviewing ? reviewing.candidateName : 'Pelamar ' + applicantsJob.title }}</h2>
+                @if (!reviewing) {
+                  <p>{{ applicants.length }} pelamar · {{ potentialCount }} ditandai potensial</p>
+                }
+                @if (reviewing) {
+                  <p>Review pelamar · {{ applicantsJob.title }}</p>
+                }
               </div>
-              <app-candidate-profile-sections [selected]="reviewDetail"></app-candidate-profile-sections>
-            </ng-container>
-          </div>
-          <div class="drawer-body" *ngIf="!reviewing">
-            <div class="segmented applicant-filter" role="tablist" aria-label="Filter pelamar" *ngIf="applicants.length">
-              <button type="button" role="tab" [class.active]="!onlyPotential" [attr.aria-selected]="!onlyPotential" (click)="onlyPotential = false">Semua ({{ applicants.length }})</button>
-              <button type="button" role="tab" [class.active]="onlyPotential" [attr.aria-selected]="onlyPotential" (click)="onlyPotential = true">Potensial ({{ potentialCount }})</button>
+              <button type="button" class="icon-btn" (click)="closeApplicants()" aria-label="Tutup"><app-icon name="x"></app-icon></button>
+            </header>
+            @if (reviewing) {
+              <div class="drawer-body">
+                @if (reviewError) {
+                  <div class="alert alert-error" role="alert"><app-icon name="alert"></app-icon><span>{{ reviewError }}</span></div>
+                }
+                @if (!reviewDetail && !reviewError) {
+                  <p class="muted">Memuat profil kandidat…</p>
+                }
+                @if (reviewDetail) {
+                  <div class="drawer-actions" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px">
+                    <button class="btn btn-primary btn-sm" (click)="api.downloadCv(reviewDetail.id, 'CV-' + reviewDetail.fullName + '.pdf')" [disabled]="!reviewDetail.cvOriginalName"><app-icon name="download" [size]="16"></app-icon> {{ reviewDetail.cvOriginalName ? 'Unduh CV' : 'CV belum ada' }}</button>
+                    <button class="btn btn-secondary btn-sm" (click)="api.viewCv(reviewDetail.id)" [disabled]="!reviewDetail.cvOriginalName"><app-icon name="eye" [size]="16"></app-icon> Lihat CV</button>
+                  </div>
+                  <app-candidate-profile-sections [selected]="reviewDetail"></app-candidate-profile-sections>
+                }
+              </div>
+            }
+            @if (!reviewing) {
+              <div class="drawer-body">
+                @if (applicants.length) {
+                  <div class="segmented applicant-filter" role="tablist" aria-label="Filter pelamar">
+                    <button type="button" role="tab" [class.active]="!onlyPotential" [attr.aria-selected]="!onlyPotential" (click)="onlyPotential = false">Semua ({{ applicants.length }})</button>
+                    <button type="button" role="tab" [class.active]="onlyPotential" [attr.aria-selected]="onlyPotential" (click)="onlyPotential = true">Potensial ({{ potentialCount }})</button>
+                  </div>
+                }
+                @if (applicantsLoading) {
+                  <p class="muted">Memuat pelamar…</p>
+                }
+                @if (applicantsError) {
+                  <div class="alert alert-error" role="alert"><app-icon name="alert"></app-icon><span>{{ applicantsError }}</span></div>
+                }
+                @if (!applicantsLoading && !applicantsError && !applicants.length) {
+                  <p class="muted">Belum ada pelamar.</p>
+                }
+                @if (applicants.length && onlyPotential && !potentialCount) {
+                  <p class="muted">Belum ada pelamar yang ditandai potensial.</p>
+                }
+                @if (applicants.length && !visibleApplicants.length && (hasApplicantFilters || !onlyPotential)) {
+                  <p class="muted">Tidak ada pelamar yang cocok dengan filter. <button type="button" class="filter-reset" (click)="clearApplicantFilters()">Hapus semua filter</button></p>
+                }
+                @if (hasApplicantFilters && visibleApplicants.length) {
+                  <p style="text-align: right; margin: 0 0 8px"><button type="button" class="filter-reset" (click)="clearApplicantFilters()">Hapus semua filter</button></p>
+                }
+                @if (visibleApplicants.length) {
+                  <div class="table-wrap">
+                    <table class="table applicant-table">
+                      <thead><tr>
+                        @for (col of applicantColumns; track col) {
+                          <th><app-column-filter [label]="col.label" [options]="applicantOptions(col.key)" [selected]="applicantFilters[col.key]" [sort]="applicantSort?.key === col.key ? applicantSort!.dir : null" (selectedChange)="setApplicantFilter(col.key, $event)" (sortChange)="setApplicantSort(col.key, $event)"></app-column-filter></th>
+                        }
+                        <th><span class="sr-only">CV</span></th>
+                      </tr></thead>
+                      <tbody>
+                        @for (a of visibleApplicants; track a) {
+                          <tr>
+                            <td style="min-width: 160px"><strong>{{ a.candidateName }}</strong><small>{{ a.candidate?.email }}</small><small>{{ a.addedByHr ? 'Ditambahkan' : 'Melamar' }} {{ fmt.fullDate(a.appliedAt) }} · {{ fmt.label(a.stage) }}</small><span class="source-tag" [class.hr]="a.addedByHr">{{ a.addedByHr ? 'Ditambahkan HC' : 'Dilamar sendiri' }}</span></td>
+                            <td style="min-width: 140px">{{ a.candidate?.jobInterests?.length ? a.candidate.jobInterests.join(', ') : (a.candidate?.relatedPosition || '-') }}</td>
+                            <td style="min-width: 170px">
+                              @if (a.candidate?.lastExperience; as exp) {
+                                <strong>{{ exp.position }}</strong><small>{{ exp.company }}</small><small>{{ fmt.lastExperiencePeriod(exp) }}</small>
+                              } @else {
+                                -
+                              }
+                            </td>
+                            <td style="min-width: 120px">{{ a.candidate?.preferredLocations?.length ? a.candidate.preferredLocations.join(', ') : '-' }}</td>
+                            <td><span class="tag" [ngClass]="a.candidate?.reviewed ? 'tag-positive' : 'tag-neutral'">{{ a.candidate?.reviewed ? 'Sudah direview' : 'Belum review' }}</span></td>
+                            <td>
+                              <button type="button" class="potential-btn" [class.on]="a.potential" [attr.aria-pressed]="a.potential"
+                                (click)="togglePotential(a)" [disabled]="a.saving" [attr.aria-label]="(a.potential ? 'Hapus tag potensial ' : 'Tandai potensial ') + a.candidateName">
+                                <app-icon [name]="a.potential ? 'check' : 'plus'" [size]="14"></app-icon> {{ a.potential ? 'Potensial' : 'Tandai potensial' }}
+                              </button>
+                            </td>
+                            <td class="actions">
+                              <div class="row-actions">
+                                <button type="button" class="icon-btn" (click)="reviewApplicant(a)" [attr.aria-label]="'Review profil ' + a.candidateName" title="Review profil kandidat"><app-icon name="eye" [size]="16"></app-icon></button>
+                                <button class="icon-btn" (click)="api.downloadCv(a.candidateId, 'CV-' + a.candidateName + '.pdf')" [disabled]="!a.candidate?.hasCv" [attr.aria-label]="'Unduh CV ' + a.candidateName" title="Unduh CV"><app-icon name="download" [size]="16"></app-icon></button>
+                              </div>
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                }
+              </div>
+            }
+            @if (reviewing) {
+              <footer class="drawer-foot">
+                <button class="btn btn-secondary" (click)="backToApplicants()"><app-icon name="arrow-left" [size]="16"></app-icon> Kembali ke daftar pelamar</button>
+              </footer>
+            }
+            @if (!reviewing) {
+              <footer class="drawer-foot">
+                <button class="btn btn-secondary" (click)="closeApplicants()">Tutup</button>
+                <a class="btn btn-primary" routerLink="/backoffice/applications" (click)="closeApplicants()">Kelola tahap di Pipeline</a>
+              </footer>
+            }
+          </aside>
+        </div>
+      }
+    
+      @if (deleteTarget) {
+        <div class="modal-backdrop" (click)="deleteTarget = null">
+          <section class="modal" role="alertdialog" aria-modal="true" aria-labelledby="delete-title" (click)="$event.stopPropagation()" style="max-width: 440px">
+            <header class="drawer-head"><div><h2 id="delete-title">Hapus lowongan?</h2><p>{{ deleteTarget.title }}</p></div></header>
+            <div class="modal-body">
+              <p>Lowongan yang dihapus tidak bisa dikembalikan. Lowongan yang sudah punya pelamar atau jadwal interview tidak bisa dihapus; tutup saja lowongannya.</p>
+              @if (deleteError) {
+                <div class="alert alert-error" role="alert"><app-icon name="alert"></app-icon><span>{{ deleteError }}</span></div>
+              }
             </div>
-            <p class="muted" *ngIf="applicantsLoading">Memuat pelamar…</p>
-            <div class="alert alert-error" *ngIf="applicantsError" role="alert"><app-icon name="alert"></app-icon><span>{{ applicantsError }}</span></div>
-            <p class="muted" *ngIf="!applicantsLoading && !applicantsError && !applicants.length">Belum ada pelamar.</p>
-            <p class="muted" *ngIf="applicants.length && onlyPotential && !potentialCount">Belum ada pelamar yang ditandai potensial.</p>
-
-            <p class="muted" *ngIf="applicants.length && !visibleApplicants.length && (hasApplicantFilters || !onlyPotential)">Tidak ada pelamar yang cocok dengan filter. <button type="button" class="filter-reset" (click)="clearApplicantFilters()">Hapus semua filter</button></p>
-            <p style="text-align: right; margin: 0 0 8px" *ngIf="hasApplicantFilters && visibleApplicants.length"><button type="button" class="filter-reset" (click)="clearApplicantFilters()">Hapus semua filter</button></p>
-            <div class="table-wrap" *ngIf="visibleApplicants.length">
-              <table class="table applicant-table">
-                <thead><tr>
-                  <th *ngFor="let col of applicantColumns"><app-column-filter [label]="col.label" [options]="applicantOptions(col.key)" [selected]="applicantFilters[col.key]" [sort]="applicantSort?.key === col.key ? applicantSort!.dir : null" (selectedChange)="setApplicantFilter(col.key, $event)" (sortChange)="setApplicantSort(col.key, $event)"></app-column-filter></th>
-                  <th><span class="sr-only">CV</span></th>
-                </tr></thead>
-                <tbody>
-                  <tr *ngFor="let a of visibleApplicants">
-                    <td style="min-width: 160px"><strong>{{ a.candidateName }}</strong><small>{{ a.candidate?.email }}</small><small>{{ a.addedByHr ? 'Ditambahkan' : 'Melamar' }} {{ fmt.fullDate(a.appliedAt) }} · {{ fmt.label(a.stage) }}</small><span class="source-tag" [class.hr]="a.addedByHr">{{ a.addedByHr ? 'Ditambahkan HC' : 'Dilamar sendiri' }}</span></td>
-                    <td style="min-width: 140px">{{ a.candidate?.jobInterests?.length ? a.candidate.jobInterests.join(', ') : (a.candidate?.relatedPosition || '-') }}</td>
-                    <td style="min-width: 170px">
-                      <ng-container *ngIf="a.candidate?.lastExperience as exp; else noExp">
-                        <strong>{{ exp.position }}</strong><small>{{ exp.company }}</small><small>{{ fmt.lastExperiencePeriod(exp) }}</small>
-                      </ng-container>
-                      <ng-template #noExp>-</ng-template>
-                    </td>
-                    <td style="min-width: 120px">{{ a.candidate?.preferredLocations?.length ? a.candidate.preferredLocations.join(', ') : '-' }}</td>
-                    <td><span class="tag" [ngClass]="a.candidate?.reviewed ? 'tag-positive' : 'tag-neutral'">{{ a.candidate?.reviewed ? 'Sudah direview' : 'Belum review' }}</span></td>
-                    <td>
-                      <button type="button" class="potential-btn" [class.on]="a.potential" [attr.aria-pressed]="a.potential"
-                        (click)="togglePotential(a)" [disabled]="a.saving" [attr.aria-label]="(a.potential ? 'Hapus tag potensial ' : 'Tandai potensial ') + a.candidateName">
-                        <app-icon [name]="a.potential ? 'check' : 'plus'" [size]="14"></app-icon> {{ a.potential ? 'Potensial' : 'Tandai potensial' }}
-                      </button>
-                    </td>
-                    <td class="actions">
-                      <div class="row-actions">
-                        <button type="button" class="icon-btn" (click)="reviewApplicant(a)" [attr.aria-label]="'Review profil ' + a.candidateName" title="Review profil kandidat"><app-icon name="eye" [size]="16"></app-icon></button>
-                        <button class="icon-btn" (click)="api.downloadCv(a.candidateId, 'CV-' + a.candidateName + '.pdf')" [disabled]="!a.candidate?.hasCv" [attr.aria-label]="'Unduh CV ' + a.candidateName" title="Unduh CV"><app-icon name="download" [size]="16"></app-icon></button>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <footer class="drawer-foot" *ngIf="reviewing">
-            <button class="btn btn-secondary" (click)="backToApplicants()"><app-icon name="arrow-left" [size]="16"></app-icon> Kembali ke daftar pelamar</button>
-          </footer>
-          <footer class="drawer-foot" *ngIf="!reviewing">
-            <button class="btn btn-secondary" (click)="closeApplicants()">Tutup</button>
-            <a class="btn btn-primary" routerLink="/backoffice/applications" (click)="closeApplicants()">Kelola tahap di Pipeline</a>
-          </footer>
-        </aside>
-      </div>
-
-      <div class="modal-backdrop" *ngIf="deleteTarget" (click)="deleteTarget = null">
-        <section class="modal" role="alertdialog" aria-modal="true" aria-labelledby="delete-title" (click)="$event.stopPropagation()" style="max-width: 440px">
-          <header class="drawer-head"><div><h2 id="delete-title">Hapus lowongan?</h2><p>{{ deleteTarget.title }}</p></div></header>
-          <div class="modal-body">
-            <p>Lowongan yang dihapus tidak bisa dikembalikan. Lowongan yang sudah punya pelamar atau jadwal interview tidak bisa dihapus; tutup saja lowongannya.</p>
-            <div class="alert alert-error" *ngIf="deleteError" role="alert"><app-icon name="alert"></app-icon><span>{{ deleteError }}</span></div>
-          </div>
-          <footer class="modal-foot">
-            <button class="btn btn-secondary" (click)="deleteTarget = null" [disabled]="deleting">Batal</button>
-            <button class="btn btn-danger" (click)="confirmDelete()" [disabled]="deleting">{{ deleting ? 'Menghapus…' : 'Hapus lowongan' }}</button>
-          </footer>
-        </section>
-      </div>
+            <footer class="modal-foot">
+              <button class="btn btn-secondary" (click)="deleteTarget = null" [disabled]="deleting">Batal</button>
+              <button class="btn btn-danger" (click)="confirmDelete()" [disabled]="deleting">{{ deleting ? 'Menghapus…' : 'Hapus lowongan' }}</button>
+            </footer>
+          </section>
+        </div>
+      }
     </app-backoffice-layout>
-  `,
+    `
 })
 export class BackofficeJobListingsComponent implements OnInit {
   showPreview = false;

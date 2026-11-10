@@ -12,10 +12,9 @@ interface Insight {
 }
 
 @Component({
-  selector: 'app-backoffice-dashboard',
-  standalone: true,
-  imports: [CommonModule, RouterLink, BackofficeLayoutComponent, IconComponent],
-  template: `
+    selector: 'app-backoffice-dashboard',
+    imports: [CommonModule, RouterLink, BackofficeLayoutComponent, IconComponent],
+    template: `
     <app-backoffice-layout active="dashboard">
       <div class="bo-head">
         <div>
@@ -27,16 +26,18 @@ interface Insight {
           <a class="btn btn-primary" routerLink="/backoffice/job-listings"><app-icon name="plus" [size]="16"></app-icon> Buat lowongan</a>
         </div>
       </div>
-
-      <p class="alert alert-error" *ngIf="error" role="alert"><app-icon name="alert"></app-icon>{{ error }}</p>
-
+    
+      @if (error) {
+        <p class="alert alert-error" role="alert"><app-icon name="alert"></app-icon>{{ error }}</p>
+      }
+    
       <section class="stat-strip" aria-label="Angka utama">
         <div class="stat"><span>Kandidat di Talent Pool</span><strong>{{ dashboard?.totalCandidates ?? '–' }}</strong><a routerLink="/backoffice/candidates">Lihat kandidat <app-icon name="chevron-right" [size]="14"></app-icon></a></div>
         <div class="stat"><span>Siap diproses</span><strong>{{ dashboard?.availableCandidates ?? '–' }}</strong><a routerLink="/backoffice/candidates">Status tersedia <app-icon name="chevron-right" [size]="14"></app-icon></a></div>
         <div class="stat"><span>Lowongan dibuka</span><strong>{{ dashboard?.openJobListings ?? '–' }}</strong><a routerLink="/backoffice/job-listings">Dari {{ dashboard?.totalJobListings ?? 0 }} lowongan <app-icon name="chevron-right" [size]="14"></app-icon></a></div>
         <div class="stat"><span>Lamaran masuk</span><strong>{{ dashboard?.totalApplications ?? '–' }}</strong><a routerLink="/backoffice/applications">Lihat pipeline <app-icon name="chevron-right" [size]="14"></app-icon></a></div>
       </section>
-
+    
       <div class="bo-grid">
         <section class="panel span-7">
           <div class="panel-head">
@@ -44,39 +45,49 @@ interface Insight {
             <a class="btn btn-ghost btn-sm" routerLink="/backoffice/applications">Kelola</a>
           </div>
           <div class="panel-body">
-            <div class="bars" *ngIf="applicationStages.length; else emptyPipeline">
-              <div class="bar-row" *ngFor="let item of applicationStages">
-                <span>{{ fmt.label(item.name) }}</span>
-                <div class="bar-track"><div class="bar-fill" [class.accent]="item.name === 'HIRED'" [style.width.%]="percentage(item.count, applicationMax)"></div></div>
-                <strong>{{ item.count }}</strong>
+            @if (applicationStages.length) {
+              <div class="bars">
+                @for (item of applicationStages; track item) {
+                  <div class="bar-row">
+                    <span>{{ fmt.label(item.name) }}</span>
+                    <div class="bar-track"><div class="bar-fill" [class.accent]="item.name === 'HIRED'" [style.width.%]="percentage(item.count, applicationMax)"></div></div>
+                    <strong>{{ item.count }}</strong>
+                  </div>
+                }
               </div>
-            </div>
-            <ng-template #emptyPipeline><p class="muted">Belum ada lamaran.</p></ng-template>
+            } @else {
+              <p class="muted">Belum ada lamaran.</p>
+            }
           </div>
         </section>
-
+    
         <section class="panel span-5">
           <div class="panel-head">
             <div><h2>Interview terdekat</h2><p>{{ dashboard?.interviewsToday || 0 }} interview hari ini</p></div>
             <a class="btn btn-ghost btn-sm" routerLink="/backoffice/interviews">Semua</a>
           </div>
           <div class="panel-body">
-            <div class="list-plain" *ngIf="upcoming.length; else noInterview">
-              <div *ngFor="let item of upcoming">
-                <div>
-                  <strong>{{ item.candidateName }}</strong>
-                  <small>{{ item.jobTitle || 'Talent Pool' }} · {{ item.interviewer }}</small>
-                </div>
-                <div style="text-align: right; flex: none">
-                  <strong>{{ fmt.fullDate(item.scheduledAt) }}</strong>
-                  <small>{{ fmt.time(item.scheduledAt) }} · {{ fmt.label(item.mode) }}</small>
-                </div>
+            @if (upcoming.length) {
+              <div class="list-plain">
+                @for (item of upcoming; track item) {
+                  <div>
+                    <div>
+                      <strong>{{ item.candidateName }}</strong>
+                      <small>{{ item.jobTitle || 'Talent Pool' }} · {{ item.interviewer }}</small>
+                    </div>
+                    <div style="text-align: right; flex: none">
+                      <strong>{{ fmt.fullDate(item.scheduledAt) }}</strong>
+                      <small>{{ fmt.time(item.scheduledAt) }} · {{ fmt.label(item.mode) }}</small>
+                    </div>
+                  </div>
+                }
               </div>
-            </div>
-            <ng-template #noInterview><p class="muted">Tidak ada interview terjadwal.</p></ng-template>
+            } @else {
+              <p class="muted">Tidak ada interview terjadwal.</p>
+            }
           </div>
         </section>
-
+    
         <section class="panel span-5">
           <div class="panel-head"><div><h2>Status kandidat</h2><p>Sebaran status di Talent Pool.</p></div></div>
           <div class="panel-body">
@@ -85,36 +96,45 @@ interface Insight {
                 <div><strong>{{ candidateTotal }}</strong><small>kandidat</small></div>
               </div>
               <div class="legend">
-                <div *ngFor="let item of candidateStatuses; let i = index">
-                  <i [style.background]="chartColors[i % chartColors.length]"></i>
-                  <span>{{ fmt.label(item.name) }}</span>
-                  <strong>{{ item.count }}</strong>
-                </div>
-                <p class="muted" *ngIf="!candidateStatuses.length">Belum ada data kandidat.</p>
+                @for (item of candidateStatuses; track item; let i = $index) {
+                  <div>
+                    <i [style.background]="chartColors[i % chartColors.length]"></i>
+                    <span>{{ fmt.label(item.name) }}</span>
+                    <strong>{{ item.count }}</strong>
+                  </div>
+                }
+                @if (!candidateStatuses.length) {
+                  <p class="muted">Belum ada data kandidat.</p>
+                }
               </div>
             </div>
           </div>
         </section>
-
+    
         <section class="panel span-7">
           <div class="panel-head">
             <div><h2>Kandidat terbaru</h2><p>Profil yang terakhir diperbarui.</p></div>
             <a class="btn btn-ghost btn-sm" routerLink="/backoffice/candidates">Semua</a>
           </div>
           <div class="panel-body" style="padding-top: 8px; padding-bottom: 8px">
-            <div class="list-plain" *ngIf="recent.length; else noRecent">
-              <div *ngFor="let item of recent">
-                <div class="person" style="min-width: 0">
-                  <span class="avatar">{{ fmt.initials(item.fullName) }}</span>
-                  <div><strong>{{ item.fullName }}</strong><small>{{ item.relatedPosition || 'Posisi belum diisi' }}</small></div>
-                </div>
-                <span class="tag" [ngClass]="'tag-' + fmt.tone(item.status)">{{ fmt.label(item.status) }}</span>
+            @if (recent.length) {
+              <div class="list-plain">
+                @for (item of recent; track item) {
+                  <div>
+                    <div class="person" style="min-width: 0">
+                      <span class="avatar">{{ fmt.initials(item.fullName) }}</span>
+                      <div><strong>{{ item.fullName }}</strong><small>{{ item.relatedPosition || 'Posisi belum diisi' }}</small></div>
+                    </div>
+                    <span class="tag" [ngClass]="'tag-' + fmt.tone(item.status)">{{ fmt.label(item.status) }}</span>
+                  </div>
+                }
               </div>
-            </div>
-            <ng-template #noRecent><p class="muted">Belum ada kandidat.</p></ng-template>
+            } @else {
+              <p class="muted">Belum ada kandidat.</p>
+            }
           </div>
         </section>
-
+    
         <section class="panel span-12">
           <div class="panel-head">
             <div><h2>Status lowongan</h2></div>
@@ -122,18 +142,22 @@ interface Insight {
           </div>
           <div class="panel-body">
             <div class="bars">
-              <div class="bar-row" *ngFor="let item of jobListingStatuses">
-                <span>{{ fmt.label(item.name) }}</span>
-                <div class="bar-track"><div class="bar-fill" [style.background]="jobColor(item.name)" [style.width.%]="percentage(item.count, jobListingTotal)"></div></div>
-                <strong>{{ item.count }}</strong>
-              </div>
-              <p class="muted" *ngIf="!jobListingStatuses.length">Belum ada lowongan.</p>
+              @for (item of jobListingStatuses; track item) {
+                <div class="bar-row">
+                  <span>{{ fmt.label(item.name) }}</span>
+                  <div class="bar-track"><div class="bar-fill" [style.background]="jobColor(item.name)" [style.width.%]="percentage(item.count, jobListingTotal)"></div></div>
+                  <strong>{{ item.count }}</strong>
+                </div>
+              }
+              @if (!jobListingStatuses.length) {
+                <p class="muted">Belum ada lowongan.</p>
+              }
             </div>
           </div>
         </section>
       </div>
     </app-backoffice-layout>
-  `,
+    `
 })
 export class BackofficeDashboardComponent implements OnInit {
   readonly fmt = FMT;

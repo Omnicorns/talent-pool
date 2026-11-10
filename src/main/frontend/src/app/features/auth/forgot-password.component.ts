@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { inject } from '@angular/core';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -8,15 +8,14 @@ import { Branding, DEFAULT_BRANDING, SiteContentService } from '../../core/servi
 import { IconComponent } from '../../shared/icon.component';
 
 @Component({
-  selector: 'app-forgot-password',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, IconComponent],
-  template: `
+    selector: 'app-forgot-password',
+    imports: [FormsModule, RouterLink, IconComponent],
+    template: `
     <main class="recovery">
       <section class="recovery-card">
         <a routerLink="/" aria-label="Beranda Sarinah Karier"><img class="logo" [src]="b.brandLogo" alt="Sarinah"></a>
-
-        <ng-container *ngIf="!submitted">
+    
+        @if (!submitted) {
           <div>
             <h1>Atur ulang password</h1>
             <p>Masukkan email akun Anda. Jika terdaftar, kami kirimkan tautan untuk membuat password baru.</p>
@@ -27,22 +26,26 @@ import { IconComponent } from '../../shared/icon.component';
             </label>
             <button class="btn btn-primary btn-lg btn-block" [disabled]="loading">{{ loading ? 'Mengirim…' : 'Kirim tautan' }}</button>
           </form>
-        </ng-container>
-
-        <ng-container *ngIf="submitted">
+        }
+    
+        @if (submitted) {
           <div class="alert alert-success" role="status">
             <app-icon name="mail"></app-icon>
             <div><strong>Periksa email Anda</strong><p>{{ message }}</p></div>
           </div>
-          <a *ngIf="debugResetUrl" [href]="debugResetUrl" class="link">Buka tautan reset (mode debug)</a>
-        </ng-container>
-
-        <div class="alert alert-error" *ngIf="error" role="alert"><app-icon name="alert"></app-icon><span>{{ error }}</span></div>
-
+          @if (debugResetUrl) {
+            <a [href]="debugResetUrl" class="link">Buka tautan reset (mode debug)</a>
+          }
+        }
+    
+        @if (error) {
+          <div class="alert alert-error" role="alert"><app-icon name="alert"></app-icon><span>{{ error }}</span></div>
+        }
+    
         <a routerLink="/sign-in" class="back-link"><app-icon name="arrow-left" [size]="16"></app-icon> Kembali ke halaman masuk</a>
       </section>
     </main>
-  `,
+    `
 })
 export class ForgotPasswordComponent {
   b: Branding = DEFAULT_BRANDING;

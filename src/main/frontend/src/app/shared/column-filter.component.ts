@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, ElementRef, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IconComponent } from './icon.component';
@@ -10,47 +10,54 @@ export type SortDir = 'asc' | 'desc' | null;
  * `selected` null berarti semua nilai tampil.
  */
 @Component({
-  selector: 'app-column-filter',
-  standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent],
-  template: `
+    selector: 'app-column-filter',
+    imports: [FormsModule, IconComponent],
+    template: `
     <button type="button" class="colfilter-btn" [class.active]="active" (click)="toggle($event)" aria-haspopup="dialog"
       [attr.aria-expanded]="open" [attr.aria-label]="'Filter dan urutkan kolom ' + label">
       <span>{{ label }}</span>
       <app-icon [name]="sort === 'asc' ? 'sort-asc' : sort === 'desc' ? 'sort-desc' : 'filter'" [size]="14"></app-icon>
     </button>
-
-    <div class="colfilter-pop" *ngIf="open" [style.top.px]="top" [style.left.px]="left" [style.maxHeight.px]="maxHeight"
-      role="dialog" [attr.aria-label]="'Filter ' + label" (keydown.escape)="close()">
-      <button type="button" class="colfilter-item" [class.on]="sort === 'asc'" (click)="applySort('asc')"><app-icon name="sort-asc" [size]="16"></app-icon> Urutkan A ke Z</button>
-      <button type="button" class="colfilter-item" [class.on]="sort === 'desc'" (click)="applySort('desc')"><app-icon name="sort-desc" [size]="16"></app-icon> Urutkan Z ke A</button>
-      <button type="button" class="colfilter-item" *ngIf="sort" (click)="applySort(null)"><app-icon name="x" [size]="16"></app-icon> Hapus pengurutan</button>
-      <hr>
-      <label class="bo-search colfilter-search">
-        <span class="sr-only">Cari nilai</span>
-        <app-icon name="search" [size]="15"></app-icon>
-        <input [ngModel]="term" (ngModelChange)="onSearch($event)" name="colTerm" placeholder="Cari" autocomplete="off">
-      </label>
-      <div class="colfilter-list" role="group" [attr.aria-label]="'Pilih nilai ' + label">
-        <label class="check">
-          <input type="checkbox" [checked]="allShownChecked" [indeterminate]="someShownChecked" (change)="toggleAll($any($event.target).checked)">
-          <span>(Pilih semua)</span>
-        </label>
-        <label class="check" *ngFor="let option of shown">
-          <input type="checkbox" [checked]="draft.has(option)" (change)="toggleOne(option, $any($event.target).checked)">
-          <span>{{ option }}</span>
-        </label>
-        <p class="muted colfilter-empty" *ngIf="!shown.length">Tidak ada nilai yang cocok.</p>
-      </div>
-      <footer class="colfilter-foot">
-        <button type="button" class="btn btn-ghost btn-sm" (click)="reset()" [disabled]="selected === null">Reset</button>
-        <span class="spacer"></span>
-        <button type="button" class="btn btn-secondary btn-sm" (click)="close()">Batal</button>
-        <button type="button" class="btn btn-primary btn-sm" (click)="apply()" [disabled]="!draft.size">OK</button>
-      </footer>
-    </div>
-  `,
-  styles: [':host { display: inline-block; }'],
+    
+    @if (open) {
+      <div class="colfilter-pop" [style.top.px]="top" [style.left.px]="left" [style.maxHeight.px]="maxHeight"
+        role="dialog" [attr.aria-label]="'Filter ' + label" (keydown.escape)="close()">
+        <button type="button" class="colfilter-item" [class.on]="sort === 'asc'" (click)="applySort('asc')"><app-icon name="sort-asc" [size]="16"></app-icon> Urutkan A ke Z</button>
+        <button type="button" class="colfilter-item" [class.on]="sort === 'desc'" (click)="applySort('desc')"><app-icon name="sort-desc" [size]="16"></app-icon> Urutkan Z ke A</button>
+        @if (sort) {
+          <button type="button" class="colfilter-item" (click)="applySort(null)"><app-icon name="x" [size]="16"></app-icon> Hapus pengurutan</button>
+        }
+        <hr>
+          <label class="bo-search colfilter-search">
+            <span class="sr-only">Cari nilai</span>
+            <app-icon name="search" [size]="15"></app-icon>
+            <input [ngModel]="term" (ngModelChange)="onSearch($event)" name="colTerm" placeholder="Cari" autocomplete="off">
+          </label>
+          <div class="colfilter-list" role="group" [attr.aria-label]="'Pilih nilai ' + label">
+            <label class="check">
+              <input type="checkbox" [checked]="allShownChecked" [indeterminate]="someShownChecked" (change)="toggleAll($any($event.target).checked)">
+              <span>(Pilih semua)</span>
+            </label>
+            @for (option of shown; track option) {
+              <label class="check">
+                <input type="checkbox" [checked]="draft.has(option)" (change)="toggleOne(option, $any($event.target).checked)">
+                <span>{{ option }}</span>
+              </label>
+            }
+            @if (!shown.length) {
+              <p class="muted colfilter-empty">Tidak ada nilai yang cocok.</p>
+            }
+          </div>
+          <footer class="colfilter-foot">
+            <button type="button" class="btn btn-ghost btn-sm" (click)="reset()" [disabled]="selected === null">Reset</button>
+            <span class="spacer"></span>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="close()">Batal</button>
+            <button type="button" class="btn btn-primary btn-sm" (click)="apply()" [disabled]="!draft.size">OK</button>
+          </footer>
+        </div>
+      }
+    `,
+    styles: [':host { display: inline-block; }']
 })
 export class ColumnFilterComponent implements OnInit, OnDestroy {
   @Input() label = '';

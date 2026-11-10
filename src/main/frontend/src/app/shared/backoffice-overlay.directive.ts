@@ -1,5 +1,5 @@
-import { DOCUMENT } from '@angular/common';
-import { AfterViewInit, Directive, ElementRef, EventEmitter, HostBinding, HostListener, Inject, Injectable, Input, OnChanges, OnDestroy, Output } from '@angular/core';
+
+import { AfterViewInit, Directive, ElementRef, EventEmitter, HostBinding, HostListener, Inject, Injectable, Input, OnChanges, OnDestroy, Output, DOCUMENT } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class BackofficeScrollLock {

@@ -12,10 +12,9 @@ import { ColumnFilterComponent } from '../../shared/column-filter.component';
 import { TableFilters } from '../../shared/table-filters';
 
 @Component({
-  selector: 'app-backoffice-interviews',
-  standalone: true,
-  imports: [CommonModule, FormsModule, BackofficeLayoutComponent, BackofficeOverlayDirective, IconComponent, PaginationComponent, ColumnFilterComponent],
-  template: `
+    selector: 'app-backoffice-interviews',
+    imports: [CommonModule, FormsModule, BackofficeLayoutComponent, BackofficeOverlayDirective, IconComponent, PaginationComponent, ColumnFilterComponent],
+    template: `
     <app-backoffice-layout active="interviews">
       <div class="bo-head">
         <div>
@@ -26,35 +25,46 @@ import { TableFilters } from '../../shared/table-filters';
           <button class="btn btn-primary" (click)="openCreate()"><app-icon name="plus" [size]="16"></app-icon> Jadwalkan interview</button>
         </div>
       </div>
-
+    
       <div class="chips" role="tablist" aria-label="Filter interview">
-        <button type="button" role="tab" class="btn btn-sm" *ngFor="let f of filters" [class.btn-primary]="filter === f.id" [class.btn-secondary]="filter !== f.id" [attr.aria-selected]="filter === f.id" (click)="setFilter(f.id)">{{ f.label }} ({{ countFor(f.id) }})</button>
+        @for (f of filters; track f) {
+          <button type="button" role="tab" class="btn btn-sm" [class.btn-primary]="filter === f.id" [class.btn-secondary]="filter !== f.id" [attr.aria-selected]="filter === f.id" (click)="setFilter(f.id)">{{ f.label }} ({{ countFor(f.id) }})</button>
+        }
       </div>
-
+    
       <section class="table-card responsive">
-        <div class="table-meta"><span><strong>{{ visible.length }}</strong> interview</span><span *ngIf="loading">Memuat…</span></div>
-        <div class="table-wrap">
-          <table class="table">
-            <thead>
+        <div class="table-meta"><span><strong>{{ visible.length }}</strong> interview</span>@if (loading) {
+        <span>Memuat…</span>
+      }</div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              @for (col of tf.cols; track col) {
+                <th><app-column-filter [label]="col.label" [options]="tf.options(byChip, col.key)" [selected]="tf.filters[col.key] ?? null" [sort]="tf.sortFor(col.key)" (selectedChange)="tf.setFilter(col.key, $event); page = 0" (sortChange)="tf.setSort(col.key, $event)"></app-column-filter></th>
+              }
+              <th><span class="sr-only">Aksi</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of paged; track item) {
               <tr>
-                <th *ngFor="let col of tf.cols"><app-column-filter [label]="col.label" [options]="tf.options(byChip, col.key)" [selected]="tf.filters[col.key] ?? null" [sort]="tf.sortFor(col.key)" (selectedChange)="tf.setFilter(col.key, $event); page = 0" (sortChange)="tf.setSort(col.key, $event)"></app-column-filter></th>
-                <th><span class="sr-only">Aksi</span></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let item of paged">
                 <td><strong>{{ fmt.fullDate(item.scheduledAt) }}</strong><small>{{ fmt.time(item.scheduledAt) }} · {{ item.durationMinutes }} menit</small></td>
                 <td><strong>{{ item.candidateName }}</strong><small>{{ item.jobTitle || 'Explore Interview / Initial Interview' }}</small></td>
                 <td style="max-width: 240px"><strong>{{ fmt.label(item.mode) }}</strong><small style="overflow-wrap: anywhere">{{ item.locationOrLink || '-' }}</small></td>
                 <td>{{ item.interviewer }}</td>
                 <td>
                   <select class="select-inline" [ngModel]="item.status" (ngModelChange)="changeStatus(item, $event)" [attr.aria-label]="'Status interview ' + item.candidateName">
-                    <option *ngFor="let s of statuses" [value]="s">{{ fmt.label(s) }}</option>
+                    @for (s of statuses; track s) {
+                      <option [value]="s">{{ fmt.label(s) }}</option>
+                    }
                   </select>
                 </td>
                 <td>
                   <select class="select-inline" [(ngModel)]="item.result" [disabled]="item.status !== 'COMPLETED'" [attr.aria-label]="'Hasil interview ' + item.candidateName" style="min-width: 120px">
-                    <option *ngFor="let r of results" [value]="r">{{ fmt.label(r) }}</option>
+                    @for (r of results; track r) {
+                      <option [value]="r">{{ fmt.label(r) }}</option>
+                    }
                   </select>
                 </td>
                 <td class="actions">
@@ -62,13 +72,17 @@ import { TableFilters } from '../../shared/table-filters';
                   <button class="icon-btn" (click)="deleteInterview(item)" [attr.aria-label]="'Hapus interview ' + item.candidateName"><app-icon name="trash" [size]="16"></app-icon></button>
                 </td>
               </tr>
-              <tr *ngIf="!visible.length && !loading"><td colspan="7" class="empty-cell">Tidak ada interview di kategori ini.</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="cards">
-          <article *ngFor="let item of paged">
+            }
+            @if (!visible.length && !loading) {
+              <tr><td colspan="7" class="empty-cell">Tidak ada interview di kategori ini.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    
+      <div class="cards">
+        @for (item of paged; track item) {
+          <article>
             <div class="card-head">
               <div><strong>{{ item.candidateName }}</strong><small>{{ item.jobTitle || 'Explore Interview / Initial Interview' }}</small></div>
               <span class="tag" [ngClass]="'tag-' + fmt.tone(item.status)">{{ fmt.label(item.status) }}</span>
@@ -81,10 +95,14 @@ import { TableFilters } from '../../shared/table-filters';
             </div>
             <div class="card-actions">
               <select class="select-inline" [ngModel]="item.status" (ngModelChange)="changeStatus(item, $event)" aria-label="Status">
-                <option *ngFor="let s of statuses" [value]="s">{{ fmt.label(s) }}</option>
+                @for (s of statuses; track s) {
+                  <option [value]="s">{{ fmt.label(s) }}</option>
+                }
               </select>
               <select class="select-inline" [(ngModel)]="item.result" [disabled]="item.status !== 'COMPLETED'" aria-label="Hasil">
-                <option *ngFor="let r of results" [value]="r">{{ fmt.label(r) }}</option>
+                @for (r of results; track r) {
+                  <option [value]="r">{{ fmt.label(r) }}</option>
+                }
               </select>
             </div>
             <div class="card-actions">
@@ -92,13 +110,17 @@ import { TableFilters } from '../../shared/table-filters';
               <button class="btn btn-ghost btn-sm" style="color: var(--negative)" (click)="deleteInterview(item)">Hapus</button>
             </div>
           </article>
-          <p class="muted" style="padding: 32px 18px; text-align: center" *ngIf="!visible.length && !loading">Tidak ada interview.</p>
-        </div>
-
-        <app-pagination [page]="page" [size]="size" [total]="visible.length" (pageChange)="page = $event" (sizeChange)="size = $event; page = 0"></app-pagination>
-      </section>
-
-      <div class="drawer-backdrop" *ngIf="drawerOpen" (click)="closeOnBackdrop($event)">
+        }
+        @if (!visible.length && !loading) {
+          <p class="muted" style="padding: 32px 18px; text-align: center">Tidak ada interview.</p>
+        }
+      </div>
+    
+      <app-pagination [page]="page" [size]="size" [total]="visible.length" (pageChange)="page = $event" (sizeChange)="size = $event; page = 0"></app-pagination>
+    </section>
+    
+    @if (drawerOpen) {
+      <div class="drawer-backdrop" (click)="closeOnBackdrop($event)">
         <aside class="drawer" [boOverlay]="true" (overlayClose)="closeDrawer()" role="dialog" aria-modal="true" aria-labelledby="interview-form-title">
           <header class="drawer-head">
             <div>
@@ -107,19 +129,22 @@ import { TableFilters } from '../../shared/table-filters';
             </div>
             <button type="button" class="icon-btn" (click)="closeDrawer()" aria-label="Tutup"><app-icon name="x"></app-icon></button>
           </header>
-
           <div class="drawer-body">
             <div class="form-stack">
               <label class="field">Kandidat
                 <select [(ngModel)]="form.candidateId" [disabled]="!!lockedCandidateId">
                   <option [ngValue]="null">Pilih kandidat</option>
-                  <option *ngFor="let candidate of candidates" [ngValue]="candidate.id">{{ candidate.fullName }}</option>
+                  @for (candidate of candidates; track candidate) {
+                    <option [ngValue]="candidate.id">{{ candidate.fullName }}</option>
+                  }
                 </select>
               </label>
               <label class="field">Untuk lowongan
                 <select [(ngModel)]="form.jobListingId" [disabled]="!!lockedJobId">
                   <option [ngValue]="null">Explore Interview / Initial Interview (tanpa lowongan)</option>
-                  <option *ngFor="let job of jobs" [ngValue]="job.id">{{ job.title }}</option>
+                  @for (job of jobs; track job) {
+                    <option [ngValue]="job.id">{{ job.title }}</option>
+                  }
                 </select>
               </label>
               <div class="form-grid">
@@ -138,18 +163,20 @@ import { TableFilters } from '../../shared/table-filters';
                 <input [(ngModel)]="form.locationOrLink" [placeholder]="form.mode === 'ONLINE' ? 'https://meet.google.com/…' : form.mode === 'PHONE' ? '08xxxxxxxxxx' : 'Gedung Sarinah lantai …'">
               </label>
               <label class="field">Catatan <span class="opt">(opsional)</span><textarea [(ngModel)]="form.notes" rows="4"></textarea></label>
-              <div class="alert alert-error" *ngIf="error" role="alert"><app-icon name="alert"></app-icon><span>{{ error }}</span></div>
+              @if (error) {
+                <div class="alert alert-error" role="alert"><app-icon name="alert"></app-icon><span>{{ error }}</span></div>
+              }
             </div>
           </div>
-
           <footer class="drawer-foot">
             <button class="btn btn-secondary" (click)="closeDrawer()" [disabled]="saving">Batal</button>
             <button class="btn btn-primary" (click)="save()" [disabled]="saving">{{ saving ? 'Menyimpan…' : (editingId ? 'Simpan perubahan' : 'Simpan jadwal') }}</button>
           </footer>
         </aside>
       </div>
+    }
     </app-backoffice-layout>
-  `,
+    `
 })
 export class BackofficeInterviewsComponent implements OnInit {
   readonly fmt = FMT;

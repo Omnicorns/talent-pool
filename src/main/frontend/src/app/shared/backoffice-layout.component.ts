@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, HostListener, Input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { BackofficeAuthService } from '../core/service/api/backoffice-auth.service';
@@ -10,10 +10,9 @@ import { IconComponent } from './icon.component';
 type Section = 'dashboard' | 'candidates' | 'jobs' | 'applications' | 'interviews' | 'banners' | 'site';
 
 @Component({
-  selector: 'app-backoffice-layout',
-  standalone: true,
-  imports: [CommonModule, RouterLink, BackofficeOverlayDirective, IconComponent],
-  template: `
+    selector: 'app-backoffice-layout',
+    imports: [RouterLink, BackofficeOverlayDirective, IconComponent],
+    template: `
     <div class="bo">
       <header class="bo-topbar">
         <button type="button" class="icon-btn" (click)="mobileMenuOpen = true" [attr.aria-expanded]="mobileMenuOpen"
@@ -23,9 +22,11 @@ type Section = 'dashboard' | 'candidates' | 'jobs' | 'applications' | 'interview
         <strong>{{ pageTitle }}</strong>
         <img [src]="brandLogo" alt="Sarinah">
       </header>
-
-      <div class="bo-scrim" *ngIf="mobileMenuOpen" (click)="mobileMenuOpen = false"></div>
-
+    
+      @if (mobileMenuOpen) {
+        <div class="bo-scrim" (click)="mobileMenuOpen = false"></div>
+      }
+    
       <aside id="backoffice-navigation" class="bo-sidebar" [class.open]="mobileMenuOpen"
         [boOverlay]="mobileMenuOpen" (overlayClose)="mobileMenuOpen = false"
         [attr.inert]="isMobile && !mobileMenuOpen ? '' : null" aria-label="Menu back office">
@@ -34,28 +35,30 @@ type Section = 'dashboard' | 'candidates' | 'jobs' | 'applications' | 'interview
           <span>Human<br>Capital</span>
           <button type="button" class="icon-btn" (click)="mobileMenuOpen = false" aria-label="Tutup menu"><app-icon name="x"></app-icon></button>
         </div>
-
+    
         <nav class="bo-nav" aria-label="Navigasi back office">
-          <ng-container *ngFor="let item of nav">
-          <p class="bo-nav-heading" *ngIf="item.heading">{{ item.heading }}</p>
-          <a [routerLink]="item.link" [class.active]="active === item.id"
-            [attr.aria-current]="active === item.id ? 'page' : null" (click)="mobileMenuOpen = false">
-            <app-icon [name]="item.icon"></app-icon>{{ item.label }}
-          </a>
-          </ng-container>
+          @for (item of nav; track item) {
+            @if (item.heading) {
+              <p class="bo-nav-heading">{{ item.heading }}</p>
+            }
+            <a [routerLink]="item.link" [class.active]="active === item.id"
+              [attr.aria-current]="active === item.id ? 'page' : null" (click)="mobileMenuOpen = false">
+              <app-icon [name]="item.icon"></app-icon>{{ item.label }}
+            </a>
+          }
         </nav>
-
+    
         <div class="bo-sidebar-foot">
           <a routerLink="/" (click)="mobileMenuOpen = false"><app-icon name="globe"></app-icon>Lihat portal kandidat</a>
           <button type="button" (click)="auth.logout()"><app-icon name="logout"></app-icon>Keluar</button>
         </div>
       </aside>
-
+    
       <main class="bo-main" [attr.inert]="mobileMenuOpen ? '' : null">
         <ng-content />
       </main>
     </div>
-  `,
+    `
 })
 export class BackofficeLayoutComponent {
   @Input() active: Section = 'dashboard';

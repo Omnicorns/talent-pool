@@ -9,30 +9,37 @@ let nextId = 0;
  * Pengguna bebas mengetik nilai sendiri bila tidak ada di daftar.
  */
 @Component({
-  selector: 'app-search-select',
-  standalone: true,
-  imports: [CommonModule],
-  template: `
+    selector: 'app-search-select',
+    imports: [CommonModule],
+    template: `
     <div class="ss">
       <input type="text" role="combobox" autocomplete="off" [attr.aria-label]="label" [placeholder]="placeholder"
         [attr.aria-expanded]="open && shown.length > 0" [attr.aria-controls]="id" aria-autocomplete="list"
         [attr.aria-activedescendant]="active >= 0 ? id + '-' + active : null" [value]="value || ''" [attr.maxlength]="maxlength"
         (input)="typed($any($event.target).value)" (focus)="onFocus()" (blur)="close()" (keydown)="keys($event)">
-      <ul class="ss-list" *ngIf="open && shown.length" [id]="id" role="listbox">
-        <li *ngIf="!query" class="ss-hint" aria-hidden="true">Populer — ketik untuk mencari di {{ total | number }} pilihan</li>
-        <li *ngFor="let item of shown; let i = index" role="option" [id]="id + '-' + i" [class.on]="i === active"
-          [attr.aria-selected]="i === active" (mousedown)="$event.preventDefault(); pick(item)" (mousemove)="active = i">{{ item }}</li>
-        <li *ngIf="query" class="ss-hint" aria-hidden="true">Tidak ada di daftar? Tetap gunakan tulisan Anda.</li>
-      </ul>
+      @if (open && shown.length) {
+        <ul class="ss-list" [id]="id" role="listbox">
+          @if (!query) {
+            <li class="ss-hint" aria-hidden="true">Populer — ketik untuk mencari di {{ total | number }} pilihan</li>
+          }
+          @for (item of shown; track item; let i = $index) {
+            <li role="option" [id]="id + '-' + i" [class.on]="i === active"
+            [attr.aria-selected]="i === active" (mousedown)="$event.preventDefault(); pick(item)" (mousemove)="active = i">{{ item }}</li>
+          }
+          @if (query) {
+            <li class="ss-hint" aria-hidden="true">Tidak ada di daftar? Tetap gunakan tulisan Anda.</li>
+          }
+        </ul>
+      }
     </div>
-  `,
-  styles: [`
+    `,
+    styles: [`
     .ss { position: relative; }
     .ss-list { position: absolute; z-index: 30; left: 0; right: 0; top: calc(100% + 4px); margin: 0; padding: 4px; list-style: none; max-height: 280px; overflow-y: auto; background: var(--white, #fff); border: 1px solid var(--line, #e5e0db); border-radius: 12px; box-shadow: 0 14px 32px rgba(31, 27, 24, .14); }
     .ss-list li[role=option] { padding: 9px 12px; border-radius: 8px; font-size: 14.5px; cursor: pointer; line-height: 1.35; }
     .ss-list li.on { background: var(--surface, #f5f3f1); }
     .ss-hint { padding: 8px 12px 6px; font-size: 12.5px; color: var(--muted, #6b645e); }
-  `],
+  `]
 })
 export class SearchSelectComponent implements OnInit, OnChanges {
   /** Sumber daftar acuan. */

@@ -1,14 +1,13 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TalentPortalService } from '../core/service/api/talent-portal.service';
 
 /** Pasangan kode pos + pilihan wilayah (kelurahan, kecamatan, kota) yang diisi dari data kode pos. */
 @Component({
-  selector: 'app-postal-region-field',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  template: `
+    selector: 'app-postal-region-field',
+    imports: [FormsModule],
+    template: `
     <div class="form-grid">
       <label class="field">{{ codeLabel }}
         <input [ngModel]="postalCode || ''" (ngModelChange)="onCode($event)" inputmode="numeric" maxlength="5" placeholder="5 digit" [attr.aria-label]="codeLabel">
@@ -17,11 +16,13 @@ import { TalentPortalService } from '../core/service/api/talent-portal.service';
       <label class="field">{{ regionLabel }}
         <select [ngModel]="region || ''" (ngModelChange)="regionChange.emit($event)" [disabled]="loading || !regions.length" [attr.aria-label]="regionLabel">
           <option value="">{{ regions.length ? 'Pilih wilayah' : 'Isi kode pos terlebih dahulu' }}</option>
-          <option *ngFor="let item of regions" [value]="item">{{ item }}</option>
+          @for (item of regions; track item) {
+            <option [value]="item">{{ item }}</option>
+          }
         </select>
       </label>
     </div>
-  `,
+    `
 })
 export class PostalRegionFieldComponent implements OnChanges {
   @Input() postalCode: string | null | undefined = '';

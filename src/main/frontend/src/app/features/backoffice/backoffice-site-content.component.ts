@@ -73,10 +73,9 @@ const SCHEMAS: Record<string, Schema> = {
 };
 
 @Component({
-  selector: 'app-backoffice-site-content',
-  standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe, BackofficeLayoutComponent, BackofficeOverlayDirective, IconComponent],
-  template: `
+    selector: 'app-backoffice-site-content',
+    imports: [CommonModule, FormsModule, DatePipe, BackofficeLayoutComponent, BackofficeOverlayDirective, IconComponent],
+    template: `
     <app-backoffice-layout active="site">
       <div class="bo-head">
         <div>
@@ -87,7 +86,7 @@ const SCHEMAS: Record<string, Schema> = {
           <button class="btn btn-secondary" type="button" (click)="load()"><app-icon name="history" [size]="16"></app-icon> Muat ulang</button>
         </div>
       </div>
-
+    
       <section class="table-card language-card">
         <div class="language-setting">
           <div>
@@ -102,87 +101,123 @@ const SCHEMAS: Record<string, Schema> = {
             <button type="button" class="btn btn-primary" (click)="saveLanguage()" [disabled]="languageSaving || language === savedLanguage">{{ languageSaving ? 'Menyimpan…' : 'Simpan' }}</button>
           </div>
         </div>
-        <div class="alert alert-success" *ngIf="languageSaved" role="status" style="margin: 0 18px 14px"><app-icon name="check"></app-icon><span>Bahasa tersimpan. Pengunjung melihat bahasa baru setelah memuat ulang halaman.</span></div>
-        <div class="alert alert-error" *ngIf="languageError" role="alert" style="margin: 0 18px 14px"><app-icon name="alert"></app-icon><span>{{ languageError }}</span></div>
-        <p class="muted" style="margin: 0 18px 14px; font-size: 13.5px" *ngIf="language === 'en'">Mode English menerjemahkan teks bawaan situs. Teks landing yang di ubah sendiri di bawah ini tampil persis seperti yang ditulis, jadi tulis dalam bahasa Inggris bila perlu.</p>
+        @if (languageSaved) {
+          <div class="alert alert-success" role="status" style="margin: 0 18px 14px"><app-icon name="check"></app-icon><span>Bahasa tersimpan. Pengunjung melihat bahasa baru setelah memuat ulang halaman.</span></div>
+        }
+        @if (languageError) {
+          <div class="alert alert-error" role="alert" style="margin: 0 18px 14px"><app-icon name="alert"></app-icon><span>{{ languageError }}</span></div>
+        }
+        @if (language === 'en') {
+          <p class="muted" style="margin: 0 18px 14px; font-size: 13.5px">Mode English menerjemahkan teks bawaan situs. Teks landing yang di ubah sendiri di bawah ini tampil persis seperti yang ditulis, jadi tulis dalam bahasa Inggris bila perlu.</p>
+        }
       </section>
-
+    
       <section class="table-card responsive">
-        <div class="alert alert-error" *ngIf="error" role="alert" style="margin: 12px 18px"><app-icon name="alert"></app-icon><span>{{ error }}</span></div>
+        @if (error) {
+          <div class="alert alert-error" role="alert" style="margin: 12px 18px"><app-icon name="alert"></app-icon><span>{{ error }}</span></div>
+        }
         <div class="table-wrap">
           <table class="table">
             <thead><tr><th>#</th><th>Nama</th><th>Kunci</th><th>Kategori</th><th>Terakhir diubah</th><th>Aksi</th></tr></thead>
             <tbody>
-              <tr *ngFor="let c of rows; let i = index">
-                <td>{{ i + 1 }}</td>
-                <td><strong>{{ c.name }}</strong></td>
-                <td>{{ c.key }}</td>
-                <td><span class="tag tag-info">{{ c.category }}</span></td>
-                <td>{{ c.updatedAt ? (c.updatedAt | date: 'dd MMM yyyy HH:mm') : 'Bawaan (belum diubah)' }}</td>
-                <td class="actions"><div class="row-actions"><button class="icon-btn" (click)="open(c)" [attr.aria-label]="'Ubah ' + c.name" title="Ubah"><app-icon name="edit" [size]="16"></app-icon></button></div></td>
-              </tr>
+              @for (c of rows; track c; let i = $index) {
+                <tr>
+                  <td>{{ i + 1 }}</td>
+                  <td><strong>{{ c.name }}</strong></td>
+                  <td>{{ c.key }}</td>
+                  <td><span class="tag tag-info">{{ c.category }}</span></td>
+                  <td>{{ c.updatedAt ? (c.updatedAt | date: 'dd MMM yyyy HH:mm') : 'Bawaan (belum diubah)' }}</td>
+                  <td class="actions"><div class="row-actions"><button class="icon-btn" (click)="open(c)" [attr.aria-label]="'Ubah ' + c.name" title="Ubah"><app-icon name="edit" [size]="16"></app-icon></button></div></td>
+                </tr>
+              }
             </tbody>
           </table>
         </div>
         <div class="cards">
-          <article *ngFor="let c of rows">
-            <div class="card-head"><div><strong>{{ c.name }}</strong><small>{{ c.category }} · {{ c.updatedAt ? (c.updatedAt | date: 'dd MMM yyyy HH:mm') : 'Bawaan' }}</small></div></div>
-            <div class="card-actions"><button class="btn btn-secondary btn-sm" (click)="open(c)">Ubah</button></div>
-          </article>
+          @for (c of rows; track c) {
+            <article>
+              <div class="card-head"><div><strong>{{ c.name }}</strong><small>{{ c.category }} · {{ c.updatedAt ? (c.updatedAt | date: 'dd MMM yyyy HH:mm') : 'Bawaan' }}</small></div></div>
+              <div class="card-actions"><button class="btn btn-secondary btn-sm" (click)="open(c)">Ubah</button></div>
+            </article>
+          }
         </div>
       </section>
-
-      <div class="drawer-backdrop" *ngIf="current" (click)="closeOnBackdrop($event)">
-        <aside class="drawer wide" [boOverlay]="true" (overlayClose)="current = null" role="dialog" aria-modal="true" aria-labelledby="content-title">
-          <header class="drawer-head">
-            <div><h2 id="content-title">{{ current.name }}</h2><p>{{ schema.hint || 'Perubahan tampil di landing page setelah disimpan.' }}</p></div>
-            <button type="button" class="icon-btn" (click)="current = null" aria-label="Tutup"><app-icon name="x"></app-icon></button>
-          </header>
-          <div class="drawer-body">
-            <p class="muted" *ngIf="loadingDetail">Memuat…</p>
-            <div class="content-editor" *ngIf="!loadingDetail">
-              <ng-container *ngIf="schema.kind === 'object'">
-                <ng-container *ngTemplateOutlet="fields; context: { $implicit: objectValue, prefix: 'o' }"></ng-container>
-              </ng-container>
-              <ng-container *ngIf="schema.kind === 'list'">
-                <article class="content-item" *ngFor="let item of listValue; let i = index">
-                  <div class="content-item-head">
-                    <strong>{{ schema.itemLabel }} {{ i + 1 }}</strong>
-                    <div class="content-item-actions">
-                      <button type="button" class="icon-btn" (click)="move(i, -1)" [disabled]="i === 0" aria-label="Naikkan"><app-icon name="chevron-up" [size]="16"></app-icon></button>
-                      <button type="button" class="icon-btn" (click)="move(i, 1)" [disabled]="i === listValue.length - 1" aria-label="Turunkan"><app-icon name="chevron-down" [size]="16"></app-icon></button>
-                      <button type="button" class="icon-btn" (click)="removeItem(i)" [disabled]="listValue.length <= (schema.min || 1)" aria-label="Hapus"><app-icon name="trash" [size]="16"></app-icon></button>
-                    </div>
-                  </div>
-                  <ng-container *ngTemplateOutlet="fields; context: { $implicit: item, prefix: 'i' + i }"></ng-container>
-                </article>
-                <button type="button" class="btn btn-secondary" (click)="addItem()" *ngIf="listValue.length < (schema.max || 20)"><app-icon name="plus" [size]="16"></app-icon> Tambah {{ schema.itemLabel?.toLowerCase() }}</button>
-              </ng-container>
-              <div class="alert alert-error" *ngIf="saveError" role="alert"><app-icon name="alert"></app-icon><span>{{ saveError }}</span></div>
-              <div class="alert alert-success" *ngIf="saved" role="status"><app-icon name="check"></app-icon><span>Tersimpan. Landing page sudah memakai teks ini.</span></div>
+    
+      @if (current) {
+        <div class="drawer-backdrop" (click)="closeOnBackdrop($event)">
+          <aside class="drawer wide" [boOverlay]="true" (overlayClose)="current = null" role="dialog" aria-modal="true" aria-labelledby="content-title">
+            <header class="drawer-head">
+              <div><h2 id="content-title">{{ current.name }}</h2><p>{{ schema.hint || 'Perubahan tampil di landing page setelah disimpan.' }}</p></div>
+              <button type="button" class="icon-btn" (click)="current = null" aria-label="Tutup"><app-icon name="x"></app-icon></button>
+            </header>
+            <div class="drawer-body">
+              @if (loadingDetail) {
+                <p class="muted">Memuat…</p>
+              }
+              @if (!loadingDetail) {
+                <div class="content-editor">
+                  @if (schema.kind === 'object') {
+                    <ng-container *ngTemplateOutlet="fields; context: { $implicit: objectValue, prefix: 'o' }"></ng-container>
+                  }
+                  @if (schema.kind === 'list') {
+                    @for (item of listValue; track item; let i = $index) {
+                      <article class="content-item">
+                        <div class="content-item-head">
+                          <strong>{{ schema.itemLabel }} {{ i + 1 }}</strong>
+                          <div class="content-item-actions">
+                            <button type="button" class="icon-btn" (click)="move(i, -1)" [disabled]="i === 0" aria-label="Naikkan"><app-icon name="chevron-up" [size]="16"></app-icon></button>
+                            <button type="button" class="icon-btn" (click)="move(i, 1)" [disabled]="i === listValue.length - 1" aria-label="Turunkan"><app-icon name="chevron-down" [size]="16"></app-icon></button>
+                            <button type="button" class="icon-btn" (click)="removeItem(i)" [disabled]="listValue.length <= (schema.min || 1)" aria-label="Hapus"><app-icon name="trash" [size]="16"></app-icon></button>
+                          </div>
+                        </div>
+                        <ng-container *ngTemplateOutlet="fields; context: { $implicit: item, prefix: 'i' + i }"></ng-container>
+                      </article>
+                    }
+                    @if (listValue.length < (schema.max || 20)) {
+                      <button type="button" class="btn btn-secondary" (click)="addItem()"><app-icon name="plus" [size]="16"></app-icon> Tambah {{ schema.itemLabel?.toLowerCase() }}</button>
+                    }
+                  }
+                  @if (saveError) {
+                    <div class="alert alert-error" role="alert"><app-icon name="alert"></app-icon><span>{{ saveError }}</span></div>
+                  }
+                  @if (saved) {
+                    <div class="alert alert-success" role="status"><app-icon name="check"></app-icon><span>Tersimpan. Landing page sudah memakai teks ini.</span></div>
+                  }
+                </div>
+              }
             </div>
-          </div>
-          <footer class="drawer-foot">
-            <button class="btn btn-ghost" type="button" (click)="resetDefault()" [disabled]="loadingDetail">Kembalikan ke bawaan</button>
-            <button class="btn btn-secondary" type="button" (click)="current = null">Tutup</button>
-            <button class="btn btn-primary" type="button" (click)="save()" [disabled]="saving || loadingDetail">{{ saving ? 'Menyimpan…' : 'Simpan' }}</button>
-          </footer>
-        </aside>
-      </div>
-
+            <footer class="drawer-foot">
+              <button class="btn btn-ghost" type="button" (click)="resetDefault()" [disabled]="loadingDetail">Kembalikan ke bawaan</button>
+              <button class="btn btn-secondary" type="button" (click)="current = null">Tutup</button>
+              <button class="btn btn-primary" type="button" (click)="save()" [disabled]="saving || loadingDetail">{{ saving ? 'Menyimpan…' : 'Simpan' }}</button>
+            </footer>
+          </aside>
+        </div>
+      }
+    
       <ng-template #fields let-item let-prefix="prefix">
         <div class="form-grid">
-          <label class="field span-2" *ngFor="let f of schema.fields">{{ f.label }}
-            <textarea *ngIf="f.type === 'textarea'" rows="3" [maxlength]="f.max" [(ngModel)]="item[f.name]" [name]="prefix + f.name"></textarea>
-            <select *ngIf="f.type === 'icon'" [(ngModel)]="item[f.name]" [name]="prefix + f.name">
-              <option *ngFor="let ic of icons" [value]="ic.value">{{ ic.label }}</option>
-            </select>
-            <input *ngIf="f.type === 'text'" [maxlength]="f.max" [(ngModel)]="item[f.name]" [name]="prefix + f.name">
-          </label>
+          @for (f of schema.fields; track f) {
+            <label class="field span-2">{{ f.label }}
+              @if (f.type === 'textarea') {
+                <textarea rows="3" [maxlength]="f.max" [(ngModel)]="item[f.name]" [name]="prefix + f.name"></textarea>
+              }
+              @if (f.type === 'icon') {
+                <select [(ngModel)]="item[f.name]" [name]="prefix + f.name">
+                  @for (ic of icons; track ic) {
+                    <option [value]="ic.value">{{ ic.label }}</option>
+                  }
+                </select>
+              }
+              @if (f.type === 'text') {
+                <input [maxlength]="f.max" [(ngModel)]="item[f.name]" [name]="prefix + f.name">
+              }
+            </label>
+          }
         </div>
       </ng-template>
     </app-backoffice-layout>
-  `,
+    `
 })
 export class BackofficeSiteContentComponent implements OnInit {
   rows: any[] = [];

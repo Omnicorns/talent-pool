@@ -1,280 +1,324 @@
-<main class="onboard" *ngIf="profile; else loadingTpl">
-  <div class="onboard-bar">
-    <div class="container">
-      <a routerLink="/" aria-label="Beranda Sarinah Karier"><img src="images/sarinah.png" alt="Sarinah"></a>
-      <a class="back-link" routerLink="/portal" *ngIf="editing">
-        <app-icon name="arrow-left" [size]="16"></app-icon> Kembali ke profil
-      </a>
-    </div>
-  </div>
-
-  <div class="onboard-wrap">
-    <div class="onboard-intro">
-      <h1>{{ editing ? 'Ubah Data Talent Pool' : 'Lengkapi Data Talent Pool' }}</h1>
-      <p>Isi data diri Anda dengan lengkap dan benar untuk melanjutkan proses pendaftaran.</p>
-      <div class="progress" role="progressbar" [attr.aria-valuenow]="step" aria-valuemin="1" aria-valuemax="7"><span [style.width.%]="progress"></span></div>
-    </div>
-
-    <div class="alert alert-info draft-banner" *ngIf="draftRestored" role="status">
-      <app-icon name="check"></app-icon>
-      <span>Isian Anda yang belum terkirim dipulihkan dari perangkat ini.</span>
-      <button type="button" class="filter-reset" (click)="discardDraft()">Mulai dari awal</button>
-    </div>
-
-    <nav class="steps" aria-label="Tahapan profil">
-      <button type="button" *ngFor="let item of steps; let i = index" [class.active]="step === i + 1" [class.done]="step > i + 1"
-        [attr.aria-current]="step === i + 1 ? 'step' : null" [disabled]="saving || step <= i + 1" (click)="goToCompletedStep(i + 1)">
-        <span class="num"><app-icon *ngIf="step > i + 1; else stepNum" name="check" [size]="14" [stroke]="2.4"></app-icon><ng-template #stepNum>{{ i + 1 }}</ng-template></span>
-        <span class="lbl">{{ item }}</span>
-      </button>
-    </nav>
-
-    <section class="onboard-card">
-      <header>
-        <small>Langkah {{ step }} dari 7</small>
-        <h2>{{ stepTitle }}</h2>
-        <p>{{ stepDescription }}</p>
-      </header>
-
-      <div class="onboard-body">
-        <!-- 1. Informasi pribadi -->
-        <ng-container *ngIf="step === 1">
-          <div class="form-grid">
-            <label class="field">Nama lengkap *<input [(ngModel)]="profile.fullName" maxlength="200" autocomplete="name" required></label>
-            <label class="field">Email<input type="email" [ngModel]="profile.email" disabled></label>
-            <label class="field">Nomor WhatsApp *<input type="tel" [(ngModel)]="profile.phone" inputmode="numeric" maxlength="15" placeholder="08xxxxxxxxxx" required></label>
-            <label class="field">Nomor KTP (NIK) *<input [(ngModel)]="profile.identityNumber" inputmode="numeric" pattern="[0-9]{16}" maxlength="16" placeholder="16 digit NIK"></label>
-            <label class="field">Jenis kelamin *<app-choice-field [options]="options.genders" [allowOther]="false" label="Jenis kelamin" [(value)]="details.gender"></app-choice-field></label>
-            <label class="field">Agama *<app-choice-field [options]="options.religions" [allowOther]="false" label="Agama" [(value)]="profile.religion"></app-choice-field></label>
-            <label class="field">Tanggal lahir *<input type="date" [(ngModel)]="profile.birthDate" [max]="today" required><small *ngIf="age !== null">Usia {{ age }} tahun</small></label>
-            <label class="field">LinkedIn <span class="opt">(opsional)</span><input type="url" [(ngModel)]="details.linkedinUrl" maxlength="500" placeholder="https://www.linkedin.com/in/…"></label>
-          </div>
-
-          <h3>Alamat</h3>
-          <label class="field">Alamat sesuai KTP *<textarea [(ngModel)]="profile.citizenIdAddress" [wordLimit]="40" rows="3" placeholder="Nama jalan, nomor rumah, RT/RW" required></textarea></label>
-          <div class="form-grid">
-            <label class="field">Kode pos KTP *
-              <input [ngModel]="details.postalCode" (ngModelChange)="postalCodeChanged($event)" inputmode="numeric" maxlength="5" placeholder="5 digit">
-              <small [class.field-error]="!!postalError">{{ postalLoading ? 'Mencari wilayah…' : postalError }}</small>
-            </label>
-            <label class="field">Kelurahan, kecamatan, kota *
-              <select [(ngModel)]="details.region" [disabled]="postalLoading || !postalRegions.length">
-                <option value="">{{ postalRegions.length ? 'Pilih wilayah' : 'Isi kode pos terlebih dahulu' }}</option>
-                <option *ngFor="let region of postalRegions" [value]="region">{{ region }}</option>
-              </select>
-            </label>
-          </div>
-          <label class="check"><input type="checkbox" [(ngModel)]="profile.sameAsCitizenIdAddress"> Alamat domisili sama dengan alamat KTP</label>
-          <label class="field" *ngIf="!profile.sameAsCitizenIdAddress">Alamat domisili *<textarea [(ngModel)]="profile.residentialAddress" [wordLimit]="40" rows="3" required></textarea></label>
-          <app-postal-region-field *ngIf="!profile.sameAsCitizenIdAddress" codeLabel="Kode pos domisili *" regionLabel="Kelurahan, kecamatan, kota domisili *"
-            [(postalCode)]="details.residentialPostalCode" [(region)]="details.residentialRegion"></app-postal-region-field>
-
-          <h3>Media sosial</h3>
-          <app-social-accounts-field [details]="details"></app-social-accounts-field>
-        </ng-container>
-
-        <!-- 2. Pendidikan -->
-        <ng-container *ngIf="step === 2">
-          <article class="repeat" *ngFor="let edu of formalEducations; let i = index">
-            <div class="repeat-head">
-              <strong>{{ i === 0 ? 'Pendidikan terakhir' : 'Pendidikan ' + (i + 1) }}</strong>
-              <button type="button" class="btn btn-ghost btn-sm" *ngIf="formalEducations.length > 1" (click)="removeEducation(i)"><app-icon name="trash" [size]="16"></app-icon> Hapus</button>
-            </div>
-            <div class="form-grid">
-              <label class="field">Jenjang *<app-choice-field [options]="options.educationLevels" [allowOther]="false" label="Jenjang" [(value)]="edu.level"></app-choice-field></label>
-              <label class="field">Institusi *<app-search-select source="campus" [popular]="options.institutions" label="Institusi" placeholder="Ketik nama kampus, mis. Universitas Indonesia" [(value)]="edu.institution"></app-search-select></label>
-              <label class="field">Jurusan *<app-search-select source="major" [popular]="options.majors" label="Jurusan" placeholder="Ketik nama jurusan / program studi" [(value)]="edu.major"></app-search-select></label>
-              <label class="field">IPK / nilai akhir *<input type="number" min="0" step="0.01" [ngModel]="edu.ipk" (ngModelChange)="edu.ipk = $event === null ? null : '' + $event" required></label>
-              <label class="field">Tahun masuk *<input type="number" min="1900" [max]="currentYear" [(ngModel)]="edu.startYear" required></label>
-              <label class="field">Tahun lulus *<input type="number" [min]="edu.startYear || 1900" [max]="currentYear" [(ngModel)]="edu.endYear" required></label>
-              <label class="file-field">Ijazah * <input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Ijazah ' + (i + 1)" (change)="selectDocument($event, educationKey(edu, 'diploma'))"><small class="field-hint">{{ documentName(educationKey(edu, 'diploma')) || 'PDF, maksimal 2 MB' }}</small></label>
-              <label class="file-field">Transkrip nilai * <input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Transkrip ' + (i + 1)" (change)="selectDocument($event, educationKey(edu, 'transcript'))"><small class="field-hint">{{ documentName(educationKey(edu, 'transcript')) || 'PDF, maksimal 2 MB' }}</small></label>
-            </div>
-          </article>
-          <button type="button" class="btn btn-secondary add-row" (click)="addEducation()"><app-icon name="plus" [size]="16"></app-icon> Tambah pendidikan</button>
-          <app-achievements-editor [details]="details" [today]="today" [docName]="documentNameFn" (attach)="selectDocument($event.event, $event.key)" (dropDocs)="removeUploads($event)"></app-achievements-editor>
-        </ng-container>
-
-        <!-- 3. Pengalaman kerja -->
-        <ng-container *ngIf="step === 3">
-          <label class="check"><input type="checkbox" [(ngModel)]="details.noExperience" (ngModelChange)="toggleNoExperience()"> Saya belum memiliki pengalaman kerja</label>
-          <ng-container *ngIf="!details.noExperience">
-            <article class="repeat" *ngFor="let exp of profile.workExperiences; let i = index">
-              <div class="repeat-head">
-                <strong>Pengalaman {{ i + 1 }}</strong>
-                <button type="button" class="btn btn-ghost btn-sm" *ngIf="profile.workExperiences.length > 1" (click)="profile.workExperiences.splice(i, 1)"><app-icon name="trash" [size]="16"></app-icon> Hapus</button>
-              </div>
-              <div class="form-grid">
-                <label class="field">Nama perusahaan *<input [(ngModel)]="exp.companyName" maxlength="200" required></label>
-                <label class="field">Posisi *<input [(ngModel)]="exp.position" maxlength="200" required></label>
-                <label class="field">Status kepegawaian *<app-choice-field [options]="options.employmentTypes" [allowOther]="false" label="Status kepegawaian" [(value)]="workDetails(exp).employmentType"></app-choice-field></label>
-                <label class="field">Industri *<app-choice-field [options]="options.industries" label="Industri" [(value)]="workDetails(exp).industry"></app-choice-field></label>
-                <label class="field">Mulai bekerja *<input type="month" [ngModel]="exp.startDate.slice(0, 7)" (ngModelChange)="exp.startDate = $event ? $event + '-01' : ''" [max]="today.slice(0, 7)" required></label>
-                <label class="field">Selesai bekerja {{ exp.currentJob ? '' : '*' }}<input type="month" [ngModel]="exp.endDate?.slice(0, 7)" (ngModelChange)="exp.endDate = $event ? $event + '-01' : null" [max]="today.slice(0, 7)" [disabled]="exp.currentJob"></label>
-              </div>
-              <label class="check"><input type="checkbox" [(ngModel)]="exp.currentJob" (ngModelChange)="exp.currentJob && (exp.endDate = null)"> Saya masih bekerja di sini</label>
-              <label class="field">Tugas dan pencapaian *<textarea [(ngModel)]="exp.description" [wordLimit]="120" rows="4" required></textarea></label>
-              <div class="form-grid">
-                <label class="field">Keahlian *<app-tag-select [options]="options.skills" label="Keahlian" [(value)]="workDetails(exp).skills"></app-tag-select></label>
-                <label class="field">Tools *<app-tag-select [options]="options.tools" label="Tools" [(value)]="workDetails(exp).tools"></app-tag-select></label>
-              </div>
-              <label class="field" *ngIf="!exp.currentJob">Alasan berhenti *<textarea [(ngModel)]="workDetails(exp).resignReason" [wordLimit]="50" rows="2" maxlength="4000" required></textarea></label>
-            </article>
-            <button type="button" class="btn btn-secondary add-row" (click)="addExperience()"><app-icon name="plus" [size]="16"></app-icon> Tambah pengalaman</button>
-          </ng-container>
-        </ng-container>
-
-        <!-- 4. Organisasi -->
-        <ng-container *ngIf="step === 4">
-          <app-organizations-editor [details]="details" [today]="today"></app-organizations-editor>
-        </ng-container>
-
-        <!-- 5. Pelatihan & Sertifikasi -->
-        <ng-container *ngIf="step === 5">
-          <h3>Pelatihan</h3>
-          <label class="check"><input type="checkbox" [(ngModel)]="details.noTraining" (ngModelChange)="toggleNoTraining()"> Saya tidak memiliki pelatihan</label>
-          <ng-container *ngIf="!details.noTraining">
-            <article class="repeat" *ngFor="let t of trainings; let i = index">
-              <div class="repeat-head">
-                <strong>Pelatihan {{ i + 1 }}</strong>
-                <button type="button" class="btn btn-ghost btn-sm" *ngIf="trainings.length > 1" (click)="removeTraining(i)"><app-icon name="trash" [size]="16"></app-icon> Hapus</button>
-              </div>
-              <div class="form-grid">
-                <label class="field">Jenis *
-                  <select [(ngModel)]="t.level" [attr.aria-label]="'Jenis pelatihan ' + (i + 1)">
-                    <option value="">Pilih jenis</option>
-                    <option *ngFor="let kind of trainingTypes" [value]="kind">{{ kind }}</option>
-                  </select>
-                </label>
-                <label class="field">Nama pelatihan *<input [(ngModel)]="t.major" maxlength="200" placeholder="Contoh: Retail Merchandising Basics"></label>
-                <label class="field">Penyelenggara *<input [(ngModel)]="t.institution" maxlength="200" placeholder="Contoh: APRINDO"></label>
-                <label class="field">Tahun *<input type="number" min="1900" [max]="currentYear" [ngModel]="t.startYear" (ngModelChange)="t.startYear = $event; t.endYear = $event"></label>
-                <label class="file-field span-2">Upload sertifikat pelatihan <span class="opt">(opsional)</span> <input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Upload sertifikat pelatihan ' + (i + 1)" (change)="selectDocument($event, educationKey(t, 'certificate'))"><small class="field-hint">{{ documentName(educationKey(t, 'certificate')) || 'PDF, maksimal 2 MB' }}</small></label>
-              </div>
-            </article>
-            <button type="button" class="btn btn-secondary add-row" (click)="addTraining()"><app-icon name="plus" [size]="16"></app-icon> Tambah pelatihan</button>
-          </ng-container>
-
-          <h3>Sertifikasi</h3>
-          <label class="check"><input type="checkbox" [(ngModel)]="details.noCertification" (ngModelChange)="toggleNoCertification()"> Saya tidak memiliki sertifikasi</label>
-          <ng-container *ngIf="!details.noCertification">
-            <article class="repeat" *ngFor="let cert of details.trainingCertifications; let i = index">
-              <div class="repeat-head">
-                <strong>Sertifikasi {{ i + 1 }}</strong>
-                <button type="button" class="btn btn-ghost btn-sm" *ngIf="details.trainingCertifications.length > 1" (click)="removeTrainingCertification(i)"><app-icon name="trash" [size]="16"></app-icon> Hapus</button>
-              </div>
-              <div class="form-grid">
-                <label class="field span-2">Nama sertifikasi *<input [(ngModel)]="cert.name" maxlength="200" placeholder="Contoh: Certified Retail Professional"></label>
-                <label class="field">Nomor sertifikat *<input [(ngModel)]="cert.credentialId" maxlength="100"></label>
-                <label class="field">Penyelenggara / institusi yang mengeluarkan *<input [(ngModel)]="cert.issuingOrganization" maxlength="200" placeholder="Contoh: BNSP"></label>
-                <label class="field">Masa berlaku: mulai *<input type="date" [(ngModel)]="cert.issueDate" [max]="today"></label>
-                <label class="field">Masa berlaku: sampai *<input type="date" [(ngModel)]="cert.expiryDate" [min]="cert.issueDate || null"></label>
-                <label class="file-field span-2">Upload sertifikat * <input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Upload sertifikat ' + (i + 1)" (change)="selectDocument($event, certificateKey(cert))"><small class="field-hint">{{ documentName(certificateKey(cert)) || 'PDF, maksimal 2 MB' }}</small></label>
-              </div>
-            </article>
-            <button type="button" class="btn btn-secondary add-row" (click)="addTrainingCertification()"><app-icon name="plus" [size]="16"></app-icon> Tambah sertifikasi</button>
-          </ng-container>
-        </ng-container>
-
-        <!-- 5. Informasi tambahan -->
-        <ng-container *ngIf="step === 6">
-          <h3>Bahasa</h3>
-          <label class="check"><input type="checkbox" [(ngModel)]="details.noLanguage" (ngModelChange)="toggleNoLanguage()"> Saya tidak memiliki keahlian berbahasa</label>
-          <ng-container *ngIf="!details.noLanguage">
-          <article class="repeat" *ngFor="let language of details.languageSkills; let i = index">
-            <div class="repeat-head">
-              <strong>Bahasa {{ i + 1 }}</strong>
-              <button type="button" class="btn btn-ghost btn-sm" *ngIf="details.languageSkills.length > 1" (click)="removeLanguage(i)"><app-icon name="trash" [size]="16"></app-icon> Hapus</button>
-            </div>
-            <div class="form-grid">
-              <label class="field">Bahasa *<app-choice-field [options]="options.languages" label="Bahasa" [(value)]="language.name"></app-choice-field></label>
-              <label class="field">Tingkat penguasaan *<app-choice-field [options]="options.proficiency" [allowOther]="false" label="Tingkat" [(value)]="language.proficiency"></app-choice-field></label>
-              <label class="check span-2"><input type="checkbox" [ngModel]="hasLanguageCertificate(language)" (ngModelChange)="setLanguageCertificate(language, $event)"> Saya memiliki sertifikat bahasa ini</label>
-              <label class="file-field span-2" *ngIf="hasLanguageCertificate(language)">Sertifikat bahasa * <input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Sertifikat bahasa ' + (i + 1)" (change)="selectDocument($event, 'language:' + language.key + ':certificate')"><small class="field-hint">{{ documentName('language:' + language.key + ':certificate') || 'PDF, maksimal 2 MB' }}</small></label>
-            </div>
-          </article>
-          <button type="button" class="btn btn-secondary add-row" (click)="addLanguage()"><app-icon name="plus" [size]="16"></app-icon> Tambah bahasa</button>
-          </ng-container>
-
-          <h3>Minat kerja</h3>
-          <div class="form-grid">
-            <label class="field">Fungsi yang diminati *<app-tag-select [options]="options.functions" [limit]="3" label="Fungsi" [(value)]="profile.jobInterests"></app-tag-select></label>
-            <label class="field">Lokasi kerja yang diminati *<app-tag-select [options]="options.locations" [limit]="3" [allowOther]="false" label="Lokasi" [(value)]="profile.preferredLocations"></app-tag-select></label>
-          </div>
-
-          <h3>Gaji</h3>
-          <label class="field">Gaji terakhir per bulan <span class="opt">(opsional)</span><input type="number" min="0" step="1" [(ngModel)]="profile.currentSalary" placeholder="Rupiah"></label>
-          <fieldset>
-            <legend>Ekspektasi gaji per bulan *</legend>
-            <div class="form-grid">
-              <label class="field">Minimum<input type="number" min="0" step="1" [(ngModel)]="profile.expectedSalary" placeholder="Contoh: 8000000" required></label>
-              <label class="field">Maksimum<input type="number" [min]="profile.expectedSalary || 0" step="1" [(ngModel)]="details.expectedSalaryMax" placeholder="Contoh: 10000000" required></label>
-            </div>
-          </fieldset>
-
-          <h3>Tentang Anda</h3>
-          <label class="field">Ringkasan profil <span class="opt">(opsional)</span><textarea rows="4" [(ngModel)]="profile.about" [wordLimit]="150" maxlength="4000" placeholder="Ceritakan pengalaman dan tujuan karier Anda dalam beberapa kalimat"></textarea></label>
-          <label class="field">Dari mana Anda tahu lowongan ini? *<app-choice-field [options]="options.sources" label="Sumber" [(value)]="profile.source"></app-choice-field></label>
-          <label class="check"><input type="checkbox" [(ngModel)]="profile.termsAccepted"> Saya menyetujui syarat dan ketentuan Talent Pool Sarinah. *</label>
-        </ng-container>
-
-        <!-- 6. CV & portofolio -->
-        <ng-container *ngIf="step === 7">
-          <label class="upload">
-            <input type="file" accept=".pdf,.doc,.docx" aria-label="Unggah CV" (change)="selectCv($event)">
-            <app-icon name="file" [size]="28" [stroke]="1.5"></app-icon>
-            <strong>{{ cvFile?.name || profile.cvOriginalName || 'Pilih file CV *' }}</strong>
-            <small>{{ cvFile || profile.cvOriginalName ? 'Klik untuk mengganti' : 'PDF, DOC, atau DOCX · maksimal 10 MB' }}</small>
-          </label>
-
-          <div class="form-grid">
-            <label class="upload">
-              <input type="file" accept=".jpg,.jpeg,.png" aria-label="Foto profil" (change)="selectProfilePicture($event)">
-              <img *ngIf="profilePicturePreviewUrl; else photoIcon" class="preview" [src]="profilePicturePreviewUrl" alt="Pratinjau foto profil">
-              <ng-template #photoIcon><app-icon name="users" [size]="28" [stroke]="1.5"></app-icon></ng-template>
-              <strong>{{ profilePicture?.name || (profilePicturePreviewUrl ? 'Foto profil' : 'Foto profil *') }}</strong>
-              <small>{{ profilePicturePreviewUrl ? 'Klik untuk mengganti' : 'JPG atau PNG · maksimal 10 MB' }}</small>
-            </label>
-            <label class="upload">
-              <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.zip" aria-label="File portofolio" (change)="selectPortfolioFiles($event)">
-              <app-icon name="upload" [size]="28" [stroke]="1.5"></app-icon>
-              <strong>{{ portfolioFiles.length ? portfolioFiles.length + ' file dipilih' : 'File portofolio (opsional)' }}</strong>
-              <small>Maksimal 10 file, 10 MB per file</small>
-            </label>
-          </div>
-
-          <div class="existing" *ngIf="existingPortfolioFiles.length">
-            <p class="subhead">Portofolio yang sudah diunggah</p>
-            <div class="doc-list">
-              <div class="doc" *ngFor="let item of existingPortfolioFiles"><app-icon name="file"></app-icon><span><strong>{{ item.originalName || item.title }}</strong></span></div>
-            </div>
-          </div>
-
-          <h3>Tautan portofolio</h3>
-          <div class="link-row" *ngFor="let item of portfolioLinks; let i = index">
-            <label class="field">URL<input type="url" [(ngModel)]="item.url" placeholder="https://…"></label>
-            <button type="button" class="icon-btn" [style.visibility]="portfolioLinks.length > 1 ? 'visible' : 'hidden'" (click)="portfolioLinks.splice(i, 1)" aria-label="Hapus tautan"><app-icon name="trash"></app-icon></button>
-          </div>
-          <button type="button" class="btn btn-secondary add-row" (click)="portfolioLinks.push({ title: 'Portofolio', url: '' })"><app-icon name="plus" [size]="16"></app-icon> Tambah tautan</button>
-        </ng-container>
-
-        <div class="alert alert-error" *ngIf="error" role="alert"><app-icon name="alert"></app-icon><span>{{ error }}</span></div>
+@if (profile) {
+  <main class="onboard">
+    <div class="onboard-bar">
+      <div class="container">
+        <a routerLink="/" aria-label="Beranda Sarinah Karier"><img src="images/sarinah.png" alt="Sarinah"></a>
+        @if (editing) {
+          <a class="back-link" routerLink="/portal">
+            <app-icon name="arrow-left" [size]="16"></app-icon> Kembali ke profil
+          </a>
+        }
       </div>
-
-      <footer class="onboard-foot">
-        <span class="hint">Perubahan disimpan saat Anda menyelesaikan langkah terakhir.</span>
-        <div>
-          <button type="button" class="btn btn-secondary" *ngIf="step > 1" [disabled]="saving" (click)="previous()">Sebelumnya</button>
-          <button type="button" class="btn btn-primary" *ngIf="step < 7" (click)="next()">Selanjutnya <app-icon name="arrow-up-right" [size]="16"></app-icon></button>
-          <button type="button" class="btn btn-primary" *ngIf="step === 7" [disabled]="saving" (click)="finish()">{{ saving ? 'Menyimpan…' : editing ? 'Simpan profil' : 'Selesai' }}</button>
+    </div>
+    <div class="onboard-wrap">
+      <div class="onboard-intro">
+        <h1>{{ editing ? 'Ubah Data Talent Pool' : 'Lengkapi Data Talent Pool' }}</h1>
+        <p>Isi data diri Anda dengan lengkap dan benar untuk melanjutkan proses pendaftaran.</p>
+        <div class="progress" role="progressbar" [attr.aria-valuenow]="step" aria-valuemin="1" aria-valuemax="7"><span [style.width.%]="progress"></span></div>
+      </div>
+      @if (draftRestored) {
+        <div class="alert alert-info draft-banner" role="status">
+          <app-icon name="check"></app-icon>
+          <span>Isian Anda yang belum terkirim dipulihkan dari perangkat ini.</span>
+          <button type="button" class="filter-reset" (click)="discardDraft()">Mulai dari awal</button>
         </div>
-      </footer>
-    </section>
-  </div>
-</main>
-<ng-template #loadingTpl>
+      }
+      <nav class="steps" aria-label="Tahapan profil">
+        @for (item of steps; track item; let i = $index) {
+          <button type="button" [class.active]="step === i + 1" [class.done]="step > i + 1"
+            [attr.aria-current]="step === i + 1 ? 'step' : null" [disabled]="saving || step <= i + 1" (click)="goToCompletedStep(i + 1)">
+            <span class="num">@if (step > i + 1) {
+              <app-icon name="check" [size]="14" [stroke]="2.4"></app-icon>
+            } @else {
+              {{ i + 1 }}
+            }</span>
+            <span class="lbl">{{ item }}</span>
+          </button>
+        }
+      </nav>
+      <section class="onboard-card">
+        <header>
+          <small>Langkah {{ step }} dari 7</small>
+          <h2>{{ stepTitle }}</h2>
+          <p>{{ stepDescription }}</p>
+        </header>
+        <div class="onboard-body">
+          <!-- 1. Informasi pribadi -->
+          @if (step === 1) {
+            <div class="form-grid">
+              <label class="field">Nama lengkap *<input [(ngModel)]="profile.fullName" maxlength="200" autocomplete="name" required></label>
+              <label class="field">Email<input type="email" [ngModel]="profile.email" disabled></label>
+              <label class="field">Nomor WhatsApp *<input type="tel" [(ngModel)]="profile.phone" inputmode="numeric" maxlength="15" placeholder="08xxxxxxxxxx" required></label>
+              <label class="field">Nomor KTP (NIK) *<input [(ngModel)]="profile.identityNumber" inputmode="numeric" pattern="[0-9]{16}" maxlength="16" placeholder="16 digit NIK"></label>
+              <label class="field">Jenis kelamin *<app-choice-field [options]="options.genders" [allowOther]="false" label="Jenis kelamin" [(value)]="details.gender"></app-choice-field></label>
+              <label class="field">Agama *<app-choice-field [options]="options.religions" [allowOther]="false" label="Agama" [(value)]="profile.religion"></app-choice-field></label>
+              <label class="field">Tanggal lahir *<input type="date" [(ngModel)]="profile.birthDate" [max]="today" required>@if (age !== null) {
+                <small>Usia {{ age }} tahun</small>
+              }</label>
+              <label class="field">LinkedIn <span class="opt">(opsional)</span><input type="url" [(ngModel)]="details.linkedinUrl" maxlength="500" placeholder="https://www.linkedin.com/in/…"></label>
+            </div>
+            <h3>Alamat</h3>
+            <label class="field">Alamat sesuai KTP *<textarea [(ngModel)]="profile.citizenIdAddress" [wordLimit]="40" rows="3" placeholder="Nama jalan, nomor rumah, RT/RW" required></textarea></label>
+            <div class="form-grid">
+              <label class="field">Kode pos KTP *
+                <input [ngModel]="details.postalCode" (ngModelChange)="postalCodeChanged($event)" inputmode="numeric" maxlength="5" placeholder="5 digit">
+                <small [class.field-error]="!!postalError">{{ postalLoading ? 'Mencari wilayah…' : postalError }}</small>
+              </label>
+              <label class="field">Kelurahan, kecamatan, kota *
+                <select [(ngModel)]="details.region" [disabled]="postalLoading || !postalRegions.length">
+                  <option value="">{{ postalRegions.length ? 'Pilih wilayah' : 'Isi kode pos terlebih dahulu' }}</option>
+                  @for (region of postalRegions; track region) {
+                    <option [value]="region">{{ region }}</option>
+                  }
+                </select>
+              </label>
+            </div>
+            <label class="check"><input type="checkbox" [(ngModel)]="profile.sameAsCitizenIdAddress"> Alamat domisili sama dengan alamat KTP</label>
+            @if (!profile.sameAsCitizenIdAddress) {
+              <label class="field">Alamat domisili *<textarea [(ngModel)]="profile.residentialAddress" [wordLimit]="40" rows="3" required></textarea></label>
+            }
+            @if (!profile.sameAsCitizenIdAddress) {
+              <app-postal-region-field codeLabel="Kode pos domisili *" regionLabel="Kelurahan, kecamatan, kota domisili *"
+              [(postalCode)]="details.residentialPostalCode" [(region)]="details.residentialRegion"></app-postal-region-field>
+            }
+            <h3>Media sosial</h3>
+            <app-social-accounts-field [details]="details"></app-social-accounts-field>
+          }
+          <!-- 2. Pendidikan -->
+          @if (step === 2) {
+            @for (edu of formalEducations; track edu; let i = $index) {
+              <article class="repeat">
+                <div class="repeat-head">
+                  <strong>{{ i === 0 ? 'Pendidikan terakhir' : 'Pendidikan ' + (i + 1) }}</strong>
+                  @if (formalEducations.length > 1) {
+                    <button type="button" class="btn btn-ghost btn-sm" (click)="removeEducation(i)"><app-icon name="trash" [size]="16"></app-icon> Hapus</button>
+                  }
+                </div>
+                <div class="form-grid">
+                  <label class="field">Jenjang *<app-choice-field [options]="options.educationLevels" [allowOther]="false" label="Jenjang" [(value)]="edu.level"></app-choice-field></label>
+                  <label class="field">Institusi *<app-search-select source="campus" [popular]="options.institutions" label="Institusi" placeholder="Ketik nama kampus, mis. Universitas Indonesia" [(value)]="edu.institution"></app-search-select></label>
+                  <label class="field">Jurusan *<app-search-select source="major" [popular]="options.majors" label="Jurusan" placeholder="Ketik nama jurusan / program studi" [(value)]="edu.major"></app-search-select></label>
+                  <label class="field">IPK / nilai akhir *<input type="number" min="0" step="0.01" [ngModel]="edu.ipk" (ngModelChange)="edu.ipk = $event === null ? null : '' + $event" required></label>
+                  <label class="field">Tahun masuk *<input type="number" min="1900" [max]="currentYear" [(ngModel)]="edu.startYear" required></label>
+                  <label class="field">Tahun lulus *<input type="number" [min]="edu.startYear || 1900" [max]="currentYear" [(ngModel)]="edu.endYear" required></label>
+                  <label class="file-field">Ijazah * <input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Ijazah ' + (i + 1)" (change)="selectDocument($event, educationKey(edu, 'diploma'))"><small class="field-hint">{{ documentName(educationKey(edu, 'diploma')) || 'PDF, maksimal 2 MB' }}</small></label>
+                  <label class="file-field">Transkrip nilai * <input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Transkrip ' + (i + 1)" (change)="selectDocument($event, educationKey(edu, 'transcript'))"><small class="field-hint">{{ documentName(educationKey(edu, 'transcript')) || 'PDF, maksimal 2 MB' }}</small></label>
+                </div>
+              </article>
+            }
+            <button type="button" class="btn btn-secondary add-row" (click)="addEducation()"><app-icon name="plus" [size]="16"></app-icon> Tambah pendidikan</button>
+            <app-achievements-editor [details]="details" [today]="today" [docName]="documentNameFn" (attach)="selectDocument($event.event, $event.key)" (dropDocs)="removeUploads($event)"></app-achievements-editor>
+          }
+          <!-- 3. Pengalaman kerja -->
+          @if (step === 3) {
+            <label class="check"><input type="checkbox" [(ngModel)]="details.noExperience" (ngModelChange)="toggleNoExperience()"> Saya belum memiliki pengalaman kerja</label>
+            @if (!details.noExperience) {
+              @for (exp of profile.workExperiences; track exp; let i = $index) {
+                <article class="repeat">
+                  <div class="repeat-head">
+                    <strong>Pengalaman {{ i + 1 }}</strong>
+                    @if (profile.workExperiences.length > 1) {
+                      <button type="button" class="btn btn-ghost btn-sm" (click)="profile.workExperiences.splice(i, 1)"><app-icon name="trash" [size]="16"></app-icon> Hapus</button>
+                    }
+                  </div>
+                  <div class="form-grid">
+                    <label class="field">Nama perusahaan *<input [(ngModel)]="exp.companyName" maxlength="200" required></label>
+                    <label class="field">Posisi *<input [(ngModel)]="exp.position" maxlength="200" required></label>
+                    <label class="field">Status kepegawaian *<app-choice-field [options]="options.employmentTypes" [allowOther]="false" label="Status kepegawaian" [(value)]="workDetails(exp).employmentType"></app-choice-field></label>
+                    <label class="field">Industri *<app-choice-field [options]="options.industries" label="Industri" [(value)]="workDetails(exp).industry"></app-choice-field></label>
+                    <label class="field">Mulai bekerja *<input type="month" [ngModel]="exp.startDate.slice(0, 7)" (ngModelChange)="exp.startDate = $event ? $event + '-01' : ''" [max]="today.slice(0, 7)" required></label>
+                    <label class="field">Selesai bekerja {{ exp.currentJob ? '' : '*' }}<input type="month" [ngModel]="exp.endDate?.slice(0, 7)" (ngModelChange)="exp.endDate = $event ? $event + '-01' : null" [max]="today.slice(0, 7)" [disabled]="exp.currentJob"></label>
+                  </div>
+                  <label class="check"><input type="checkbox" [(ngModel)]="exp.currentJob" (ngModelChange)="exp.currentJob && (exp.endDate = null)"> Saya masih bekerja di sini</label>
+                  <label class="field">Tugas dan pencapaian *<textarea [(ngModel)]="exp.description" [wordLimit]="120" rows="4" required></textarea></label>
+                  <div class="form-grid">
+                    <label class="field">Keahlian *<app-tag-select [options]="options.skills" label="Keahlian" [(value)]="workDetails(exp).skills"></app-tag-select></label>
+                    <label class="field">Tools *<app-tag-select [options]="options.tools" label="Tools" [(value)]="workDetails(exp).tools"></app-tag-select></label>
+                  </div>
+                  @if (!exp.currentJob) {
+                    <label class="field">Alasan berhenti *<textarea [(ngModel)]="workDetails(exp).resignReason" [wordLimit]="50" rows="2" maxlength="4000" required></textarea></label>
+                  }
+                </article>
+              }
+              <button type="button" class="btn btn-secondary add-row" (click)="addExperience()"><app-icon name="plus" [size]="16"></app-icon> Tambah pengalaman</button>
+            }
+          }
+          <!-- 4. Organisasi -->
+          @if (step === 4) {
+            <app-organizations-editor [details]="details" [today]="today"></app-organizations-editor>
+          }
+          <!-- 5. Pelatihan & Sertifikasi -->
+          @if (step === 5) {
+            <h3>Pelatihan</h3>
+            <label class="check"><input type="checkbox" [(ngModel)]="details.noTraining" (ngModelChange)="toggleNoTraining()"> Saya tidak memiliki pelatihan</label>
+            @if (!details.noTraining) {
+              @for (t of trainings; track t; let i = $index) {
+                <article class="repeat">
+                  <div class="repeat-head">
+                    <strong>Pelatihan {{ i + 1 }}</strong>
+                    @if (trainings.length > 1) {
+                      <button type="button" class="btn btn-ghost btn-sm" (click)="removeTraining(i)"><app-icon name="trash" [size]="16"></app-icon> Hapus</button>
+                    }
+                  </div>
+                  <div class="form-grid">
+                    <label class="field">Jenis *
+                      <select [(ngModel)]="t.level" [attr.aria-label]="'Jenis pelatihan ' + (i + 1)">
+                        <option value="">Pilih jenis</option>
+                        @for (kind of trainingTypes; track kind) {
+                          <option [value]="kind">{{ kind }}</option>
+                        }
+                      </select>
+                    </label>
+                    <label class="field">Nama pelatihan *<input [(ngModel)]="t.major" maxlength="200" placeholder="Contoh: Retail Merchandising Basics"></label>
+                    <label class="field">Penyelenggara *<input [(ngModel)]="t.institution" maxlength="200" placeholder="Contoh: APRINDO"></label>
+                    <label class="field">Tahun *<input type="number" min="1900" [max]="currentYear" [ngModel]="t.startYear" (ngModelChange)="t.startYear = $event; t.endYear = $event"></label>
+                    <label class="file-field span-2">Upload sertifikat pelatihan <span class="opt">(opsional)</span> <input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Upload sertifikat pelatihan ' + (i + 1)" (change)="selectDocument($event, educationKey(t, 'certificate'))"><small class="field-hint">{{ documentName(educationKey(t, 'certificate')) || 'PDF, maksimal 2 MB' }}</small></label>
+                  </div>
+                </article>
+              }
+              <button type="button" class="btn btn-secondary add-row" (click)="addTraining()"><app-icon name="plus" [size]="16"></app-icon> Tambah pelatihan</button>
+            }
+            <h3>Sertifikasi</h3>
+            <label class="check"><input type="checkbox" [(ngModel)]="details.noCertification" (ngModelChange)="toggleNoCertification()"> Saya tidak memiliki sertifikasi</label>
+            @if (!details.noCertification) {
+              @for (cert of details.trainingCertifications; track cert; let i = $index) {
+                <article class="repeat">
+                  <div class="repeat-head">
+                    <strong>Sertifikasi {{ i + 1 }}</strong>
+                    @if (details.trainingCertifications.length > 1) {
+                      <button type="button" class="btn btn-ghost btn-sm" (click)="removeTrainingCertification(i)"><app-icon name="trash" [size]="16"></app-icon> Hapus</button>
+                    }
+                  </div>
+                  <div class="form-grid">
+                    <label class="field span-2">Nama sertifikasi *<input [(ngModel)]="cert.name" maxlength="200" placeholder="Contoh: Certified Retail Professional"></label>
+                    <label class="field">Nomor sertifikat *<input [(ngModel)]="cert.credentialId" maxlength="100"></label>
+                    <label class="field">Penyelenggara / institusi yang mengeluarkan *<input [(ngModel)]="cert.issuingOrganization" maxlength="200" placeholder="Contoh: BNSP"></label>
+                    <label class="field">Masa berlaku: mulai *<input type="date" [(ngModel)]="cert.issueDate" [max]="today"></label>
+                    <label class="field">Masa berlaku: sampai *<input type="date" [(ngModel)]="cert.expiryDate" [min]="cert.issueDate || null"></label>
+                    <label class="file-field span-2">Upload sertifikat * <input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Upload sertifikat ' + (i + 1)" (change)="selectDocument($event, certificateKey(cert))"><small class="field-hint">{{ documentName(certificateKey(cert)) || 'PDF, maksimal 2 MB' }}</small></label>
+                  </div>
+                </article>
+              }
+              <button type="button" class="btn btn-secondary add-row" (click)="addTrainingCertification()"><app-icon name="plus" [size]="16"></app-icon> Tambah sertifikasi</button>
+            }
+          }
+          <!-- 5. Informasi tambahan -->
+          @if (step === 6) {
+            <h3>Bahasa</h3>
+            <label class="check"><input type="checkbox" [(ngModel)]="details.noLanguage" (ngModelChange)="toggleNoLanguage()"> Saya tidak memiliki keahlian berbahasa</label>
+            @if (!details.noLanguage) {
+              @for (language of details.languageSkills; track language; let i = $index) {
+                <article class="repeat">
+                  <div class="repeat-head">
+                    <strong>Bahasa {{ i + 1 }}</strong>
+                    @if (details.languageSkills.length > 1) {
+                      <button type="button" class="btn btn-ghost btn-sm" (click)="removeLanguage(i)"><app-icon name="trash" [size]="16"></app-icon> Hapus</button>
+                    }
+                  </div>
+                  <div class="form-grid">
+                    <label class="field">Bahasa *<app-choice-field [options]="options.languages" label="Bahasa" [(value)]="language.name"></app-choice-field></label>
+                    <label class="field">Tingkat penguasaan *<app-choice-field [options]="options.proficiency" [allowOther]="false" label="Tingkat" [(value)]="language.proficiency"></app-choice-field></label>
+                    <label class="check span-2"><input type="checkbox" [ngModel]="hasLanguageCertificate(language)" (ngModelChange)="setLanguageCertificate(language, $event)"> Saya memiliki sertifikat bahasa ini</label>
+                    @if (hasLanguageCertificate(language)) {
+                      <label class="file-field span-2">Sertifikat bahasa * <input type="file" accept=".pdf,application/pdf" [attr.aria-label]="'Sertifikat bahasa ' + (i + 1)" (change)="selectDocument($event, 'language:' + language.key + ':certificate')"><small class="field-hint">{{ documentName('language:' + language.key + ':certificate') || 'PDF, maksimal 2 MB' }}</small></label>
+                    }
+                  </div>
+                </article>
+              }
+              <button type="button" class="btn btn-secondary add-row" (click)="addLanguage()"><app-icon name="plus" [size]="16"></app-icon> Tambah bahasa</button>
+            }
+            <h3>Minat kerja</h3>
+            <div class="form-grid">
+              <label class="field">Fungsi yang diminati *<app-tag-select [options]="options.functions" [limit]="3" label="Fungsi" [(value)]="profile.jobInterests"></app-tag-select></label>
+              <label class="field">Lokasi kerja yang diminati *<app-tag-select [options]="options.locations" [limit]="3" [allowOther]="false" label="Lokasi" [(value)]="profile.preferredLocations"></app-tag-select></label>
+            </div>
+            <h3>Gaji</h3>
+            <label class="field">Gaji terakhir per bulan <span class="opt">(opsional)</span><input type="number" min="0" step="1" [(ngModel)]="profile.currentSalary" placeholder="Rupiah"></label>
+            <fieldset>
+              <legend>Ekspektasi gaji per bulan *</legend>
+              <div class="form-grid">
+                <label class="field">Minimum<input type="number" min="0" step="1" [(ngModel)]="profile.expectedSalary" placeholder="Contoh: 8000000" required></label>
+                <label class="field">Maksimum<input type="number" [min]="profile.expectedSalary || 0" step="1" [(ngModel)]="details.expectedSalaryMax" placeholder="Contoh: 10000000" required></label>
+              </div>
+            </fieldset>
+            <h3>Tentang Anda</h3>
+            <label class="field">Ringkasan profil <span class="opt">(opsional)</span><textarea rows="4" [(ngModel)]="profile.about" [wordLimit]="150" maxlength="4000" placeholder="Ceritakan pengalaman dan tujuan karier Anda dalam beberapa kalimat"></textarea></label>
+            <label class="field">Dari mana Anda tahu lowongan ini? *<app-choice-field [options]="options.sources" label="Sumber" [(value)]="profile.source"></app-choice-field></label>
+            <label class="check"><input type="checkbox" [(ngModel)]="profile.termsAccepted"> Saya menyetujui syarat dan ketentuan Talent Pool Sarinah. *</label>
+          }
+          <!-- 6. CV & portofolio -->
+          @if (step === 7) {
+            <label class="upload">
+              <input type="file" accept=".pdf,.doc,.docx" aria-label="Unggah CV" (change)="selectCv($event)">
+              <app-icon name="file" [size]="28" [stroke]="1.5"></app-icon>
+              <strong>{{ cvFile?.name || profile.cvOriginalName || 'Pilih file CV *' }}</strong>
+              <small>{{ cvFile || profile.cvOriginalName ? 'Klik untuk mengganti' : 'PDF, DOC, atau DOCX · maksimal 10 MB' }}</small>
+            </label>
+            <div class="form-grid">
+              <label class="upload">
+                <input type="file" accept=".jpg,.jpeg,.png" aria-label="Foto profil" (change)="selectProfilePicture($event)">
+                @if (profilePicturePreviewUrl) {
+                  <img class="preview" [src]="profilePicturePreviewUrl" alt="Pratinjau foto profil">
+                } @else {
+                  <app-icon name="users" [size]="28" [stroke]="1.5"></app-icon>
+                }
+                <strong>{{ profilePicture?.name || (profilePicturePreviewUrl ? 'Foto profil' : 'Foto profil *') }}</strong>
+                <small>{{ profilePicturePreviewUrl ? 'Klik untuk mengganti' : 'JPG atau PNG · maksimal 10 MB' }}</small>
+              </label>
+              <label class="upload">
+                <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.zip" aria-label="File portofolio" (change)="selectPortfolioFiles($event)">
+                <app-icon name="upload" [size]="28" [stroke]="1.5"></app-icon>
+                <strong>{{ portfolioFiles.length ? portfolioFiles.length + ' file dipilih' : 'File portofolio (opsional)' }}</strong>
+                <small>Maksimal 10 file, 10 MB per file</small>
+              </label>
+            </div>
+            @if (existingPortfolioFiles.length) {
+              <div class="existing">
+                <p class="subhead">Portofolio yang sudah diunggah</p>
+                <div class="doc-list">
+                  @for (item of existingPortfolioFiles; track item) {
+                    <div class="doc"><app-icon name="file"></app-icon><span><strong>{{ item.originalName || item.title }}</strong></span></div>
+                  }
+                </div>
+              </div>
+            }
+            <h3>Tautan portofolio</h3>
+            @for (item of portfolioLinks; track item; let i = $index) {
+              <div class="link-row">
+                <label class="field">URL<input type="url" [(ngModel)]="item.url" placeholder="https://…"></label>
+                <button type="button" class="icon-btn" [style.visibility]="portfolioLinks.length > 1 ? 'visible' : 'hidden'" (click)="portfolioLinks.splice(i, 1)" aria-label="Hapus tautan"><app-icon name="trash"></app-icon></button>
+              </div>
+            }
+            <button type="button" class="btn btn-secondary add-row" (click)="portfolioLinks.push({ title: 'Portofolio', url: '' })"><app-icon name="plus" [size]="16"></app-icon> Tambah tautan</button>
+          }
+          @if (error) {
+            <div class="alert alert-error" role="alert"><app-icon name="alert"></app-icon><span>{{ error }}</span></div>
+          }
+        </div>
+        <footer class="onboard-foot">
+          <span class="hint">Perubahan disimpan saat Anda menyelesaikan langkah terakhir.</span>
+          <div>
+            @if (step > 1) {
+              <button type="button" class="btn btn-secondary" [disabled]="saving" (click)="previous()">Sebelumnya</button>
+            }
+            @if (step < 7) {
+              <button type="button" class="btn btn-primary" (click)="next()">Selanjutnya <app-icon name="arrow-up-right" [size]="16"></app-icon></button>
+            }
+            @if (step === 7) {
+              <button type="button" class="btn btn-primary" [disabled]="saving" (click)="finish()">{{ saving ? 'Menyimpan…' : editing ? 'Simpan profil' : 'Selesai' }}</button>
+            }
+          </div>
+        </footer>
+      </section>
+    </div>
+  </main>
+} @else {
   <div class="full-loading">
-    <p *ngIf="!error">Menyiapkan formulir profil…</p>
-    <ng-container *ngIf="error"><strong role="alert">{{ error }}</strong><button type="button" class="btn btn-secondary" (click)="ngOnInit()">Coba lagi</button></ng-container>
+    @if (!error) {
+      <p>Menyiapkan formulir profil…</p>
+    }
+    @if (error) {
+      <strong role="alert">{{ error }}</strong><button type="button" class="btn btn-secondary" (click)="ngOnInit()">Coba lagi</button>
+    }
   </div>
-</ng-template>
+}
