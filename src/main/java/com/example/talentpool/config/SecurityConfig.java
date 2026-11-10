@@ -66,6 +66,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/public/job-listings", "/api/public/job-listings/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/public/site", "/api/public/site/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/public/postal-codes").permitAll()
+                        // Berhenti berlangganan email lowongan (token acak di tautan email)
+                        .requestMatchers(HttpMethod.GET, "/api/public/job-alerts/unsubscribe").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/public/job-alerts/unsubscribe").permitAll()
 
                         .requestMatchers(HttpMethod.POST,
                                 "/api/talent/auth/register",

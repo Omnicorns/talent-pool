@@ -2,6 +2,7 @@ package com.example.talentpool.service;
 
 import com.example.talentpool.domain.JobListing;
 import com.example.talentpool.domain.JobListingStatus;
+import com.example.talentpool.event.JobListingPublishedEvent;
 import com.example.talentpool.dto.*;
 import com.example.talentpool.exception.BadRequestException;
 import com.example.talentpool.exception.ResourceNotFoundException;
@@ -9,10 +10,12 @@ import com.example.talentpool.repository.InterviewRepository;
 import com.example.talentpool.repository.JobApplicationRepository;
 import com.example.talentpool.repository.JobListingRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -21,29 +24,37 @@ public class JobListingService {
     private final JobListingRepository repository;
     private final JobApplicationRepository applicationRepository;
     private final InterviewRepository interviewRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public JobListingService(
             JobListingRepository repository,
             JobApplicationRepository applicationRepository,
-            InterviewRepository interviewRepository
+            InterviewRepository interviewRepository,
+            ApplicationEventPublisher eventPublisher
     ) {
         this.repository = repository;
         this.applicationRepository = applicationRepository;
         this.interviewRepository = interviewRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
     public JobListingResponse create(JobListingRequest request) {
         JobListing job = new JobListing();
         apply(job, request);
-        return toResponse(repository.save(job));
+        JobListing saved = repository.save(job);
+        announceIfNewlyPublished(saved, null);
+        return toResponse(saved);
     }
 
     @Transactional
     public JobListingResponse update(UUID id, JobListingRequest request) {
         JobListing job = getEntity(id);
+        JobListingStatus before = job.getStatus();
         apply(job, request);
-        return toResponse(repository.save(job));
+        JobListing saved = repository.save(job);
+        announceIfNewlyPublished(saved, before);
+        return toResponse(saved);
     }
 
     @Transactional
@@ -54,8 +65,11 @@ public class JobListingService {
                 && job.getApplicationDeadline().isBefore(LocalDate.now())) {
             throw new BadRequestException("Lowongan dengan batas lamaran yang sudah lewat tidak dapat dipublikasikan");
         }
+        JobListingStatus before = job.getStatus();
         job.setStatus(request.status());
-        return toResponse(repository.save(job));
+        JobListing saved = repository.save(job);
+        announceIfNewlyPublished(saved, before);
+        return toResponse(saved);
     }
 
     @Transactional
@@ -118,6 +132,22 @@ public class JobListingService {
                 job.getDescription(), job.getOpenings(), job.getApplicationDeadline(), job.getStatus(),
                 applicationRepository.countByJobListingId(job.getId()), job.getCreatedAt(), job.getUpdatedAt()
         );
+    }
+
+    /**
+     * Email lowongan baru dikirim sekali per lowongan, saat pertama kali berstatus PUBLISHED.
+     * Penanda disimpan di transaksi yang sama; pengiriman berjalan async setelah commit.
+     */
+    private void announceIfNewlyPublished(JobListing job, JobListingStatus before) {
+        // Hanya saat berpindah ke PUBLISHED: mengedit lowongan yang sudah PUBLISHED (termasuk data lama
+        // yang belum punya penanda) tidak boleh memicu email massal.
+        if (before != JobListingStatus.PUBLISHED
+                && job.getStatus() == JobListingStatus.PUBLISHED
+                && job.getNewJobNotifiedAt() == null) {
+            job.setNewJobNotifiedAt(Instant.now());
+            repository.save(job);
+            eventPublisher.publishEvent(new JobListingPublishedEvent(job.getId()));
+        }
     }
 
     private String trimToNull(String value) {

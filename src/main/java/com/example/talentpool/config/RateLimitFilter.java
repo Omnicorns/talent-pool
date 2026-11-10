@@ -42,7 +42,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         if (path.endsWith("/api/public/talents")) return UPLOAD;
         if (path.endsWith("/api/backoffice/auth/login")) return BACKOFFICE_LOGIN;
-        if (path.contains("/api/talent/auth/")) return AUTH;
+        if (path.contains("/api/talent/auth/") || path.contains("/api/public/job-alerts/")) return AUTH;
         return null;
     }
 

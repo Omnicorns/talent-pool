@@ -40,6 +40,14 @@ public class TalentAccount {
     @Column(name = "onboarding_completed")
     private Boolean onboardingCompleted;
 
+    /** Email pemberitahuan lowongan baru. null dianggap aktif (akun lama). */
+    @Column(name = "job_alerts_enabled")
+    private Boolean jobAlertsEnabled;
+
+    /** Token acak untuk tautan berhenti berlangganan di email; dibuat saat email pertama dikirim. */
+    @Column(name = "job_alert_token", length = 64, unique = true)
+    private String jobAlertToken;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -64,6 +72,10 @@ public class TalentAccount {
     public boolean isEmailVerified() { return emailVerifiedAt != null; }
     public boolean isOnboardingCompleted() { return onboardingCompleted == null || onboardingCompleted; }
     public void setOnboardingCompleted(boolean onboardingCompleted) { this.onboardingCompleted = onboardingCompleted; }
+    public boolean isJobAlertsEnabled() { return jobAlertsEnabled == null || jobAlertsEnabled; }
+    public void setJobAlertsEnabled(boolean jobAlertsEnabled) { this.jobAlertsEnabled = jobAlertsEnabled; }
+    public String getJobAlertToken() { return jobAlertToken; }
+    public void setJobAlertToken(String jobAlertToken) { this.jobAlertToken = jobAlertToken; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 }

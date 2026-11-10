@@ -43,6 +43,10 @@ public class JobListing {
     @Column(nullable = false, length = 30)
     private JobListingStatus status = JobListingStatus.DRAFT;
 
+    /** Diisi saat email lowongan baru dikirim, supaya publish ulang tidak mengirim email dua kali. */
+    @Column(name = "new_job_notified_at")
+    private Instant newJobNotifiedAt;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -68,6 +72,8 @@ public class JobListing {
     public void setApplicationDeadline(LocalDate applicationDeadline) { this.applicationDeadline = applicationDeadline; }
     public JobListingStatus getStatus() { return status; }
     public void setStatus(JobListingStatus status) { this.status = status; }
+    public Instant getNewJobNotifiedAt() { return newJobNotifiedAt; }
+    public void setNewJobNotifiedAt(Instant newJobNotifiedAt) { this.newJobNotifiedAt = newJobNotifiedAt; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 }
