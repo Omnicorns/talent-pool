@@ -8,6 +8,8 @@ public record ExecutiveSummaryResponse(
         long candidatesInRecruitment,
         long candidatesInInterview,
         long candidatesHired,
+        long reviewedCandidates,
+        long unreviewedCandidates,
         List<MonthlyCount> monthlyGrowth,
         List<InterviewResponse> upcomingInterviews,
         List<PotentialCandidate> potentialCandidates

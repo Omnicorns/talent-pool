@@ -64,6 +64,12 @@ public interface CandidateRepository extends JpaRepository<Candidate, UUID>, Jpa
     @Query("select c.createdAt from Candidate c where c.createdAt >= :since and " + VISIBLE)
     List<Instant> findCreatedAtSince(@org.springframework.data.repository.query.Param("since") Instant since);
 
-    @Query("select c from Candidate c where c.status = :status and " + VISIBLE + " order by c.updatedAt desc")
-    List<Candidate> findVisibleByStatus(@org.springframework.data.repository.query.Param("status") CandidateStatus status, Pageable pageable);
+    /** Kandidat bertanda Potensial: status kandidat POTENTIAL atau punya lamaran yang ditandai potensial. */
+    @Query("select c from Candidate c where (c.status = com.example.talentpool.domain.CandidateStatus.POTENTIAL "
+            + "or exists (select 1 from JobApplication a where a.candidate = c and a.potential = true)) and "
+            + VISIBLE + " order by c.updatedAt desc")
+    List<Candidate> findPotentialVisible(Pageable pageable);
+
+    @Query("select count(c) from Candidate c where c.reviewed = true and " + VISIBLE)
+    long countReviewed();
 }

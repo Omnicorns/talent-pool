@@ -70,6 +70,21 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', '
             }
           </section>
 
+          <section class="es-panel">
+            <h2>Status Kandidat</h2>
+            <p class="es-sub">Sebaran kandidat berdasarkan status review</p>
+            <div class="es-donut-wrap">
+              <div class="es-donut" [style.background]="donutBackground" role="img"
+                [attr.aria-label]="'Sudah di review ' + reviewed + ' dari ' + total + ' kandidat'">
+                <div><strong>{{ num(total) }}</strong><small>Kandidat</small></div>
+              </div>
+              <ul class="es-legend">
+                <li><i class="dot done"></i><span>Sudah di Review</span><strong>{{ num(reviewed) }}</strong><em>{{ percent(reviewed) }}%</em></li>
+                <li><i class="dot todo"></i><span>Belum di Review</span><strong>{{ num(unreviewed) }}</strong><em>{{ percent(unreviewed) }}%</em></li>
+              </ul>
+            </div>
+          </section>
+
           <section class="es-panel es-wide">
             <h2>Kandidat Potential</h2>
             <p class="es-sub">Kandidat dengan potensi tinggi untuk diproyeksikan</p>
@@ -118,6 +133,18 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', '
     .es-list li { display: flex; justify-content: space-between; gap: 12px; }
     .es-list small { display: block; color: #6f6561; }
     .es-when { text-align: right; flex: none; }
+    .es-donut-wrap { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
+    .es-donut { width: 150px; height: 150px; border-radius: 50%; display: grid; place-items: center; flex: none; }
+    .es-donut > div { width: 98px; height: 98px; border-radius: 50%; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .es-donut strong { font-size: 22px; line-height: 1.1; }
+    .es-donut small { color: #6f6561; font-size: 12px; }
+    .es-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; flex: 1; min-width: 200px; }
+    .es-legend li { display: flex; align-items: center; gap: 10px; }
+    .es-legend span { flex: 1; }
+    .es-legend em { font-style: normal; background: #fbe4e5; color: #8a1118; border-radius: 999px; padding: 2px 10px; font-size: 12px; min-width: 48px; text-align: center; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .dot.done { background: #b91c24; }
+    .dot.todo { background: #f1b6b9; }
     .es-empty { text-align: center; color: #6f6561; padding: 40px 0; font-weight: 600; }
     .es-table { width: 100%; border-collapse: collapse; font-size: 14px; }
     .es-table th { text-align: left; background: #f4efed; padding: 8px 10px; font-size: 12px; }
@@ -150,6 +177,20 @@ export class BackofficeExecutiveSummaryComponent implements OnInit {
       next: (data) => (this.data = data),
       error: () => (this.error = 'Gagal memuat ringkasan. Coba muat ulang halaman.'),
     });
+  }
+
+  get total(): number { return this.data?.totalCandidates ?? 0; }
+  get reviewed(): number { return this.data?.reviewedCandidates ?? 0; }
+  get unreviewed(): number { return this.data?.unreviewedCandidates ?? 0; }
+
+  percent(value: number): number {
+    return this.total ? Math.round((value / this.total) * 100) : 0;
+  }
+
+  get donutBackground(): string {
+    if (!this.total) return '#f1e6e4';
+    const deg = (this.reviewed / this.total) * 360;
+    return `conic-gradient(#b91c24 0deg ${deg}deg, #f1b6b9 ${deg}deg 360deg)`;
   }
 
   get growth(): MonthlyCount[] { return this.data?.monthlyGrowth ?? []; }
