@@ -30,7 +30,7 @@ mvn spring-boot:run
 
 API berjalan di `http://localhost:8080`.
 
-Kredensial admin dan recruiter tidak punya nilai bawaan. Set sendiri lewat environment variable `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `RECRUITER_USERNAME`, `RECRUITER_PASSWORD`, dan `TALENT_JWT_SECRET` (acak, minimal 32 karakter; contoh membuatnya: `openssl rand -base64 48`).
+Kredensial admin dan recruiter tidak punya nilai bawaan. Akun pimpinan (hanya melihat halaman ringkasan) bersifat opsional: isi `VIEWER_USERNAME` dan `VIEWER_PASSWORD` (minimal 12 karakter); bila kosong, akun tidak dibuat. Set sendiri lewat environment variable `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `RECRUITER_USERNAME`, `RECRUITER_PASSWORD`, dan `TALENT_JWT_SECRET` (acak, minimal 32 karakter; contoh membuatnya: `openssl rand -base64 48`).
 
 Konfigurasi database dapat diubah dengan environment variable:
 

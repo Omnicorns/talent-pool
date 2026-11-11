@@ -7,6 +7,9 @@ public record SecurityProperties(
         String adminUsername,
         String adminPassword,
         String recruiterUsername,
-        String recruiterPassword
+        String recruiterPassword,
+        /** Opsional: akun pimpinan yang hanya boleh melihat ringkasan. Kosong = akun tidak dibuat. */
+        String viewerUsername,
+        String viewerPassword
 ) {
 }

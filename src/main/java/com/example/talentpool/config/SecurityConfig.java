@@ -83,6 +83,10 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/talent/**").hasRole("TALENT")
 
+                        // Ringkasan eksekutif: satu-satunya endpoint backoffice untuk akun VIEWER.
+                        .requestMatchers(HttpMethod.GET, "/api/backoffice/executive-summary")
+                        .hasAnyRole("ADMIN", "RECRUITER", "VIEWER")
+
                         .requestMatchers("/api/backoffice/**")
                         .hasAnyRole("ADMIN", "RECRUITER")
 
@@ -128,7 +132,19 @@ public class SecurityConfig {
                 .roles("RECRUITER")
                 .build();
 
-        return new InMemoryUserDetailsManager(admin, recruiter);
+        var manager = new InMemoryUserDetailsManager(admin, recruiter);
+        String viewerUser = properties.viewerUsername();
+        String viewerPass = properties.viewerPassword();
+        if (viewerUser != null && !viewerUser.isBlank() && viewerPass != null && !viewerPass.isBlank()) {
+            if (viewerPass.length() < 12) {
+                throw new IllegalStateException("VIEWER_PASSWORD minimal 12 karakter");
+            }
+            manager.createUser(User.withUsername(viewerUser)
+                    .password(encoder.encode(viewerPass))
+                    .roles("VIEWER")
+                    .build());
+        }
+        return manager;
     }
 
     @Bean

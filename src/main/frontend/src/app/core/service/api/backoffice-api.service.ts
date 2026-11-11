@@ -16,6 +16,10 @@ export class BackofficeApiService {
     return this.http.get<any>(`${API_BASE}/backoffice/dashboard`, { headers: this.headers });
   }
 
+  executiveSummary() {
+    return this.http.get<any>(`${API_BASE}/backoffice/executive-summary`, { headers: this.headers });
+  }
+
   candidates(q = '', page = 0, size = 50) {
     let params = new HttpParams().set('page', String(page)).set('size', String(size)).set('sort', 'updatedAt,desc');
     if (q.trim()) params = params.set('q', q.trim());

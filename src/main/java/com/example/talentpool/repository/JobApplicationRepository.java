@@ -25,4 +25,10 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
 
     @Query("select a.stage, count(a) from JobApplication a group by a.stage")
     List<Object[]> countGroupedByStage();
+
+    @Query("select count(distinct a.candidate.id) from JobApplication a")
+    long countDistinctCandidates();
+
+    @Query("select count(distinct a.candidate.id) from JobApplication a where a.stage = :stage")
+    long countDistinctCandidatesByStage(@org.springframework.data.repository.query.Param("stage") HiringStage stage);
 }

@@ -6,6 +6,7 @@ import { API_BASE } from './api-base';
 
 const BACKOFFICE_KEY = 'sarinahBackofficeAuth';
 const BACKOFFICE_EXPIRY_KEY = 'sarinahBackofficeAuthExpiry';
+const BACKOFFICE_ROLE_KEY = 'sarinahBackofficeRole';
 
 interface BackofficeLoginResponse {
   accessToken: string;
@@ -28,6 +29,7 @@ export class BackofficeAuthService {
       tap((response) => {
         sessionStorage.setItem(BACKOFFICE_KEY, `${response.tokenType} ${response.accessToken}`);
         sessionStorage.setItem(BACKOFFICE_EXPIRY_KEY, String(Date.now() + response.expiresIn * 1000));
+        sessionStorage.setItem(BACKOFFICE_ROLE_KEY, response.role);
       })
     );
   }
@@ -44,6 +46,15 @@ export class BackofficeAuthService {
     return value;
   }
 
+  /** Akun pimpinan (VIEWER) hanya boleh membuka halaman ringkasan. Server tetap menegakkan aturan ini. */
+  get isViewer(): boolean {
+    return sessionStorage.getItem(BACKOFFICE_ROLE_KEY) === 'VIEWER';
+  }
+
+  get homeUrl(): string {
+    return this.isViewer ? '/backoffice/ringkasan' : '/backoffice/dashboard';
+  }
+
   logout(): void {
     this.clear();
     this.router.navigateByUrl('/backoffice/login');
@@ -52,5 +63,6 @@ export class BackofficeAuthService {
   private clear(): void {
     sessionStorage.removeItem(BACKOFFICE_KEY);
     sessionStorage.removeItem(BACKOFFICE_EXPIRY_KEY);
+    sessionStorage.removeItem(BACKOFFICE_ROLE_KEY);
   }
 }

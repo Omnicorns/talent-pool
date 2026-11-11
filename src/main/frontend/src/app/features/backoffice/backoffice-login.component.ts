@@ -55,7 +55,7 @@ export class BackofficeLoginComponent {
     this.loading = true;
     this.error = '';
     this.auth.login(this.username, this.password).subscribe({
-      next: () => this.router.navigateByUrl('/backoffice/dashboard'),
+      next: () => this.router.navigateByUrl(this.auth.homeUrl),
       error: () => {
         this.error = 'Username atau password tidak valid.';
         this.loading = false;
