@@ -1,7 +1,8 @@
 import { inject } from '@angular/core';
 import { Router, Routes } from '@angular/router';
 import { candidateAuthGuard, completedOnboardingGuard } from './core/guard/candidate-auth.guard';
-import { backofficeAuthGuard } from './core/guard/backoffice-auth.guard';
+import { backofficeAuthGuard, backofficeSummaryGuard } from './core/guard/backoffice-auth.guard';
+import { BackofficeExecutiveSummaryComponent } from './features/backoffice/backoffice-executive-summary.component';
 import { LandingComponent } from './features/public/landing.component';
 import { CandidateAuthComponent } from './features/auth/candidate-auth.component';
 import { ForgotPasswordComponent } from './features/auth/forgot-password.component';
@@ -34,6 +35,11 @@ export const routes: Routes = [
   { path: 'onboarding', component: TalentOnboardingComponent, canActivate: [candidateAuthGuard] },
   { path: 'portal', component: CandidatePortalComponent, canActivate: [completedOnboardingGuard] },
   { path: 'backoffice/login', component: BackofficeLoginComponent },
+  {
+    path: 'backoffice/ringkasan',
+    component: BackofficeExecutiveSummaryComponent,
+    canActivate: [backofficeSummaryGuard],
+  },
   {
     path: 'backoffice/dashboard',
     component: BackofficeDashboardComponent,

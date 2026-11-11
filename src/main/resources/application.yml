@@ -82,6 +82,8 @@ app:
     admin-password: ${ADMIN_PASSWORD}
     recruiter-username: ${RECRUITER_USERNAME}
     recruiter-password: ${RECRUITER_PASSWORD}
+    viewer-username: ${VIEWER_USERNAME:}
+    viewer-password: ${VIEWER_PASSWORD:}
   jwt:
     secret: ${TALENT_JWT_SECRET}
     expiration-minutes: ${TALENT_JWT_EXPIRATION_MINUTES:480}

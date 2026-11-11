@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -59,4 +60,10 @@ public interface CandidateRepository extends JpaRepository<Candidate, UUID>, Jpa
             ORDER BY COUNT(c) DESC
             """)
     List<Object[]> findTopPreferredLocations(Pageable pageable);
+
+    @Query("select c.createdAt from Candidate c where c.createdAt >= :since and " + VISIBLE)
+    List<Instant> findCreatedAtSince(@org.springframework.data.repository.query.Param("since") Instant since);
+
+    @Query("select c from Candidate c where c.status = :status and " + VISIBLE + " order by c.updatedAt desc")
+    List<Candidate> findVisibleByStatus(@org.springframework.data.repository.query.Param("status") CandidateStatus status, Pageable pageable);
 }
