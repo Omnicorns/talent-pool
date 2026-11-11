@@ -47,7 +47,7 @@ public class JobAlertMailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
             helper.setFrom(from);
             helper.setTo(email);
-            helper.setSubject("Lowongan baru di Sarinah: " + oneLine(job.getTitle()));
+            helper.setSubject("Peluang Karier Terbaru di Sarinah – " + oneLine(job.getTitle()));
             helper.setText(body(fullName, job, jobUrl, unsubscribeUrl), false);
             // Mendukung tombol "Berhenti berlangganan" bawaan klien email (RFC 8058).
             message.addHeader("List-Unsubscribe", "<" + unsubscribeUrl + ">");
@@ -63,24 +63,44 @@ public class JobAlertMailService {
 
     private String body(String fullName, JobListing job, String jobUrl, String unsubscribeUrl) {
         StringBuilder sb = new StringBuilder();
-        sb.append("Halo ").append(fullName == null || fullName.isBlank() ? "" : oneLine(fullName)).append(",\n\n");
-        sb.append("Ada lowongan baru di Sarinah yang bisa Anda lihat:\n\n");
-        sb.append(oneLine(job.getTitle())).append('\n');
-        if (job.getDepartment() != null) sb.append("Departemen : ").append(oneLine(job.getDepartment())).append('\n');
-        if (job.getLocation() != null) sb.append("Lokasi     : ").append(oneLine(job.getLocation())).append('\n');
+        String name = fullName == null ? "" : oneLine(fullName);
+        sb.append("Halo").append(name.isEmpty() ? "" : " " + name).append(",\n");
+        sb.append("Salam hangat dari Human Capital PT Sarinah (Persero).\n\n");
+        sb.append("Sebagai bagian dari komitmen kami untuk menghubungkan talenta potensial dengan peluang karier ")
+          .append("yang sesuai, kami ingin menginformasikan bahwa saat ini tersedia kesempatan berkarier di Sarinah ")
+          .append("dengan detail sebagai berikut:\n\n");
+        sb.append(oneLine(job.getTitle()).toUpperCase(Locale.ROOT)).append("\n\n");
+        if (job.getDepartment() != null) sb.append("* Departemen: ").append(oneLine(job.getDepartment())).append('\n');
+        if (job.getLocation() != null) sb.append("* Lokasi Kerja: ").append(oneLine(job.getLocation())).append('\n');
         if (job.getEmploymentType() != null) {
-            sb.append("Tipe       : ").append(job.getEmploymentType().name().replace('_', ' ').toLowerCase(Locale.ROOT)).append('\n');
+            sb.append("* Tipe Pekerjaan: ").append(employmentTypeLabel(job.getEmploymentType().name())).append('\n');
         }
         if (job.getApplicationDeadline() != null) {
-            sb.append("Batas lamaran: ").append(DATE.format(job.getApplicationDeadline())).append('\n');
+            sb.append("* Batas Akhir Lamaran: ").append(DATE.format(job.getApplicationDeadline())).append('\n');
         }
-        sb.append("\nLihat detail dan lamar di:\n").append(jobUrl).append("\n\n");
-        sb.append("Sarinah Talent Management\n\n");
+        sb.append("\nApabila posisi ini sesuai dengan minat dan kualifikasi Anda, silakan pelajari informasi lebih lanjut ")
+          .append("dan ajukan lamaran melalui tautan berikut:\n");
+        sb.append("[Lihat Detail Lowongan & Lamar Sekarang]\n").append(jobUrl).append("\n\n");
+        sb.append("Kami akan terus menginformasikan berbagai peluang karier terbaru di Sarinah melalui Sarinah Talent Pool. ")
+          .append("Pastikan informasi profil dan kontak Anda selalu diperbarui agar kami dapat menyampaikan informasi yang relevan.\n\n");
+        sb.append("Terima kasih atas ketertarikan dan kepercayaan Anda untuk menjadi bagian dari talent pool Sarinah.\n\n");
+        sb.append("Salam hangat,\nHuman Capital\nPT Sarinah (Persero)\n\n");
         sb.append("--\n");
-        sb.append("Anda menerima email ini karena terdaftar di Sarinah Talent Pool.\n");
-        sb.append("Tidak ingin menerima pemberitahuan lowongan lagi? Berhenti berlangganan:\n");
+        sb.append("Anda menerima email ini karena telah terdaftar sebagai anggota Sarinah Talent Pool.\n");
+        sb.append("Tidak ingin menerima informasi lowongan lagi? Berhenti berlangganan:\n");
         sb.append(unsubscribeUrl).append('\n');
         return sb.toString();
+    }
+
+    /** FULL_TIME -> "Full Time". */
+    private static String employmentTypeLabel(String enumName) {
+        StringBuilder out = new StringBuilder();
+        for (String part : enumName.toLowerCase(Locale.ROOT).split("_")) {
+            if (part.isEmpty()) continue;
+            if (out.length() > 0) out.append(' ');
+            out.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
+        }
+        return out.toString();
     }
 
     /** Mencegah injeksi header/baris baru dari data yang diinput admin. */
