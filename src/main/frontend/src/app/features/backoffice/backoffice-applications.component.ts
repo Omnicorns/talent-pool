@@ -11,10 +11,9 @@ import { ColumnFilterComponent } from '../../shared/column-filter.component';
 import { TableFilters } from '../../shared/table-filters';
 
 @Component({
-  selector: 'app-backoffice-applications',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, BackofficeLayoutComponent, IconComponent, PaginationComponent, ColumnFilterComponent],
-  template: `
+    selector: 'app-backoffice-applications',
+    imports: [CommonModule, FormsModule, RouterLink, BackofficeLayoutComponent, IconComponent, PaginationComponent, ColumnFilterComponent],
+    template: `
     <app-backoffice-layout active="applications">
       <div class="bo-head">
         <div>
@@ -22,45 +21,60 @@ import { TableFilters } from '../../shared/table-filters';
           <p>Pindahkan tahap kandidat langsung dari daftar. Kandidat di tahap Interview bisa langsung dijadwalkan.</p>
         </div>
       </div>
-
+    
       <div class="chips" role="tablist" aria-label="Filter tahap">
         <button type="button" role="tab" class="btn btn-sm" [class.btn-primary]="stageFilter === ''" [class.btn-secondary]="stageFilter !== ''" [attr.aria-selected]="stageFilter === ''" (click)="setStage('')">Semua ({{ allCount }})</button>
-        <button type="button" role="tab" class="btn btn-sm" *ngFor="let stage of stageOptions" [class.btn-primary]="stageFilter === stage" [class.btn-secondary]="stageFilter !== stage" [attr.aria-selected]="stageFilter === stage" (click)="setStage(stage)">{{ fmt.label(stage) }} ({{ countFor(stage) }})</button>
+        @for (stage of stageOptions; track stage) {
+          <button type="button" role="tab" class="btn btn-sm" [class.btn-primary]="stageFilter === stage" [class.btn-secondary]="stageFilter !== stage" [attr.aria-selected]="stageFilter === stage" (click)="setStage(stage)">{{ fmt.label(stage) }} ({{ countFor(stage) }})</button>
+        }
       </div>
-
+    
       <section class="table-card responsive">
-        <div class="table-meta"><span><strong>{{ total }}</strong> lamaran</span><span *ngIf="loading">Memuat…</span></div>
-        <div class="table-wrap">
-          <table class="table">
-            <thead><tr>
-              <th *ngFor="let col of tf.cols"><app-column-filter [label]="col.label" [options]="tf.options(byStage, col.key)" [selected]="tf.filters[col.key] ?? null" [sort]="tf.sortFor(col.key)" (selectedChange)="tf.setFilter(col.key, $event); page = 0" (sortChange)="tf.setSort(col.key, $event)"></app-column-filter></th>
-              <th><span class="sr-only">Aksi</span></th>
-            </tr></thead>
-            <tbody>
-              <tr *ngFor="let item of visible">
+        <div class="table-meta"><span><strong>{{ total }}</strong> lamaran</span>@if (loading) {
+        <span>Memuat…</span>
+      }</div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr>
+            @for (col of tf.cols; track col) {
+              <th><app-column-filter [label]="col.label" [options]="tf.options(byStage, col.key)" [selected]="tf.filters[col.key] ?? null" [sort]="tf.sortFor(col.key)" (selectedChange)="tf.setFilter(col.key, $event); page = 0" (sortChange)="tf.setSort(col.key, $event)"></app-column-filter></th>
+            }
+            <th><span class="sr-only">Aksi</span></th>
+          </tr></thead>
+          <tbody>
+            @for (item of visible; track item) {
+              <tr>
                 <td><strong>{{ item.candidateName }}</strong></td>
                 <td>{{ item.jobTitle }}</td>
                 <td>
                   <select class="select-inline" [ngModel]="viewStage(item)" (ngModelChange)="changeStage(item, $event)" [attr.aria-label]="'Tahap ' + item.candidateName">
-                    <option *ngFor="let stage of stageOptions" [value]="stage">{{ fmt.label(stage) }}</option>
+                    @for (stage of stageOptions; track stage) {
+                      <option [value]="stage">{{ fmt.label(stage) }}</option>
+                    }
                   </select>
                 </td>
                 <td><span class="tag" [ngClass]="'tag-' + fmt.tone(item.status)">{{ fmt.label(item.status) }}</span></td>
                 <td>{{ fmt.fullDate(item.appliedAt) }}</td>
                 <td class="actions">
                   <button type="button" class="btn btn-ghost btn-sm" (click)="openHistory(item)" [attr.aria-label]="'Riwayat tahap ' + item.candidateName"><app-icon name="clock" [size]="15"></app-icon> Riwayat</button>
-                  <a *ngIf="item.stage === 'INTERVIEW'" routerLink="/backoffice/interviews" [queryParams]="{ candidateId: item.candidateId, jobId: item.jobListingId }" class="btn btn-secondary btn-sm">
-                    <app-icon name="calendar" [size]="15"></app-icon> Atur interview
-                  </a>
+                  @if (item.stage === 'INTERVIEW') {
+                    <a routerLink="/backoffice/interviews" [queryParams]="{ candidateId: item.candidateId, jobId: item.jobListingId }" class="btn btn-secondary btn-sm">
+                      <app-icon name="calendar" [size]="15"></app-icon> Atur interview
+                    </a>
+                  }
                 </td>
               </tr>
-              <tr *ngIf="!visible.length && !loading"><td colspan="6" class="empty-cell">{{ stageFilter ? 'Tidak ada lamaran di tahap ini.' : 'Belum ada lamaran masuk.' }}</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="cards">
-          <article *ngFor="let item of visible">
+            }
+            @if (!visible.length && !loading) {
+              <tr><td colspan="6" class="empty-cell">{{ stageFilter ? 'Tidak ada lamaran di tahap ini.' : 'Belum ada lamaran masuk.' }}</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    
+      <div class="cards">
+        @for (item of visible; track item) {
+          <article>
             <div class="card-head">
               <div><strong>{{ item.candidateName }}</strong><small>{{ item.jobTitle }}</small></div>
               <span class="tag" [ngClass]="'tag-' + fmt.tone(item.status)">{{ fmt.label(item.status) }}</span>
@@ -69,42 +83,61 @@ import { TableFilters } from '../../shared/table-filters';
             <div class="card-actions">
               <button type="button" class="btn btn-ghost btn-sm" (click)="openHistory(item)"><app-icon name="clock" [size]="15"></app-icon> Riwayat</button>
               <select class="select-inline" [ngModel]="viewStage(item)" (ngModelChange)="changeStage(item, $event)" [attr.aria-label]="'Tahap ' + item.candidateName">
-                <option *ngFor="let stage of stageOptions" [value]="stage">{{ fmt.label(stage) }}</option>
+                @for (stage of stageOptions; track stage) {
+                  <option [value]="stage">{{ fmt.label(stage) }}</option>
+                }
               </select>
-              <a *ngIf="item.stage === 'INTERVIEW'" routerLink="/backoffice/interviews" [queryParams]="{ candidateId: item.candidateId, jobId: item.jobListingId }" class="btn btn-secondary btn-sm">Atur interview</a>
+              @if (item.stage === 'INTERVIEW') {
+                <a routerLink="/backoffice/interviews" [queryParams]="{ candidateId: item.candidateId, jobId: item.jobListingId }" class="btn btn-secondary btn-sm">Atur interview</a>
+              }
             </div>
           </article>
-          <p class="muted" style="padding: 32px 18px; text-align: center" *ngIf="!visible.length && !loading">Tidak ada lamaran.</p>
-        </div>
-
-        <app-pagination [page]="page" [size]="size" [total]="total" (pageChange)="goToPage($event)" (sizeChange)="changeSize($event)"></app-pagination>
-      </section>
-          <div class="modal-backdrop" *ngIf="historyItem" (click)="closeHistory()">
+        }
+        @if (!visible.length && !loading) {
+          <p class="muted" style="padding: 32px 18px; text-align: center">Tidak ada lamaran.</p>
+        }
+      </div>
+    
+      <app-pagination [page]="page" [size]="size" [total]="total" (pageChange)="goToPage($event)" (sizeChange)="changeSize($event)"></app-pagination>
+    </section>
+    @if (historyItem) {
+      <div class="modal-backdrop" (click)="closeHistory()">
         <section class="modal" role="dialog" aria-modal="true" aria-labelledby="history-title" (click)="$event.stopPropagation()" style="max-width: 520px">
           <header class="drawer-head">
             <div><h2 id="history-title">Riwayat tahap</h2><p>{{ historyItem.candidateName }} · {{ historyItem.jobTitle }}</p></div>
             <button type="button" class="icon-btn" (click)="closeHistory()" aria-label="Tutup"><app-icon name="x"></app-icon></button>
           </header>
           <div class="modal-body">
-            <p class="muted" *ngIf="historyLoading">Memuat riwayat…</p>
-            <div class="alert alert-error" *ngIf="historyError" role="alert"><app-icon name="alert"></app-icon><span>{{ historyError }}</span></div>
-            <ol class="history-list" *ngIf="!historyLoading && history.length">
-              <li *ngFor="let entry of history; let last = last" [class.current]="last">
-                <span class="history-dot" aria-hidden="true"></span>
-                <div>
-                  <strong>{{ stageText(entry) }}</strong>
-                  <span class="muted"> · {{ eventLabel(entry.eventType) }}</span>
-                  <small class="muted" style="display: block">{{ fmt.fullDate(entry.changedAt) }} · {{ fmt.time(entry.changedAt) }}</small>
-                  <p *ngIf="entry.notes" style="margin: 4px 0 0; font-size: 14px">{{ entry.notes }}</p>
-                </div>
-              </li>
-            </ol>
+            @if (historyLoading) {
+              <p class="muted">Memuat riwayat…</p>
+            }
+            @if (historyError) {
+              <div class="alert alert-error" role="alert"><app-icon name="alert"></app-icon><span>{{ historyError }}</span></div>
+            }
+            @if (!historyLoading && history.length) {
+              <ol class="history-list">
+                @for (entry of history; track entry; let last = $last) {
+                  <li [class.current]="last">
+                    <span class="history-dot" aria-hidden="true"></span>
+                    <div>
+                      <strong>{{ stageText(entry) }}</strong>
+                      <span class="muted"> · {{ eventLabel(entry.eventType) }}</span>
+                      <small class="muted" style="display: block">{{ fmt.fullDate(entry.changedAt) }} · {{ fmt.time(entry.changedAt) }}</small>
+                      @if (entry.notes) {
+                        <p style="margin: 4px 0 0; font-size: 14px">{{ entry.notes }}</p>
+                      }
+                    </div>
+                  </li>
+                }
+              </ol>
+            }
           </div>
           <footer class="modal-foot"><button class="btn btn-secondary" (click)="closeHistory()">Tutup</button></footer>
         </section>
       </div>
+    }
     </app-backoffice-layout>
-  `,
+    `
 })
 export class BackofficeApplicationsComponent implements OnInit {
   readonly fmt = FMT;

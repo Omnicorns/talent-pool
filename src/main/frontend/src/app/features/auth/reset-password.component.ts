@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { inject } from '@angular/core';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -10,15 +10,14 @@ import { checkPassword, generatePassword } from '../../shared/password-policy';
 import { IconComponent } from '../../shared/icon.component';
 
 @Component({
-  selector: 'app-reset-password',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, IconComponent, PasswordMeterComponent],
-  template: `
+    selector: 'app-reset-password',
+    imports: [FormsModule, RouterLink, IconComponent, PasswordMeterComponent],
+    template: `
     <main class="recovery">
       <section class="recovery-card">
         <a routerLink="/" aria-label="Beranda Sarinah Karier"><img class="logo" [src]="b.brandLogo" alt="Sarinah"></a>
-
-        <ng-container *ngIf="!success">
+    
+        @if (!success) {
           <div>
             <h1>Buat password baru</h1>
             <p>Gunakan minimal 10 karakter, kombinasi huruf besar, huruf kecil, dan angka, serta berbeda dari password sebelumnya.</p>
@@ -44,22 +43,26 @@ import { IconComponent } from '../../shared/icon.component';
             </label>
             <button class="btn btn-primary btn-lg btn-block" [disabled]="loading || !token">{{ loading ? 'Menyimpan…' : 'Simpan password' }}</button>
           </form>
-        </ng-container>
-
-        <ng-container *ngIf="success">
+        }
+    
+        @if (success) {
           <div class="alert alert-success" role="status">
             <app-icon name="check"></app-icon>
             <div><strong>Password berhasil diubah</strong><p>Silakan masuk dengan password baru Anda.</p></div>
           </div>
           <a routerLink="/sign-in" class="btn btn-primary btn-lg btn-block">Masuk</a>
-        </ng-container>
-
-        <div class="alert alert-error" *ngIf="error" role="alert"><app-icon name="alert"></app-icon><span>{{ error }}</span></div>
-
-        <a *ngIf="!success" routerLink="/sign-in" class="back-link"><app-icon name="arrow-left" [size]="16"></app-icon> Kembali ke halaman masuk</a>
+        }
+    
+        @if (error) {
+          <div class="alert alert-error" role="alert"><app-icon name="alert"></app-icon><span>{{ error }}</span></div>
+        }
+    
+        @if (!success) {
+          <a routerLink="/sign-in" class="back-link"><app-icon name="arrow-left" [size]="16"></app-icon> Kembali ke halaman masuk</a>
+        }
       </section>
     </main>
-  `,
+    `
 })
 export class ResetPasswordComponent {
   b: Branding = DEFAULT_BRANDING;

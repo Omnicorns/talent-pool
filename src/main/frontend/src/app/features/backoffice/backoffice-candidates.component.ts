@@ -14,10 +14,9 @@ import { ColumnFilterComponent, SortDir } from '../../shared/column-filter.compo
 type ColKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review';
 
 @Component({
-  selector: 'app-backoffice-candidates',
-  standalone: true,
-  imports: [CommonModule, FormsModule, BackofficeLayoutComponent, CandidateProfileSectionsComponent, BackofficeOverlayDirective, IconComponent, PaginationComponent, ColumnFilterComponent],
-  template: `
+    selector: 'app-backoffice-candidates',
+    imports: [CommonModule, FormsModule, BackofficeLayoutComponent, CandidateProfileSectionsComponent, BackofficeOverlayDirective, IconComponent, PaginationComponent, ColumnFilterComponent],
+    template: `
     <app-backoffice-layout active="candidates">
       <div class="bo-head">
         <div>
@@ -33,29 +32,41 @@ type ColKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review';
           <button class="btn btn-secondary" type="submit">Cari</button>
         </form>
       </div>
-
+    
       <section class="table-card responsive">
         <div class="table-meta">
-          <span><strong>{{ total }}</strong> kandidat<ng-container *ngIf="q.trim()"> untuk “{{ q.trim() }}”</ng-container></span>
-          <button type="button" class="filter-reset" *ngIf="hasFilters" (click)="clearFilters()">Hapus semua filter</button>
-          <span *ngIf="loading">Memuat…</span>
-        </div>
-
-        <div class="table-wrap">
-          <table class="table">
-            <thead>
+          <span><strong>{{ total }}</strong> kandidat@if (q.trim()) {
+          untuk “{{ q.trim() }}”
+        }</span>
+        @if (hasFilters) {
+          <button type="button" class="filter-reset" (click)="clearFilters()">Hapus semua filter</button>
+        }
+        @if (loading) {
+          <span>Memuat…</span>
+        }
+      </div>
+    
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              @for (col of columns; track col) {
+                <th><app-column-filter [label]="col.label" [options]="options(col.key)" [selected]="filters[col.key]" [sort]="sort?.key === col.key ? sort!.dir : null" (selectedChange)="setFilter(col.key, $event)" (sortChange)="setSort(col.key, $event)"></app-column-filter></th>
+              }
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of rows; track item) {
               <tr>
-                <th *ngFor="let col of columns"><app-column-filter [label]="col.label" [options]="options(col.key)" [selected]="filters[col.key]" [sort]="sort?.key === col.key ? sort!.dir : null" (selectedChange)="setFilter(col.key, $event)" (sortChange)="setSort(col.key, $event)"></app-column-filter></th>
-                <th>Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let item of rows">
                 <td>
                   <div class="person">
                     <span class="avatar">
-                      <img *ngIf="pictureUrls[item.id]; else tableInitials" [src]="pictureUrls[item.id]" alt="">
-                      <ng-template #tableInitials>{{ fmt.initials(item.fullName) }}</ng-template>
+                      @if (pictureUrls[item.id]) {
+                        <img [src]="pictureUrls[item.id]" alt="">
+                      } @else {
+                        {{ fmt.initials(item.fullName) }}
+                      }
                     </span>
                     <div><strong>{{ item.fullName }}</strong><small>{{ item.email }}</small></div>
                   </div>
@@ -64,12 +75,13 @@ type ColKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review';
                   {{ item.jobInterests?.length ? item.jobInterests.join(', ') : (item.relatedPosition || '-') }}
                 </td>
                 <td style="min-width: 160px">
-                  <ng-container *ngIf="item.lastExperience as exp; else noExp">
+                  @if (item.lastExperience; as exp) {
                     <strong>{{ exp.position }}</strong>
                     <small>{{ exp.company }}</small>
                     <small>{{ fmt.lastExperiencePeriod(exp) }}</small>
-                  </ng-container>
-                  <ng-template #noExp><span class="muted">-</span></ng-template>
+                  } @else {
+                    <span class="muted">-</span>
+                  }
                 </td>
                 <td style="min-width: 100px">{{ item.preferredLocations?.length ? item.preferredLocations.join(', ') : '-' }}</td>
                 <td>
@@ -83,18 +95,25 @@ type ColKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review';
                   </div>
                 </td>
               </tr>
-              <tr *ngIf="!rows.length && !loading"><td colspan="6" class="empty-cell">{{ q.trim() || hasFilters ? 'Tidak ada kandidat yang cocok dengan pencarian atau filter.' : 'Belum ada kandidat di Talent Pool.' }}</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="cards">
-          <article *ngFor="let item of rows">
+            }
+            @if (!rows.length && !loading) {
+              <tr><td colspan="6" class="empty-cell">{{ q.trim() || hasFilters ? 'Tidak ada kandidat yang cocok dengan pencarian atau filter.' : 'Belum ada kandidat di Talent Pool.' }}</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    
+      <div class="cards">
+        @for (item of rows; track item) {
+          <article>
             <div class="card-head">
               <div class="person" style="min-width: 0">
                 <span class="avatar">
-                  <img *ngIf="pictureUrls[item.id]; else mobileInitials" [src]="pictureUrls[item.id]" alt="">
-                  <ng-template #mobileInitials>{{ fmt.initials(item.fullName) }}</ng-template>
+                  @if (pictureUrls[item.id]) {
+                    <img [src]="pictureUrls[item.id]" alt="">
+                  } @else {
+                    {{ fmt.initials(item.fullName) }}
+                  }
                 </span>
                 <div><strong>{{ item.fullName }}</strong><small>{{ item.email }}</small></div>
               </div>
@@ -111,106 +130,135 @@ type ColKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review';
               <button class="btn btn-secondary btn-sm" (click)="openCandidate(item)">Lihat profil</button>
             </div>
           </article>
-          <p class="empty-cell muted" style="padding: 32px 18px; text-align: center" *ngIf="!rows.length && !loading">Belum ada kandidat.</p>
-        </div>
-
-        <app-pagination [page]="page" [size]="size" [total]="total" (pageChange)="goToPage($event)" (sizeChange)="changeSize($event)"></app-pagination>
-      </section>
-
-      <div class="drawer-backdrop bo-candidate-backdrop" *ngIf="drawerOpen" (click)="closeOnBackdrop($event)">
+        }
+        @if (!rows.length && !loading) {
+          <p class="empty-cell muted" style="padding: 32px 18px; text-align: center">Belum ada kandidat.</p>
+        }
+      </div>
+    
+      <app-pagination [page]="page" [size]="size" [total]="total" (pageChange)="goToPage($event)" (sizeChange)="changeSize($event)"></app-pagination>
+    </section>
+    
+    @if (drawerOpen) {
+      <div class="drawer-backdrop bo-candidate-backdrop" (click)="closeOnBackdrop($event)">
         <aside class="drawer wide" [boOverlay]="true" (overlayClose)="closeDrawer()" role="dialog" aria-modal="true" aria-label="Profil kandidat">
           <header class="drawer-head">
-            <div class="candidate-sheet" *ngIf="selected; else headLoading">
-              <span class="avatar avatar-md">
-                <img *ngIf="pictureUrls[selected.id]; else drawerInitials" [src]="pictureUrls[selected.id]" alt="">
-                <ng-template #drawerInitials>{{ fmt.initials(selected.fullName) }}</ng-template>
-              </span>
-              <div>
-                <h2>{{ selected.fullName }}</h2>
-                <p>{{ selected.relatedJobPositions?.join(', ') || selected.jobPosition || 'Kandidat Talent Pool' }}</p>
-                <span class="tag" [ngClass]="isReviewed(selected.id) ? 'tag-positive' : 'tag-neutral'">{{ isReviewed(selected.id) ? 'Sudah direview' : 'Belum review' }}</span>
+            @if (selected) {
+              <div class="candidate-sheet">
+                <span class="avatar avatar-md">
+                  @if (pictureUrls[selected.id]) {
+                    <img [src]="pictureUrls[selected.id]" alt="">
+                  } @else {
+                    {{ fmt.initials(selected.fullName) }}
+                  }
+                </span>
+                <div>
+                  <h2>{{ selected.fullName }}</h2>
+                  <p>{{ selected.relatedJobPositions?.join(', ') || selected.jobPosition || 'Kandidat Talent Pool' }}</p>
+                  <span class="tag" [ngClass]="isReviewed(selected.id) ? 'tag-positive' : 'tag-neutral'">{{ isReviewed(selected.id) ? 'Sudah direview' : 'Belum review' }}</span>
+                </div>
               </div>
-            </div>
-            <ng-template #headLoading><h2>Profil kandidat</h2></ng-template>
+            } @else {
+              <h2>Profil kandidat</h2>
+            }
             <button type="button" class="icon-btn" (click)="closeDrawer()" aria-label="Tutup"><app-icon name="x"></app-icon></button>
           </header>
-
-          <div class="drawer-body" *ngIf="selected; else detailLoading">
-            <div class="button-row">
-              <button class="btn btn-primary" (click)="downloadCv()" [disabled]="!selected.cvOriginalName"><app-icon name="download" [size]="16"></app-icon> {{ selected.cvOriginalName ? 'Unduh CV' : 'CV belum ada' }}</button>
-              <button class="btn btn-secondary" (click)="api.viewCv(selected.id)" [disabled]="!selected.cvOriginalName"><app-icon name="eye" [size]="16"></app-icon> Lihat CV</button>
-              <button class="btn btn-secondary" (click)="showInterviewForm = !showInterviewForm" [attr.aria-expanded]="showInterviewForm"><app-icon name="calendar" [size]="16"></app-icon> Jadwalkan interview</button>
-              <a class="btn btn-ghost" [href]="'mailto:' + selected.email"><app-icon name="mail" [size]="16"></app-icon> Email</a>
-            </div>
-
-            <section class="drawer-section" *ngIf="showInterviewForm">
-              <h3>Jadwalkan interview</h3>
-              <div class="form-grid">
-                <label class="field">Tanggal dan jam<input type="datetime-local" [(ngModel)]="interviewForm.scheduledAt"></label>
-                <label class="field">Durasi (menit)<input type="number" min="15" max="480" [(ngModel)]="interviewForm.durationMinutes"></label>
-                <label class="field">Cara interview
-                  <select [(ngModel)]="interviewForm.mode">
-                    <option value="ONLINE">Online</option>
-                    <option value="ONSITE">Tatap muka</option>
-                    <option value="PHONE">Telepon</option>
-                  </select>
-                </label>
-                <label class="field">Pewawancara<input [(ngModel)]="interviewForm.interviewer" placeholder="Nama dan jabatan"></label>
-                <label class="field span-2">{{ interviewForm.mode === 'ONLINE' ? 'Tautan meeting' : interviewForm.mode === 'PHONE' ? 'Nomor telepon' : 'Lokasi' }}<input [(ngModel)]="interviewForm.locationOrLink"></label>
-                <label class="field span-2">Untuk lowongan
-                  <select [(ngModel)]="interviewForm.jobListingId">
-                    <option [ngValue]="null">Talent Pool (tanpa lowongan)</option>
-                    <option *ngFor="let job of jobs" [ngValue]="job.id">{{ job.title }}</option>
-                  </select>
-                </label>
-                <label class="field span-2">Catatan <span class="opt">(opsional)</span><textarea [(ngModel)]="interviewForm.notes" rows="3"></textarea></label>
-              </div>
-              <div class="alert alert-error" *ngIf="interviewError" role="alert"><app-icon name="alert"></app-icon><span>{{ interviewError }}</span></div>
+          @if (selected) {
+            <div class="drawer-body">
               <div class="button-row">
-                <button class="btn btn-primary" (click)="scheduleInterview()" [disabled]="scheduling">{{ scheduling ? 'Menyimpan…' : 'Simpan jadwal' }}</button>
-                <button class="btn btn-ghost" (click)="showInterviewForm = false">Batal</button>
+                <button class="btn btn-primary" (click)="downloadCv()" [disabled]="!selected.cvOriginalName"><app-icon name="download" [size]="16"></app-icon> {{ selected.cvOriginalName ? 'Unduh CV' : 'CV belum ada' }}</button>
+                <button class="btn btn-secondary" (click)="api.viewCv(selected.id)" [disabled]="!selected.cvOriginalName"><app-icon name="eye" [size]="16"></app-icon> Lihat CV</button>
+                <button class="btn btn-secondary" (click)="showInterviewForm = !showInterviewForm" [attr.aria-expanded]="showInterviewForm"><app-icon name="calendar" [size]="16"></app-icon> Jadwalkan interview</button>
+                <a class="btn btn-ghost" [href]="'mailto:' + selected.email"><app-icon name="mail" [size]="16"></app-icon> Email</a>
               </div>
-            </section>
-
-            <section class="drawer-section" *ngIf="appliedJobs.length" aria-label="Lowongan yang dilamar">
-              <h3>Lowongan yang dilamar</h3>
-              <ul class="applied-list">
-                <li *ngFor="let a of appliedJobs">
-                  <div><strong>{{ a.jobTitle }}</strong><small>{{ a.addedByHr ? 'Ditambahkan HC' : 'Melamar' }} {{ fmt.fullDate(a.appliedAt) }}</small></div>
-                  <span class="tag tag-neutral">{{ fmt.label(a.stage) }}</span>
-                </li>
-              </ul>
-            </section>
-
-            <section class="drawer-section" id="move-section">
-              <h3>Masukkan ke lowongan</h3>
-              <p class="muted" style="font-size: 14px" *ngIf="selected.movedToJobListing">Kandidat ini sudah pernah dimasukkan ke lowongan.</p>
-              <div class="form-grid" *ngIf="jobs.length; else noJobs">
-                <label class="field">Lowongan
-                  <select [(ngModel)]="moveForm.jobListingId">
-                    <option value="">Pilih lowongan yang dibuka</option>
-                    <option *ngFor="let job of jobs" [value]="job.id">{{ job.title }}</option>
-                  </select>
-                </label>
-              </div>
-              <ng-template #noJobs><p class="muted" style="font-size: 14px">Belum ada lowongan yang dibuka.</p></ng-template>
-              <div class="alert alert-error" *ngIf="moveError" role="alert"><app-icon name="alert"></app-icon><span>{{ moveError }}</span></div>
-              <div class="alert alert-success" *ngIf="moveSuccess" role="status"><app-icon name="check"></app-icon><span>{{ moveSuccess }}</span></div>
-              <div class="button-row" *ngIf="jobs.length">
-                <button type="button" class="btn btn-secondary" (click)="moveToJobListing()" [disabled]="moving">{{ moving ? 'Menyimpan…' : 'Masukkan ke lowongan' }}</button>
-              </div>
-            </section>
-
-            <app-candidate-profile-sections [selected]="selected"></app-candidate-profile-sections>
-          </div>
-
-          <ng-template #detailLoading>
+              @if (showInterviewForm) {
+                <section class="drawer-section">
+                  <h3>Jadwalkan interview</h3>
+                  <div class="form-grid">
+                    <label class="field">Tanggal dan jam<input type="datetime-local" [(ngModel)]="interviewForm.scheduledAt"></label>
+                    <label class="field">Durasi (menit)<input type="number" min="15" max="480" [(ngModel)]="interviewForm.durationMinutes"></label>
+                    <label class="field">Cara interview
+                      <select [(ngModel)]="interviewForm.mode">
+                        <option value="ONLINE">Online</option>
+                        <option value="ONSITE">Tatap muka</option>
+                        <option value="PHONE">Telepon</option>
+                      </select>
+                    </label>
+                    <label class="field">Pewawancara<input [(ngModel)]="interviewForm.interviewer" placeholder="Nama dan jabatan"></label>
+                    <label class="field span-2">{{ interviewForm.mode === 'ONLINE' ? 'Tautan meeting' : interviewForm.mode === 'PHONE' ? 'Nomor telepon' : 'Lokasi' }}<input [(ngModel)]="interviewForm.locationOrLink"></label>
+                    <label class="field span-2">Untuk lowongan
+                      <select [(ngModel)]="interviewForm.jobListingId">
+                        <option [ngValue]="null">Talent Pool (tanpa lowongan)</option>
+                        @for (job of jobs; track job) {
+                          <option [ngValue]="job.id">{{ job.title }}</option>
+                        }
+                      </select>
+                    </label>
+                    <label class="field span-2">Catatan <span class="opt">(opsional)</span><textarea [(ngModel)]="interviewForm.notes" rows="3"></textarea></label>
+                  </div>
+                  @if (interviewError) {
+                    <div class="alert alert-error" role="alert"><app-icon name="alert"></app-icon><span>{{ interviewError }}</span></div>
+                  }
+                  <div class="button-row">
+                    <button class="btn btn-primary" (click)="scheduleInterview()" [disabled]="scheduling">{{ scheduling ? 'Menyimpan…' : 'Simpan jadwal' }}</button>
+                    <button class="btn btn-ghost" (click)="showInterviewForm = false">Batal</button>
+                  </div>
+                </section>
+              }
+              @if (appliedJobs.length) {
+                <section class="drawer-section" aria-label="Lowongan yang dilamar">
+                  <h3>Lowongan yang dilamar</h3>
+                  <ul class="applied-list">
+                    @for (a of appliedJobs; track a) {
+                      <li>
+                        <div><strong>{{ a.jobTitle }}</strong><small>{{ a.addedByHr ? 'Ditambahkan HC' : 'Melamar' }} {{ fmt.fullDate(a.appliedAt) }}</small></div>
+                        <span class="tag tag-neutral">{{ fmt.label(a.stage) }}</span>
+                      </li>
+                    }
+                  </ul>
+                </section>
+              }
+              <section class="drawer-section" id="move-section">
+                <h3>Masukkan ke lowongan</h3>
+                @if (selected.movedToJobListing) {
+                  <p class="muted" style="font-size: 14px">Kandidat ini sudah pernah dimasukkan ke lowongan.</p>
+                }
+                @if (jobs.length) {
+                  <div class="form-grid">
+                    <label class="field">Lowongan
+                      <select [(ngModel)]="moveForm.jobListingId">
+                        <option value="">Pilih lowongan yang dibuka</option>
+                        @for (job of jobs; track job) {
+                          <option [value]="job.id">{{ job.title }}</option>
+                        }
+                      </select>
+                    </label>
+                  </div>
+                } @else {
+                  <p class="muted" style="font-size: 14px">Belum ada lowongan yang dibuka.</p>
+                }
+                @if (moveError) {
+                  <div class="alert alert-error" role="alert"><app-icon name="alert"></app-icon><span>{{ moveError }}</span></div>
+                }
+                @if (moveSuccess) {
+                  <div class="alert alert-success" role="status"><app-icon name="check"></app-icon><span>{{ moveSuccess }}</span></div>
+                }
+                @if (jobs.length) {
+                  <div class="button-row">
+                    <button type="button" class="btn btn-secondary" (click)="moveToJobListing()" [disabled]="moving">{{ moving ? 'Menyimpan…' : 'Masukkan ke lowongan' }}</button>
+                  </div>
+                }
+              </section>
+              <app-candidate-profile-sections [selected]="selected"></app-candidate-profile-sections>
+            </div>
+          } @else {
             <div class="full-loading">Memuat profil kandidat…</div>
-          </ng-template>
+          }
         </aside>
       </div>
+    }
     </app-backoffice-layout>
-  `,
+    `
 })
 export class BackofficeCandidatesComponent implements OnInit, OnDestroy {
   readonly fmt = FMT;

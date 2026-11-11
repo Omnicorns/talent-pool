@@ -1,16 +1,28 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-@Component({selector:'app-tag-select',standalone:true,imports:[CommonModule,FormsModule],template:`
+@Component({
+    selector: 'app-tag-select', imports: [FormsModule], template: `
   <select [attr.aria-label]="label" (change)="select($event)" [disabled]="value.length >= limit">
     <option value="">{{ value.length >= limit ? 'Sudah ' + limit + ' pilihan' : 'Pilih' + (limit < 20 ? ' (maks. ' + limit + ')' : '') }}</option>
-    <option *ngFor="let item of options" [value]="item" [disabled]="value.includes(item)">{{ item }}</option>
-    <option *ngIf="allowOther" value="__other">Lainnya…</option>
+    @for (item of options; track item) {
+      <option [value]="item" [disabled]="value.includes(item)">{{ item }}</option>
+    }
+    @if (allowOther) {
+      <option value="__other">Lainnya…</option>
+    }
   </select>
-  <div class="inline-add" *ngIf="other"><input [(ngModel)]="custom" [attr.aria-label]="label + ' lainnya'" placeholder="Tulis pilihan Anda" (keydown.enter)="addCustom(); $event.preventDefault()"><button type="button" class="btn btn-secondary" (click)="addCustom()">Tambah</button></div>
-  <div class="tag-list"><button type="button" class="tag-remove" *ngFor="let item of value" (click)="remove(item)" [attr.aria-label]="'Hapus ' + item">{{ item }} <span aria-hidden="true">×</span></button></div>
-  <small *ngIf="message" class="field-error" role="alert">{{ message }}</small>
-`})
+  @if (other) {
+    <div class="inline-add"><input [(ngModel)]="custom" [attr.aria-label]="label + ' lainnya'" placeholder="Tulis pilihan Anda" (keydown.enter)="addCustom(); $event.preventDefault()"><button type="button" class="btn btn-secondary" (click)="addCustom()">Tambah</button></div>
+  }
+  <div class="tag-list">@for (item of value; track item) {
+    <button type="button" class="tag-remove" (click)="remove(item)" [attr.aria-label]="'Hapus ' + item">{{ item }} <span aria-hidden="true">×</span></button>
+  }</div>
+  @if (message) {
+    <small class="field-error" role="alert">{{ message }}</small>
+  }
+  `
+})
 export class TagSelectComponent {
   @Input() options:string[]=[]; @Input() value:string[]=[]; @Input() label='Pilihan';
   @Input() limit=20; @Input() allowOther=true;

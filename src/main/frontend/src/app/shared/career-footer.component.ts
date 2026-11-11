@@ -1,13 +1,12 @@
-import { CommonModule } from '@angular/common';
+
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Branding, DEFAULT_BRANDING, SiteContentService } from '../core/service/api/site-content.service';
 
 @Component({
-  selector: 'app-career-footer',
-  standalone: true,
-  imports: [CommonModule, RouterLink],
-  template: `
+    selector: 'app-career-footer',
+    imports: [RouterLink],
+    template: `
     <footer class="site-footer">
       <div class="container">
         <div>
@@ -24,10 +23,18 @@ import { Branding, DEFAULT_BRANDING, SiteContentService } from '../core/service/
         <div>
           <h2>{{ b.footer.contactTitle }}</h2>
           <address>
-            <span *ngIf="b.footer.company">{{ b.footer.company }}</span>
-            <span *ngIf="b.footer.address">{{ b.footer.address }}</span>
-            <a *ngIf="b.footer.phone" [href]="'tel:' + phoneHref">{{ b.footer.phone }}</a>
-            <a *ngIf="b.footer.email" [href]="'mailto:' + b.footer.email">{{ b.footer.email }}</a>
+            @if (b.footer.company) {
+              <span>{{ b.footer.company }}</span>
+            }
+            @if (b.footer.address) {
+              <span>{{ b.footer.address }}</span>
+            }
+            @if (b.footer.phone) {
+              <a [href]="'tel:' + phoneHref">{{ b.footer.phone }}</a>
+            }
+            @if (b.footer.email) {
+              <a [href]="'mailto:' + b.footer.email">{{ b.footer.email }}</a>
+            }
           </address>
         </div>
       </div>
@@ -38,7 +45,7 @@ import { Branding, DEFAULT_BRANDING, SiteContentService } from '../core/service/
         </div>
       </div>
     </footer>
-  `,
+    `
 })
 export class CareerFooterComponent {
   readonly year = new Date().getFullYear();

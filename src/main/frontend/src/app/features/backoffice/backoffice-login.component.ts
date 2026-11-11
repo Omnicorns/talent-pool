@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -8,10 +8,9 @@ import { SiteContentService } from '../../core/service/api/site-content.service'
 import { IconComponent } from '../../shared/icon.component';
 
 @Component({
-  selector: 'app-backoffice-login',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, IconComponent],
-  template: `
+    selector: 'app-backoffice-login',
+    imports: [FormsModule, RouterLink, IconComponent],
+    template: `
     <main class="bo-login">
       <section class="bo-login-card">
         <img [src]="brandLogo" alt="Sarinah" class="logo">
@@ -29,13 +28,15 @@ import { IconComponent } from '../../shared/icon.component';
               </button>
             </span>
           </label>
-          <div class="alert alert-error" *ngIf="error" role="alert"><app-icon name="alert"></app-icon><span>{{ error }}</span></div>
+          @if (error) {
+            <div class="alert alert-error" role="alert"><app-icon name="alert"></app-icon><span>{{ error }}</span></div>
+          }
           <button class="btn btn-primary btn-lg btn-block" [disabled]="loading">{{ loading ? 'Memeriksa…' : 'Masuk' }}</button>
         </form>
         <p class="bo-login-foot"><a routerLink="/" class="back-link"><app-icon name="arrow-left" [size]="16"></app-icon> Ke portal kandidat</a></p>
       </section>
     </main>
-  `,
+    `
 })
 export class BackofficeLoginComponent {
   username = '';

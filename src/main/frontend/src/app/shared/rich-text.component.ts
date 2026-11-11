@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, Input } from '@angular/core';
 
 type Block = { kind: 'h' | 'p'; text: string } | { kind: 'ul' | 'ol'; items: string[] };
@@ -8,27 +8,38 @@ type Block = { kind: 'h' | 'p'; text: string } | { kind: 'ul' | 'ol'; items: str
  * baris berakhiran ":" jadi sub-judul, dan baris bernomor / berawalan "-" jadi daftar.
  */
 @Component({
-  selector: 'app-rich-text',
-  standalone: true,
-  imports: [CommonModule],
-  template: `
-    <ng-container *ngFor="let b of blocks">
-      <ng-container [ngSwitch]="b.kind">
-        <h3 *ngSwitchCase="'h'" class="rt-h">{{ $any(b).text }}</h3>
-        <p *ngSwitchCase="'p'" class="rt-p">{{ $any(b).text }}</p>
-        <ul *ngSwitchCase="'ul'" class="rt-list"><li *ngFor="let i of $any(b).items">{{ i }}</li></ul>
-        <ol *ngSwitchCase="'ol'" class="rt-list"><li *ngFor="let i of $any(b).items">{{ i }}</li></ol>
-      </ng-container>
-    </ng-container>
-  `,
-  styles: [`
+    selector: 'app-rich-text',
+    imports: [],
+    template: `
+    @for (b of blocks; track b) {
+      @switch (b.kind) {
+        @case ('h') {
+          <h3 class="rt-h">{{ $any(b).text }}</h3>
+        }
+        @case ('p') {
+          <p class="rt-p">{{ $any(b).text }}</p>
+        }
+        @case ('ul') {
+          <ul class="rt-list">@for (i of $any(b).items; track i) {
+            <li>{{ i }}</li>
+          }</ul>
+        }
+        @case ('ol') {
+          <ol class="rt-list">@for (i of $any(b).items; track i) {
+            <li>{{ i }}</li>
+          }</ol>
+        }
+      }
+    }
+    `,
+    styles: [`
     :host { display: block; }
     .rt-h { margin: 18px 0 6px; font-size: 1.02em; font-weight: 700; }
     .rt-h:first-child { margin-top: 0; }
     .rt-p { margin: 0 0 10px; }
     .rt-list { margin: 0 0 12px; padding-left: 22px; }
     .rt-list li { margin: 0 0 6px; padding-left: 2px; }
-  `],
+  `]
 })
 export class RichTextComponent {
   blocks: Block[] = [];

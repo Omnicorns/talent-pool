@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, Input } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BackofficeAuthService } from '../core/service/api/backoffice-auth.service';
@@ -9,23 +9,25 @@ import { salaryRange } from './labels';
 import { socialList } from './social-accounts';
 
 @Component({
-  selector: 'app-talent-profile-details',
-  standalone: true,
-  imports: [CommonModule, IconComponent],
-  template: `
-  <div class="talent-details" *ngIf="profile.profileDetails as details">
-    <dl class="facts" [class.one]="!backoffice" [class.two]="backoffice">
-      <div><dt>Jenis kelamin</dt><dd>{{ details.gender || '-' }}</dd></div>
-      <div><dt>Agama</dt><dd>{{ profile.religion || '-' }}</dd></div>
-      <div><dt>Alamat KTP</dt><dd>{{ joinParts(profile.citizenIdAddress, details.region, details.postalCode) }}</dd></div>
-      <div><dt>Alamat domisili</dt><dd>
-        <ng-container *ngIf="profile.sameAsCitizenIdAddress; else ownResidence">{{ joinParts(profile.citizenIdAddress, details.region, details.postalCode) }} <small class="muted">(sama dengan alamat KTP)</small></ng-container>
-        <ng-template #ownResidence>{{ joinParts(profile.residentialAddress, details.residentialRegion, details.residentialPostalCode) }}</ng-template>
+    selector: 'app-talent-profile-details',
+    imports: [IconComponent],
+    template: `
+  @if (profile.profileDetails; as details) {
+    <div class="talent-details">
+      <dl class="facts" [class.one]="!backoffice" [class.two]="backoffice">
+        <div><dt>Jenis kelamin</dt><dd>{{ details.gender || '-' }}</dd></div>
+        <div><dt>Agama</dt><dd>{{ profile.religion || '-' }}</dd></div>
+        <div><dt>Alamat KTP</dt><dd>{{ joinParts(profile.citizenIdAddress, details.region, details.postalCode) }}</dd></div>
+        <div><dt>Alamat domisili</dt><dd>
+        @if (profile.sameAsCitizenIdAddress) {
+          {{ joinParts(profile.citizenIdAddress, details.region, details.postalCode) }} <small class="muted">(sama dengan alamat KTP)</small>
+        } @else {
+          {{ joinParts(profile.residentialAddress, details.residentialRegion, details.residentialPostalCode) }}
+        }
       </dd></div>
       <div><dt>Tahu Sarinah dari</dt><dd>{{ profile.source || '-' }}</dd></div>
     </dl>
-
-    <ng-container *ngIf="showAdditionalInformation">
+    @if (showAdditionalInformation) {
       <p class="subhead">Informasi tambahan</p>
       <dl class="facts two">
         <div><dt>Ekspektasi gaji per bulan</dt><dd>{{ salaryRange(profile.expectedSalary, details.expectedSalaryMax) }}</dd></div>
@@ -33,26 +35,36 @@ import { socialList } from './social-accounts';
         <div><dt>Lokasi yang diminati</dt><dd>{{ profile.preferredLocations.join(', ') || '-' }}</dd></div>
         <div><dt>Kemampuan bahasa</dt><dd>{{ languages(details) }}</dd></div>
         <div><dt>LinkedIn</dt><dd>{{ details.linkedinUrl || '-' }}</dd></div>
-        <div><dt>Media sosial</dt><dd><span class="line" *ngFor="let item of socials(details)">{{ item }}</span><ng-container *ngIf="!socials(details).length">-</ng-container></dd></div>
-      </dl>
-    </ng-container>
-
-    <ng-container *ngIf="showEducationInformation">
-      <p class="subhead">Dokumen pendidikan</p>
-      <div class="doc-list" *ngIf="profile.supportingDocuments?.length; else noDocs">
-        <div class="doc" *ngFor="let doc of profile.supportingDocuments">
-          <app-icon name="file"></app-icon>
-          <span><strong>{{ label(doc.key) }}</strong><small>{{ doc.originalName }}</small></span>
-          <button type="button" class="btn btn-ghost btn-sm" (click)="open(doc.key, doc.originalName, false)" [disabled]="downloading" [attr.aria-label]="'Lihat ' + label(doc.key)"><app-icon name="eye" [size]="16"></app-icon> Lihat</button>
-          <button type="button" class="btn btn-ghost btn-sm" (click)="open(doc.key, doc.originalName, true)" [disabled]="downloading" [attr.aria-label]="'Unduh ' + label(doc.key)"><app-icon name="download" [size]="16"></app-icon> Unduh</button>
-        </div>
+        <div><dt>Media sosial</dt><dd>@for (item of socials(details); track item) {
+        <span class="line">{{ item }}</span>
+        }@if (!socials(details).length) {
+        -
+      }</dd></div>
+    </dl>
+  }
+  @if (showEducationInformation) {
+    <p class="subhead">Dokumen pendidikan</p>
+    @if (profile.supportingDocuments?.length) {
+      <div class="doc-list">
+        @for (doc of profile.supportingDocuments; track doc) {
+          <div class="doc">
+            <app-icon name="file"></app-icon>
+            <span><strong>{{ label(doc.key) }}</strong><small>{{ doc.originalName }}</small></span>
+            <button type="button" class="btn btn-ghost btn-sm" (click)="open(doc.key, doc.originalName, false)" [disabled]="downloading" [attr.aria-label]="'Lihat ' + label(doc.key)"><app-icon name="eye" [size]="16"></app-icon> Lihat</button>
+            <button type="button" class="btn btn-ghost btn-sm" (click)="open(doc.key, doc.originalName, true)" [disabled]="downloading" [attr.aria-label]="'Unduh ' + label(doc.key)"><app-icon name="download" [size]="16"></app-icon> Unduh</button>
+          </div>
+        }
       </div>
-      <ng-template #noDocs><p class="muted" style="font-size: 14px">Belum ada dokumen pendukung.</p></ng-template>
-    </ng-container>
-
-    <div class="alert alert-error" *ngIf="error" role="alert" style="margin-top: 12px"><app-icon name="alert"></app-icon><span>{{ error }}</span></div>
+    } @else {
+      <p class="muted" style="font-size: 14px">Belum ada dokumen pendukung.</p>
+    }
+  }
+  @if (error) {
+    <div class="alert alert-error" role="alert" style="margin-top: 12px"><app-icon name="alert"></app-icon><span>{{ error }}</span></div>
+  }
   </div>
-  `,
+  }
+  `
 })
 export class TalentProfileDetailsComponent {
   @Input({ required: true }) profile!: CandidateProfile;

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, ElementRef, HostListener, Input } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TalentAuthService } from '../core/service/api/talent-auth.service';
@@ -7,58 +7,68 @@ import { Branding, DEFAULT_BRANDING, SiteContentService } from '../core/service/
 import { initials } from './labels';
 
 @Component({
-  selector: 'app-career-header',
-  standalone: true,
-  imports: [CommonModule, RouterLink, IconComponent],
-  template: `
+    selector: 'app-career-header',
+    imports: [RouterLink, IconComponent],
+    template: `
     <header class="site-header">
       <div class="container">
         <a routerLink="/" class="site-brand" aria-label="Beranda Sarinah Karier">
           <img [src]="b.partnerLogo" alt="Danantara Indonesia">
         </a>
-
+    
         <nav id="site-navigation" class="site-nav" [class.open]="mobileMenuOpen" aria-label="Navigasi utama">
           <a routerLink="/" [class.active]="active === 'home' && sectionActive === ''" (click)="goHome($event)">{{ b.header.navHome }}</a>
           <button type="button" [class.active]="sectionActive === 'life'" (click)="goToSection('life')">{{ b.header.navLife }}</button>
           <button type="button" [class.active]="active === 'open' || sectionActive === 'open-positions'" (click)="goToSection('open-positions')">{{ b.header.navOpen }}</button>
           <button type="button" [class.active]="sectionActive === 'faq'" (click)="goToSection('faq')">{{ b.header.navFaq }}</button>
-          <a *ngIf="!auth.authenticated" class="nav-signin" routerLink="/sign-in" (click)="mobileMenuOpen = false">{{ b.header.signIn }}</a>
+          @if (!auth.authenticated) {
+            <a class="nav-signin" routerLink="/sign-in" (click)="mobileMenuOpen = false">{{ b.header.signIn }}</a>
+          }
         </nav>
-
+    
         <div class="site-actions">
-          <a *ngIf="!auth.authenticated" class="btn btn-secondary btn-sm desktop-only" routerLink="/sign-in">{{ b.header.signIn }}</a>
-
-          <div class="account" *ngIf="auth.authenticated">
-            <button type="button" class="account-chip" [attr.aria-expanded]="accountMenuOpen" aria-haspopup="menu"
-              aria-label="Menu akun" (click)="toggleAccountMenu(); mobileMenuOpen = false">
-              <span class="avatar">
-                <img *ngIf="profilePictureUrl; else headerInitials" [src]="profilePictureUrl" alt="">
-                <ng-template #headerInitials>{{ userInitials }}</ng-template>
-              </span>
-              <strong>{{ auth.session?.fullName || 'Talent' }}</strong>
-              <app-icon name="chevron-down" [size]="16"></app-icon>
-            </button>
-            <div class="menu-pop" *ngIf="accountMenuOpen" role="menu">
-              <div class="menu-pop-head">
+          @if (!auth.authenticated) {
+            <a class="btn btn-secondary btn-sm desktop-only" routerLink="/sign-in">{{ b.header.signIn }}</a>
+          }
+    
+          @if (auth.authenticated) {
+            <div class="account">
+              <button type="button" class="account-chip" [attr.aria-expanded]="accountMenuOpen" aria-haspopup="menu"
+                aria-label="Menu akun" (click)="toggleAccountMenu(); mobileMenuOpen = false">
+                <span class="avatar">
+                  @if (profilePictureUrl) {
+                    <img [src]="profilePictureUrl" alt="">
+                  } @else {
+                    {{ userInitials }}
+                  }
+                </span>
                 <strong>{{ auth.session?.fullName || 'Talent' }}</strong>
-                <small>{{ auth.session?.email }}</small>
-              </div>
-              <a routerLink="/portal" role="menuitem" class="menu-item" (click)="accountMenuOpen = false">
-                <app-icon name="users"></app-icon> Profil saya
-              </a>
-              <a routerLink="/portal" fragment="my-applications" role="menuitem" class="menu-item" (click)="accountMenuOpen = false">
-                <app-icon name="clipboard"></app-icon> Lamaran saya
-              </a>
-              <button type="button" role="menuitem" class="menu-item danger" (click)="logout()">
-                <app-icon name="logout"></app-icon> Keluar
+                <app-icon name="chevron-down" [size]="16"></app-icon>
               </button>
+              @if (accountMenuOpen) {
+                <div class="menu-pop" role="menu">
+                  <div class="menu-pop-head">
+                    <strong>{{ auth.session?.fullName || 'Talent' }}</strong>
+                    <small>{{ auth.session?.email }}</small>
+                  </div>
+                  <a routerLink="/portal" role="menuitem" class="menu-item" (click)="accountMenuOpen = false">
+                    <app-icon name="users"></app-icon> Profil saya
+                  </a>
+                  <a routerLink="/portal" fragment="my-applications" role="menuitem" class="menu-item" (click)="accountMenuOpen = false">
+                    <app-icon name="clipboard"></app-icon> Lamaran saya
+                  </a>
+                  <button type="button" role="menuitem" class="menu-item danger" (click)="logout()">
+                    <app-icon name="logout"></app-icon> Keluar
+                  </button>
+                </div>
+              }
             </div>
-          </div>
-
+          }
+    
           <a routerLink="/" aria-label="Sarinah" class="site-brand">
             <img class="sarinah-mark" [src]="b.brandLogo" alt="Sarinah">
           </a>
-
+    
           <button type="button" class="icon-btn menu-toggle" (click)="mobileMenuOpen = !mobileMenuOpen"
             [attr.aria-expanded]="mobileMenuOpen" aria-controls="site-navigation"
             [attr.aria-label]="mobileMenuOpen ? 'Tutup menu' : 'Buka menu'">
@@ -67,7 +77,7 @@ import { initials } from './labels';
         </div>
       </div>
     </header>
-  `,
+    `
 })
 export class CareerHeaderComponent {
   @Input() active: 'home' | 'open' | 'portal' | '' = '';

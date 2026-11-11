@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -17,7 +17,9 @@ import { SearchSelectComponent } from '../../shared/search-select.component';
 import { PostalRegionFieldComponent } from '../../shared/postal-region-field.component';
 import { SocialAccountsFieldComponent } from '../../shared/social-accounts-field.component';
 import { cleanSocial, socialError } from '../../shared/social-accounts';
-@Component({selector:'app-talent-onboarding',standalone:true,imports:[CommonModule,FormsModule,RouterLink,ChoiceFieldComponent,TagSelectComponent,IconComponent,SearchSelectComponent,WordLimitDirective,PostalRegionFieldComponent,SocialAccountsFieldComponent,AchievementsEditorComponent,OrganizationsEditorComponent],templateUrl:'./talent-onboarding.component.html'})
+@Component({
+    selector: 'app-talent-onboarding', imports: [FormsModule, RouterLink, ChoiceFieldComponent, TagSelectComponent, IconComponent, SearchSelectComponent, WordLimitDirective, PostalRegionFieldComponent, SocialAccountsFieldComponent, AchievementsEditorComponent, OrganizationsEditorComponent], templateUrl: './talent-onboarding.component.html'
+})
 export class TalentOnboardingComponent implements OnInit, OnDestroy {
   profile!:CandidateProfile; details!:TalentProfileDetails; options=TALENT_OPTIONS;
   draft!:OnboardingDraft; draftRestored=false; private autosaveTimer:ReturnType<typeof setInterval>|null=null; private lastSig=''; private lastFileSig=''; private draftReady=false;
