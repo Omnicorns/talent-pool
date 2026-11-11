@@ -15,6 +15,21 @@ import { ColumnFilterComponent, SortDir } from '../../shared/column-filter.compo
 
 type AppKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review' | 'penilaian';
 
+const DESC_TEMPLATES = {
+  id: {
+    responsibilities: 'Tanggung Jawab', qualifications: 'Kualifikasi', benefits: 'Benefit',
+    point: 'Poin', list: 'Daftar', preview: 'Pratinjau', fullTemplate: 'Template lengkap',
+    skeleton: 'Tanggung Jawab:\n- \n\nKualifikasi:\n1. \n\nBenefit:\n- \n',
+    placeholder: 'Tanggung Jawab:\n- Merancang dan menganalisa permintaan layanan umum\n\nKualifikasi:\n1. Sarjana (S1) Manajemen atau terkait\n2. Pengalaman min. 3 tahun',
+  },
+  en: {
+    responsibilities: 'Responsibilities', qualifications: 'Qualifications', benefits: 'Benefits',
+    point: 'Point', list: 'List', preview: 'Preview', fullTemplate: 'Full template',
+    skeleton: 'Responsibilities:\n- \n\nQualifications:\n1. \n\nBenefits:\n- \n',
+    placeholder: 'Responsibilities:\n- Design and analyze general service requests\n\nQualifications:\n1. Bachelor degree in Management or related field\n2. Minimum 3 years of experience',
+  },
+} as const;
+
 @Component({
     selector: 'app-backoffice-job-listings',
     imports: [CommonModule, FormsModule, RouterLink, BackofficeLayoutComponent, BackofficeOverlayDirective, IconComponent, PaginationComponent, ColumnFilterComponent, RichTextComponent, CandidateProfileSectionsComponent],
@@ -140,14 +155,19 @@ type AppKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review' | 'penilaia
                 <div class="field desc-field">
                   <span>Deskripsi</span>
                   <div class="desc-tools" role="toolbar" aria-label="Format deskripsi">
-                    <button type="button" (click)="insertText(desc, 'Tanggung Jawab:\n', true)">Tanggung Jawab</button>
-                    <button type="button" (click)="insertText(desc, 'Kualifikasi:\n', true)">Kualifikasi</button>
-                    <button type="button" (click)="insertText(desc, 'Benefit:\n', true)">Benefit</button>
-                    <button type="button" (click)="insertText(desc, '- ')">&bull; Poin</button>
-                    <button type="button" (click)="insertText(desc, '1. ')">1. Daftar</button>
-                    <button type="button" class="desc-preview-toggle" [attr.aria-pressed]="showPreview" (click)="showPreview = !showPreview">Pratinjau</button>
+                    <span class="desc-lang" role="group" aria-label="Bahasa template">
+                      <button type="button" [attr.aria-pressed]="descLang === 'id'" (click)="descLang = 'id'">ID</button>
+                      <button type="button" [attr.aria-pressed]="descLang === 'en'" (click)="descLang = 'en'">EN</button>
+                    </span>
+                    <button type="button" (click)="insertText(desc, tpl.responsibilities + ':\n', true)">{{ tpl.responsibilities }}</button>
+                    <button type="button" (click)="insertText(desc, tpl.qualifications + ':\n', true)">{{ tpl.qualifications }}</button>
+                    <button type="button" (click)="insertText(desc, tpl.benefits + ':\n', true)">{{ tpl.benefits }}</button>
+                    <button type="button" (click)="insertText(desc, '- ')">&bull; {{ tpl.point }}</button>
+                    <button type="button" (click)="insertText(desc, '1. ')">1. {{ tpl.list }}</button>
+                    <button type="button" (click)="insertText(desc, tpl.skeleton, true)">{{ tpl.fullTemplate }}</button>
+                    <button type="button" class="desc-preview-toggle" [attr.aria-pressed]="showPreview" (click)="showPreview = !showPreview">{{ tpl.preview }}</button>
                   </div>
-                  <textarea #desc rows="10" name="description" [(ngModel)]="form.description" placeholder="Tanggung Jawab:&#10;- Merancang dan menganalisa permintaan layanan umum&#10;&#10;Kualifikasi:&#10;1. Sarjana (S1) Manajemen atau terkait&#10;2. Pengalaman min. 3 tahun"></textarea>
+                  <textarea #desc rows="10" name="description" [(ngModel)]="form.description" [placeholder]="tpl.placeholder"></textarea>
                   <small class="muted">Baris yang berakhiran ":" menjadi sub-judul; baris berawalan "-" atau "1." menjadi daftar di halaman lowongan.</small>
                   @if (showPreview) {
                     <div class="desc-preview prose"><app-rich-text [text]="form.description"></app-rich-text></div>
@@ -304,6 +324,10 @@ type AppKey = 'name' | 'fungsi' | 'pengalaman' | 'lokasi' | 'review' | 'penilaia
 })
 export class BackofficeJobListingsComponent implements OnInit {
   showPreview = false;
+  /** Bahasa template deskripsi lowongan (hanya memengaruhi teks yang disisipkan). */
+  descLang: 'id' | 'en' = 'id';
+
+  get tpl() { return DESC_TEMPLATES[this.descLang]; }
 
   /** Sisipkan potongan teks di posisi kursor deskripsi; sub-judul diberi baris kosong di depan bila perlu. */
   insertText(el: HTMLTextAreaElement, snippet: string, heading = false): void {
