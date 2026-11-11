@@ -32,6 +32,8 @@ class ExecutiveSummaryApiTest {
         mvc.perform(get("/api/backoffice/executive-summary").with(viewer))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalCandidates").value(0))
+                .andExpect(jsonPath("$.reviewedCandidates").value(0))
+                .andExpect(jsonPath("$.unreviewedCandidates").value(0))
                 .andExpect(jsonPath("$.monthlyGrowth.length()").value(6));
 
         mvc.perform(get("/api/backoffice/dashboard").with(viewer)).andExpect(status().isForbidden());

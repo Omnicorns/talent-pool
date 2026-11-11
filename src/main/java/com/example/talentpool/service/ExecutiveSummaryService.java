@@ -1,6 +1,5 @@
 package com.example.talentpool.service;
 
-import com.example.talentpool.domain.CandidateStatus;
 import com.example.talentpool.domain.HiringStage;
 import com.example.talentpool.domain.RecruitmentSetting;
 import com.example.talentpool.dto.ExecutiveSummaryResponse;
@@ -47,16 +46,21 @@ public class ExecutiveSummaryService {
     @Transactional
     public ExecutiveSummaryResponse summary() {
         List<PotentialCandidate> potential = candidates
-                .findVisibleByStatus(CandidateStatus.POTENTIAL, PageRequest.of(0, POTENTIAL_LIMIT))
+                .findPotentialVisible(PageRequest.of(0, POTENTIAL_LIMIT))
                 .stream()
                 .map(c -> new PotentialCandidate(c.getFullName(), c.getJobPosition(), c.isMovedToJobListing()))
                 .toList();
 
+        long total = candidates.countVisible();
+        long reviewed = Math.min(candidates.countReviewed(), total);
+
         return new ExecutiveSummaryResponse(
-                candidates.countVisible(),
+                total,
                 applications.countDistinctCandidates(),
                 applications.countDistinctCandidatesByStage(HiringStage.INTERVIEW),
                 applications.countDistinctCandidatesByStage(HiringStage.HIRED),
+                reviewed,
+                total - reviewed,
                 monthlyGrowth(),
                 interviews.upcoming(),
                 potential
