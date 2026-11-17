@@ -1181,3 +1181,53 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
 .ach-empty .btn { margin-top: 8px; }
 .ach .repeat { background: var(--white, #fff); }
 .ach select { width: 100%; }
+
+
+/* ===== Landing: tampilan sinematik (hero foto penuh, kaca, bagian gelap) ===== */
+.hero { display: block; min-height: min(92vh, 820px); background: #120f0d; isolation: isolate; }
+.hero-media { position: absolute; inset: 0; z-index: 0; }
+.hero-media img { object-position: 60% 25%; transform: scale(1.04); }
+.hero-media::after { background:
+  linear-gradient(180deg, rgba(18, 15, 13, .55) 0%, rgba(18, 15, 13, .05) 38%, rgba(18, 15, 13, .55) 78%, #120f0d 100%),
+  linear-gradient(90deg, rgba(18, 15, 13, .82) 0%, rgba(18, 15, 13, .25) 55%, rgba(18, 15, 13, 0) 80%); }
+.hero-motif { display: none; }
+.hero-copy { position: relative; z-index: 2; justify-content: flex-end; min-height: min(92vh, 820px); gap: 26px; padding-top: 120px; padding-bottom: 150px; }
+.hero-chip { display: inline-flex; align-items: center; gap: 10px; align-self: flex-start; padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; letter-spacing: .04em; color: #fff; background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .22); backdrop-filter: blur(10px); }
+.hero-chip i { width: 8px; height: 8px; border-radius: 50%; background: #ff4d55; box-shadow: 0 0 0 4px rgba(255, 77, 85, .25); }
+.hero h1 { font-size: clamp(44px, 7.4vw, 108px); line-height: .98; letter-spacing: -.045em; font-weight: 800; max-width: 12ch; text-wrap: balance; }
+.hero p { font-size: clamp(17px, 1.6vw, 21px); max-width: 40ch; color: #eae4de; }
+.hero .btn-lg { border-radius: 999px; padding-inline: 28px; }
+.hero .btn-secondary { background: rgba(255, 255, 255, .1); border-color: rgba(255, 255, 255, .35); backdrop-filter: blur(10px); }
+.hero .btn-secondary:hover { background: rgba(255, 255, 255, .2); }
+
+.values { margin-top: -96px; padding-bottom: 72px; background: linear-gradient(180deg, transparent 96px, #120f0d 96px); }
+.values-card { background: rgba(255, 255, 255, .07); border: 1px solid rgba(255, 255, 255, .16); border-radius: 24px; backdrop-filter: blur(18px) saturate(1.2); box-shadow: 0 24px 60px rgba(0, 0, 0, .35); padding: 10px; }
+.value { padding: 26px 24px; }
+.value + .value { border-left-color: rgba(255, 255, 255, .14); }
+.value h2 { color: #fff; font-size: 17px; }
+.value p { color: #cfc7c0; }
+.value-icon { display: inline-grid; place-items: center; width: 48px; height: 48px; margin-bottom: 14px; border-radius: 14px; color: #fff; background: rgba(196, 22, 28, .85); }
+
+.how { background: #120f0d; color: #fff; padding: 40px 0 96px; }
+.how .eyebrow-red { color: #ff6a70; }
+.how .section-head h2 { color: #fff; font-size: clamp(32px, 4.4vw, 56px); letter-spacing: -.035em; line-height: 1.04; }
+.how .section-head p { color: #b9b1aa; }
+.how-steps::before { display: none; }
+.how-steps li { justify-items: start; text-align: left; gap: 10px; padding: 28px; border-radius: 24px; background: linear-gradient(160deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .03)); border: 1px solid rgba(255, 255, 255, .12); }
+.how-num { width: auto; height: auto; border-radius: 0; background: none; box-shadow: none; font-size: clamp(48px, 5vw, 72px); line-height: 1; font-weight: 800; letter-spacing: -.05em; color: transparent; -webkit-text-stroke: 1.5px rgba(255, 255, 255, .55); }
+.how-steps h3 { color: #fff; font-size: 21px; margin-top: 8px; }
+.how-steps p { color: #b9b1aa; max-width: none; }
+
+.life { background: #120f0d; margin-top: 0; padding-bottom: 96px; }
+.life-banner { background: #120f0d; padding: 24px 0 48px; }
+.life-banner h2 { font-size: clamp(40px, 7vw, 96px); line-height: .98; letter-spacing: -.04em; text-transform: none; }
+.life-panel { background: transparent; border: 0; padding: 0; border-radius: 0; }
+.life-card { border-radius: 24px; }
+
+@media (max-width: 900px) {
+  .life { margin-top: 0; }
+  .hero, .hero-copy { min-height: 680px; }
+  .hero-copy { padding-top: 96px; padding-bottom: 130px; }
+  .values { margin-top: -72px; background: linear-gradient(180deg, transparent 72px, #120f0d 72px); }
+  .how-steps li { padding: 22px; }
+}

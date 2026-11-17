@@ -26,6 +26,7 @@ import { LandingData, SiteContentService } from '../../core/service/api/site-con
               }</g>
             </svg>
             <div class="hero-copy">
+              <span class="hero-chip"><i></i> Sarinah Talent Pool</span>
               <h1 id="hero-title">{{ site.hero.title }}</h1>
               <p>{{ site.hero.subtitle }}</p>
               <div class="hero-actions">
@@ -34,7 +35,7 @@ import { LandingData, SiteContentService } from '../../core/service/api/site-con
               </div>
             </div>
             <div class="hero-media">
-              <img [src]="site.heroImages[0]" width="611" height="462"
+              <img [src]="site.heroImages[0]" width="1600" height="900"
                 [alt]="heroAlt" fetchpriority="high">
             </div>
           </section>
