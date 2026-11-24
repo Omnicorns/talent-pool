@@ -73,7 +73,7 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
                     }
                   </nav>
                   <section id="about" class="profile-section">
-                    <div class="section-title"><h2>Tentang saya</h2><button class="btn btn-ghost btn-sm" (click)="openDrawer('about')"><app-icon name="edit" [size]="16"></app-icon> Ubah</button></div>
+                    <div class="section-title"><h2>Tentang Saya</h2><button class="btn btn-ghost btn-sm" (click)="openDrawer('about')"><app-icon name="edit" [size]="16"></app-icon> Ubah</button></div>
                     <p class="about-copy" [class.placeholder]="!profile.about">{{ profile.about || 'Tulis ringkasan singkat tentang pengalaman dan tujuan karier Anda agar recruiter cepat memahami profil Anda.' }}</p>
                     <div class="interest-box">
                       <span class="interest-icon"><app-icon name="award" [size]="20"></app-icon></span>
@@ -82,7 +82,7 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
                     </div>
                   </section>
                   <section id="experiences" class="profile-section">
-                    <div class="section-title"><h2>Pengalaman kerja</h2><button class="btn btn-ghost btn-sm" (click)="openDrawer('experience')"><app-icon name="plus" [size]="16"></app-icon> Tambah</button></div>
+                    <div class="section-title"><h2>Pengalaman Kerja</h2><button class="btn btn-ghost btn-sm" (click)="openDrawer('experience')"><app-icon name="plus" [size]="16"></app-icon> Tambah</button></div>
                     @if (profile.workExperiences.length) {
                       <div class="timeline">
                         @for (item of profile.workExperiences; track item; let i = $index) {
@@ -111,7 +111,7 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
                     }
                   </section>
                   <section id="organizations" class="profile-section">
-                    <div class="section-title"><h2>Pengalaman organisasi</h2><button class="btn btn-ghost btn-sm" (click)="openDrawer('organizations')"><app-icon [name]="organizations.length ? 'edit' : 'plus'" [size]="16"></app-icon> {{ organizations.length ? 'Ubah' : 'Tambah' }}</button></div>
+                    <div class="section-title"><h2>Pengalaman Organisasi</h2><button class="btn btn-ghost btn-sm" (click)="openDrawer('organizations')"><app-icon [name]="organizations.length ? 'edit' : 'plus'" [size]="16"></app-icon> {{ organizations.length ? 'Ubah' : 'Tambah' }}</button></div>
                     @if (organizations.length) {
                       <div class="timeline">
                         @for (item of organizations; track item) {
@@ -157,7 +157,7 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
                       <p class="muted">Belum ada pendidikan formal yang ditambahkan.</p>
                     }
                     @if (educationDocuments.length) {
-                      <p class="subhead">Dokumen pendukung</p>
+                      <p class="subhead">Dokumen Pendukung</p>
                       <div class="doc-list">
                         @for (doc of educationDocuments; track doc) {
                           <button type="button" class="doc" (click)="downloadSupportingDocument(doc.key, doc.originalName)">
@@ -262,7 +262,7 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
                     }
                   </section>
                   <section id="additional" class="profile-section">
-                    <div class="section-title"><h2>Informasi tambahan</h2><button class="btn btn-ghost btn-sm" (click)="openDrawer('additional')"><app-icon name="edit" [size]="16"></app-icon> Ubah</button></div>
+                    <div class="section-title"><h2>Informasi Tambahan</h2><button class="btn btn-ghost btn-sm" (click)="openDrawer('additional')"><app-icon name="edit" [size]="16"></app-icon> Ubah</button></div>
                     <dl class="facts two">
                       <div><dt>Ekspektasi gaji per bulan</dt><dd>{{ salaryRange(profile.expectedSalary, profile.profileDetails?.expectedSalaryMax) }}</dd></div>
                       <div><dt>Fungsi yang diminati</dt><dd>{{ profile.jobInterests.join(', ') || '-' }}</dd></div>
@@ -278,7 +278,7 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
                 </section>
               </section>
               <section id="my-applications" class="profile-card profile-section">
-                <div class="section-title"><h2>Lamaran saya</h2><a class="btn btn-secondary btn-sm" routerLink="/" fragment="open-positions">Cari lowongan</a></div>
+                <div class="section-title"><h2>Lamaran Saya</h2><a class="btn btn-secondary btn-sm" routerLink="/" fragment="open-positions">Cari lowongan</a></div>
                 @if (applications.length) {
                   <div class="app-list">
                     @for (app of visibleApplications; track app) {
@@ -322,7 +322,7 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
                   </button>
                 }
                 <div class="app-interviews">
-                  <h3 class="subhead">Jadwal interview</h3>
+                  <h3 class="subhead">Jadwal Interview</h3>
                   @if (interviews.length) {
                     <div>
                       @for (item of interviews; track item) {
@@ -356,7 +356,7 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
           <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="history-title">
             <header class="drawer-head">
               <div>
-                <h2 id="history-title">{{ selectedApplication?.jobTitle || 'Riwayat lamaran' }}</h2>
+                <h2 id="history-title">{{ selectedApplication?.jobTitle || 'Riwayat Lamaran' }}</h2>
                 <p>Riwayat proses rekrutmen untuk lowongan ini.</p>
               </div>
               <button class="icon-btn" (click)="closeApplicationHistory()" aria-label="Tutup"><app-icon name="x"></app-icon></button>
@@ -611,7 +611,7 @@ export class CandidatePortalComponent implements OnInit {
     { id: 'training', label: 'Pelatihan' },
     { id: 'certification', label: 'Sertifikasi' },
     { id: 'achievements', label: 'Pencapaian' },
-    { id: 'additional', label: 'Info tambahan' },
+    { id: 'additional', label: 'Info Tambahan' },
   ];
   activeSection = 'about';
   private tabClickedAt = 0;
@@ -973,17 +973,17 @@ export class CandidatePortalComponent implements OnInit {
   }
   get drawerTitle(): string {
     const map: Record<DrawerSection, string> = {
-      header: 'Ubah profil',
-      personal: 'Ubah data pribadi',
-      interest: 'Ubah minat karier',
-      about: 'Tentang saya',
-      experience: this.drawerIndex == null ? 'Tambah pengalaman kerja' : 'Ubah pengalaman kerja',
-      education: this.drawerIndex == null ? 'Tambah pendidikan' : 'Ubah pendidikan',
-      training: this.drawerIndex == null ? 'Tambah pelatihan' : 'Ubah pelatihan',
-      certification: this.drawerIndex == null ? 'Tambah sertifikasi' : 'Ubah sertifikasi',
+      header: 'Ubah Profil',
+      personal: 'Ubah Data Pribadi',
+      interest: 'Ubah Minat Karier',
+      about: 'Tentang Saya',
+      experience: this.drawerIndex == null ? 'Tambah Pengalaman Kerja' : 'Ubah Pengalaman Kerja',
+      education: this.drawerIndex == null ? 'Tambah Pendidikan' : 'Ubah Pendidikan',
+      training: this.drawerIndex == null ? 'Tambah Pelatihan' : 'Ubah Pelatihan',
+      certification: this.drawerIndex == null ? 'Tambah Sertifikasi' : 'Ubah Sertifikasi',
       achievements: 'My Achievements',
-      organizations: 'Pengalaman organisasi',
-      additional: 'Informasi tambahan',
+      organizations: 'Pengalaman Organisasi',
+      additional: 'Informasi Tambahan',
     };
     return this.drawerSection ? map[this.drawerSection] : '';
   }
