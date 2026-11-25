@@ -320,11 +320,11 @@ app-choice-field, app-tag-select { display: grid; gap: 8px; }
 
 /* 6. Auth & recovery ------------------------------------------------------ */
 .auth { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); background: var(--white); }
-.auth-aside { position: relative; display: flex; flex-direction: column; justify-content: space-between; padding: 40px; color: #fff; background: var(--ink); overflow: hidden; }
+.auth-aside { position: sticky; top: 0; height: 100vh; height: 100svh; align-self: start; display: flex; flex-direction: column; justify-content: space-between; padding: 40px; color: #fff; background: var(--ink); overflow: hidden; }
 .auth-aside > img.bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 70% 30%; opacity: .55; }
 .auth-aside::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(31, 27, 24, .92) 0%, rgba(31, 27, 24, .2) 60%); }
 .auth-aside > * { position: relative; z-index: 1; }
-.auth-aside .logo { height: 30px; width: auto; filter: brightness(0) invert(1); }
+.auth-aside .logo { height: clamp(38px, 3vw, 48px); width: auto; filter: brightness(0) invert(1); }
 .auth-aside h1 { color: #fff; font-size: clamp(30px, 3.2vw, 44px); letter-spacing: -.03em; max-width: 14ch; }
 .auth-aside p { color: #e4ded8; margin-top: 14px; max-width: 42ch; }
 .auth-main { display: flex; flex-direction: column; justify-content: center; padding: 40px var(--gutter); }
@@ -682,7 +682,8 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
   .job-head-cta { justify-items: start; }
 
   .auth { grid-template-columns: minmax(0, 1fr); }
-  .auth-aside { min-height: 220px; padding: 24px var(--gutter); }
+  .auth-aside { position: relative; height: auto; min-height: 220px; padding: 24px var(--gutter); }
+  .auth-aside .logo { height: 40px; }
   .auth-aside h1 { font-size: 26px; }
   .auth-aside p { display: none; }
 
@@ -809,7 +810,7 @@ legend { font-size: 14px; font-weight: 600; color: var(--ink-2); padding: 0; mar
   .value .icon { margin-bottom: 10px; }
 
   .auth { display: block; background: var(--ink); }
-  .auth-aside { min-height: 280px; padding: 20px var(--gutter) 72px; justify-content: flex-end; }
+  .auth-aside { position: relative; height: auto; min-height: 280px; padding: 20px var(--gutter) 72px; justify-content: flex-end; }
   .auth-aside > a { display: none; }
   .auth-aside h1 { font-size: 26px; max-width: 16ch; }
   .auth-aside p { font-size: 14px; margin-top: 8px; }
