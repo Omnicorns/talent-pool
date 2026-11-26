@@ -43,9 +43,22 @@ public class FileStorageService {
     }
 
     public StoredFile storeSiteBanner(MultipartFile file) {
+        return storeSiteBanner(file, false);
+    }
+
+    /**
+     * Simpan gambar situs. Bila {@code enhancePhoto} true (foto, bukan logo), foto beresolusi kecil
+     * otomatis diperbesar agar tidak buram saat ditampilkan besar; lihat {@link ImageUpscaler}.
+     */
+    public StoredFile storeSiteBanner(MultipartFile file, boolean enhancePhoto) {
         if (file != null && file.getSize() > 5L * 1024 * 1024)
             throw new BadRequestException("Ukuran gambar maksimal 5 MB");
-        return store(file, Path.of("site", "banners"), Set.of("jpg", "jpeg", "png", "webp"));
+        StoredFile stored = store(file, Path.of("site", "banners"), Set.of("jpg", "jpeg", "png", "webp"));
+        if (enhancePhoto) {
+            Path path = root.resolve(stored.storedPath()).normalize();
+            if (path.startsWith(root)) ImageUpscaler.upscaleIfSmall(path, extensionOf(stored.storedPath()));
+        }
+        return stored;
     }
 
     public StoredFile storePortfolio(MultipartFile file, UUID candidateId) {
