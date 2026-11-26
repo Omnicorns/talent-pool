@@ -1,5 +1,7 @@
 
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
+import { SiteContentService } from '../../core/service/api/site-content.service';
+import { DEFAULT_BRAND_LOGO } from '../public/site-defaults';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CandidateProfile, EducationItem, WorkExperienceItem, WorkDetails, TalentProfileDetails, SupportingUpload, PortfolioItem } from '../../core/models/talent.models';
@@ -29,6 +31,9 @@ export class TalentOnboardingComponent implements OnInit, OnDestroy {
   portfolioLinks=[{title:'Portfolio',url:''}]; postalRegions:string[]=[]; postalLoading=false; postalError='';
   steps=['Data Diri','Pendidikan','Pengalaman Kerja','Organisasi','Pelatihan & Sertifikasi','Info Tambahan','Dokumen'];
   trainingTypes=['Training','Workshop','Webinar','Seminar'];
+  /** Logo dari back office (versi dengan tulisan "an injourney retail"), sama dengan halaman masuk/daftar. */
+  brandLogo = DEFAULT_BRAND_LOGO;
+  private readonly brandingSub = inject(SiteContentService).branding().subscribe((branding) => (this.brandLogo = branding.brandLogo));
   constructor(private portal:TalentPortalService,private auth:TalentAuthService,private router:Router,private route:ActivatedRoute) {
     const requested=route.snapshot.queryParamMap.get('returnUrl');
     if(requested?.startsWith('/') && !requested.startsWith('//')) this.returnUrl=requested;
@@ -85,7 +90,7 @@ export class TalentOnboardingComponent implements OnInit, OnDestroy {
     if(fileSig!==this.lastFileSig&&(files||this.lastFileSig)){this.lastFileSig=fileSig;this.draft.saveFiles({cv:this.cvFile,picture:this.profilePicture,portfolio:this.portfolioFiles,docs:this.supportingUploads});}
   }
   discardDraft():void{this.draft.clear();this.draftRestored=false;this.draftReady=false;if(this.autosaveTimer)clearInterval(this.autosaveTimer);this.autosaveTimer=null;this.cvFile=null;this.profilePicture=null;this.portfolioFiles=[];this.supportingUploads=[];this.step=1;this.error='';this.ngOnInit();}
-  ngOnDestroy():void{this.persistDraft(true);if(this.autosaveTimer)clearInterval(this.autosaveTimer);if(this.profilePicturePreviewUrl)URL.revokeObjectURL(this.profilePicturePreviewUrl);}
+  ngOnDestroy():void{this.brandingSub.unsubscribe();this.persistDraft(true);if(this.autosaveTimer)clearInterval(this.autosaveTimer);if(this.profilePicturePreviewUrl)URL.revokeObjectURL(this.profilePicturePreviewUrl);}
   private loadExistingProfilePicture():void{this.portal.profilePicture().subscribe({next:blob=>{if(!blob.size)return;if(this.profilePicturePreviewUrl)URL.revokeObjectURL(this.profilePicturePreviewUrl);this.profilePicturePreviewUrl=URL.createObjectURL(blob);},error:()=>{this.profilePicturePreviewUrl=null;}});}
   get progress():number{return this.step/7*100;}
   get stepLabel():string{return String(this.step).padStart(2,'0');}

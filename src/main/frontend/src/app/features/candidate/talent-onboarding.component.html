@@ -2,7 +2,7 @@
   <main class="onboard">
     <div class="onboard-bar">
       <div class="container">
-        <a routerLink="/" aria-label="Beranda Sarinah Karier"><img src="images/sarinah.png" alt="Sarinah"></a>
+        <a routerLink="/" aria-label="Beranda Sarinah Karier"><img [src]="brandLogo" alt="Sarinah"></a>
         @if (editing) {
           <a class="back-link" routerLink="/portal">
             <app-icon name="arrow-left" [size]="16"></app-icon> Kembali ke profil

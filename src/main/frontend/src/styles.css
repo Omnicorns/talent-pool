@@ -345,8 +345,8 @@ app-choice-field, app-tag-select { display: grid; gap: 8px; }
 /* 7. Onboarding ----------------------------------------------------------- */
 .onboard { min-height: 100vh; background: var(--surface); padding-bottom: 64px; }
 .onboard-bar { background: var(--white); border-bottom: 1px solid var(--line); }
-.onboard-bar .container { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 64px; }
-.onboard-bar img { height: 28px; width: auto; }
+.onboard-bar .container { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 72px; }
+.onboard-bar img { height: 42px; width: auto; }
 .onboard-wrap { max-width: 1040px; margin: 0 auto; padding: 32px var(--gutter) 0; display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 32px; align-items: start; }
 .onboard-intro { grid-column: 1 / -1; }
 .onboard-intro h1 { font-size: 28px; letter-spacing: -.025em; }
