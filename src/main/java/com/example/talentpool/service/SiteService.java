@@ -101,13 +101,18 @@ public class SiteService {
         return toResponse(find(id), "/api/backoffice/site/banners/");
     }
 
+    /** Logo dibiarkan apa adanya; foto (hero, Life at Sarinah, gambar login, dll.) diperbesar bila kecil. */
+    private static boolean isPhoto(String category) {
+        return category == null || !category.toUpperCase(java.util.Locale.ROOT).startsWith("LOGO");
+    }
+
     @Transactional
     public BannerResponse createBanner(String name, String category, String groupKey, String altText,
                                        int sequence, boolean active, MultipartFile image) {
         if (image == null || image.isEmpty()) throw new BadRequestException("Gambar wajib diunggah");
         SiteBanner banner = new SiteBanner();
         apply(banner, name, category, groupKey, altText, sequence, active);
-        var stored = storage.storeSiteBanner(image);
+        var stored = storage.storeSiteBanner(image, isPhoto(banner.getCategory()));
         banner.setImageOriginalName(stored.originalName());
         banner.setImageStoredPath(stored.storedPath());
         return toResponse(banners.saveAndFlush(banner), "/api/backoffice/site/banners/");
@@ -120,7 +125,7 @@ public class SiteService {
         apply(banner, name, category, groupKey, altText, sequence, active);
         String oldPath = null;
         if (image != null && !image.isEmpty()) {
-            var stored = storage.storeSiteBanner(image);
+            var stored = storage.storeSiteBanner(image, isPhoto(banner.getCategory()));
             oldPath = banner.getImageStoredPath();
             banner.setImageOriginalName(stored.originalName());
             banner.setImageStoredPath(stored.storedPath());
