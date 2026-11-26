@@ -1,10 +1,9 @@
 
-import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { inject, Component } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { CareerHeaderComponent } from '../../shared/career-header.component';
 import { CareerFooterComponent } from '../../shared/career-footer.component';
 import { IconComponent } from '../../shared/icon.component';
-import { OpenPositionsComponent } from './open-positions.component';
 import { TalentAuthService } from '../../core/service/api/talent-auth.service';
 import { LifeCarouselComponent } from './life-carousel.component';
 import { LIFE_SLIDE_SECONDS } from './life-at-sarinah.config';
@@ -12,7 +11,7 @@ import { LandingData, SiteContentService } from '../../core/service/api/site-con
 
 @Component({
     selector: 'app-landing',
-    imports: [RouterLink, CareerHeaderComponent, CareerFooterComponent, OpenPositionsComponent, IconComponent, LifeCarouselComponent],
+    imports: [RouterLink, CareerHeaderComponent, CareerFooterComponent, IconComponent, LifeCarouselComponent],
     template: `
     <div class="site">
       <app-career-header active="home"></app-career-header>
@@ -29,7 +28,7 @@ import { LandingData, SiteContentService } from '../../core/service/api/site-con
               <h1 id="hero-title">{{ site.hero.title }}</h1>
               <p>{{ site.hero.subtitle }}</p>
               <div class="hero-actions">
-                <a routerLink="/" fragment="open-positions" class="btn btn-primary btn-lg">{{ site.hero.primaryCta }} <app-icon name="arrow-up-right" [size]="16"></app-icon></a>
+                <a routerLink="/open-positions" class="btn btn-primary btn-lg">{{ site.hero.primaryCta }} <app-icon name="arrow-up-right" [size]="16"></app-icon></a>
                 <a [routerLink]="talentPoolLink" class="btn btn-secondary btn-lg">{{ site.hero.secondaryCta }}</a>
               </div>
             </div>
@@ -84,9 +83,12 @@ import { LandingData, SiteContentService } from '../../core/service/api/site-con
               </div>
             </div>
           </section>
-          <section id="open-positions" class="section alt" aria-labelledby="positions-title">
-            <div class="container">
-              <app-open-positions></app-open-positions>
+          <section class="career-cta" aria-labelledby="career-cta-title">
+            <img class="career-cta-bg" [src]="site.heroImages[0]" alt="" loading="lazy">
+            <div class="container career-cta-inner">
+              <h2 id="career-cta-title">Siap memulai karier Anda?</h2>
+              <p>Temukan peluang karier terbaru dan jadilah bagian dari perjalanan Sarinah.</p>
+              <a routerLink="/open-positions" class="btn btn-primary btn-lg">Lihat lowongan <app-icon name="arrow-up-right" [size]="16"></app-icon></a>
             </div>
           </section>
           <section id="faq" class="section">
@@ -128,6 +130,10 @@ export class LandingComponent {
   readonly slideSeconds = LIFE_SLIDE_SECONDS;
 
   constructor(private auth: TalentAuthService, content: SiteContentService) {
+    // Tautan lama /#open-positions -> halaman lowongan tersendiri
+    if (typeof location !== 'undefined' && location.hash === '#open-positions') {
+      inject(Router).navigateByUrl('/open-positions', { replaceUrl: true });
+    }
     content.landing().subscribe((site) => this.site = site);
   }
 

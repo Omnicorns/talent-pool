@@ -11,6 +11,7 @@ import { VerifyEmailComponent } from './features/auth/verify-email.component';
 import { CandidatePortalComponent } from './features/candidate/candidate-portal.component';
 import { TalentOnboardingComponent } from './features/candidate/talent-onboarding.component';
 import { JobDetailComponent } from './features/public/job-detail.component';
+import { OpenPositionsPageComponent } from './features/public/open-positions-page.component';
 import { JobApplicationReviewComponent } from './features/candidate/job-application-review.component';
 import { BackofficeLoginComponent } from './features/backoffice/backoffice-login.component';
 import { BackofficeDashboardComponent } from './features/backoffice/backoffice-dashboard.component';
@@ -24,7 +25,7 @@ import { BackofficeSiteContentComponent } from './features/backoffice/backoffice
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
-  { path: 'open-positions', redirectTo: () => inject(Router).createUrlTree(['/'], { fragment: 'open-positions' }) },
+  { path: 'open-positions', component: OpenPositionsPageComponent },
   { path: 'jobs/:id', component: JobDetailComponent },
   { path: 'jobs/:id/apply', component: JobApplicationReviewComponent, canActivate: [completedOnboardingGuard] },
   { path: 'sign-in', component: CandidateAuthComponent },

@@ -92,4 +92,8 @@ export const EN_PORTAL: Record<string, string> = {
   'Ketik untuk mencari': 'Type to search',
   'Tidak ada di daftar? Tetap gunakan tulisan Anda.': 'Not on the list? Use what you typed.',
   'Maksimal {#0} pilihan.': 'Maximum {0} choices.',
+  // Ajakan ke halaman lowongan (landing)
+  'Siap memulai karier Anda?': 'Ready to start your career?',
+  'Temukan peluang karier terbaru dan jadilah bagian dari perjalanan Sarinah.': 'Discover the latest career opportunities and become part of the Sarinah journey.',
+  'Lihat lowongan': 'View open positions',
 };

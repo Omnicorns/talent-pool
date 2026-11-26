@@ -17,7 +17,7 @@ import { Branding, DEFAULT_BRANDING, SiteContentService } from '../core/service/
           <h2>{{ b.footer.exploreTitle }}</h2>
           <a routerLink="/">{{ b.header.navHome }}</a>
           <a routerLink="/" fragment="life">{{ b.header.navLife }}</a>
-          <a routerLink="/" fragment="open-positions">{{ b.header.navOpen }}</a>
+          <a routerLink="/open-positions">{{ b.header.navOpen }}</a>
           <a routerLink="/" fragment="faq">{{ b.header.navFaq }}</a>
         </nav>
         <div>

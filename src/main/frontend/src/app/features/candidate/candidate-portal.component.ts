@@ -278,7 +278,7 @@ type DrawerSection = 'header' | 'personal' | 'interest' | 'about' | 'experience'
                 </section>
               </section>
               <section id="my-applications" class="profile-card profile-section">
-                <div class="section-title"><h2>Lamaran Saya</h2><a class="btn btn-secondary btn-sm" routerLink="/" fragment="open-positions">Cari lowongan</a></div>
+                <div class="section-title"><h2>Lamaran Saya</h2><a class="btn btn-secondary btn-sm" routerLink="/open-positions">Cari lowongan</a></div>
                 @if (applications.length) {
                   <div class="app-list">
                     @for (app of visibleApplications; track app) {

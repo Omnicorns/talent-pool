@@ -20,7 +20,7 @@ import { RichTextComponent } from '../../shared/rich-text.component';
       @if (job) {
         <main class="job-page">
           <div class="container">
-            <a routerLink="/" fragment="open-positions" class="back-link"><app-icon name="arrow-left" [size]="16"></app-icon> Semua lowongan</a>
+            <a routerLink="/open-positions" class="back-link"><app-icon name="arrow-left" [size]="16"></app-icon> Semua lowongan</a>
             <header class="job-head">
               <div>
                 <p class="dept">{{ job.department || 'Sarinah' }}</p>
@@ -68,7 +68,7 @@ import { RichTextComponent } from '../../shared/rich-text.component';
           }
           @if (error) {
             <strong>{{ error }}</strong>
-            <a routerLink="/" fragment="open-positions" class="btn btn-secondary">Lihat lowongan lain</a>
+            <a routerLink="/open-positions" class="btn btn-secondary">Lihat lowongan lain</a>
           }
         </main>
       }

@@ -19,7 +19,7 @@ import { initials } from './labels';
         <nav id="site-navigation" class="site-nav" [class.open]="mobileMenuOpen" aria-label="Navigasi utama">
           <a routerLink="/" [class.active]="active === 'home' && sectionActive === ''" (click)="goHome($event)">{{ b.header.navHome }}</a>
           <button type="button" [class.active]="sectionActive === 'life'" (click)="goToSection('life')">{{ b.header.navLife }}</button>
-          <button type="button" [class.active]="active === 'open' || sectionActive === 'open-positions'" (click)="goToSection('open-positions')">{{ b.header.navOpen }}</button>
+          <a routerLink="/open-positions" [class.active]="active === 'open'" (click)="mobileMenuOpen = false">{{ b.header.navOpen }}</a>
           <button type="button" [class.active]="sectionActive === 'faq'" (click)="goToSection('faq')">{{ b.header.navFaq }}</button>
           @if (!auth.authenticated) {
             <a class="nav-signin" routerLink="/sign-in" (click)="mobileMenuOpen = false">{{ b.header.signIn }}</a>
@@ -131,7 +131,7 @@ export class CareerHeaderComponent {
       const headerH = (document.querySelector('.site-header') as HTMLElement | null)?.offsetHeight ?? 72;
       const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
       let current = '';
-      for (const id of ['life', 'open-positions', 'faq']) {
+      for (const id of ['life', 'faq']) {
         const el = document.getElementById(id);
         if (el && el.getBoundingClientRect().top <= headerH + window.innerHeight * 0.3) current = id;
       }
@@ -151,7 +151,7 @@ export class CareerHeaderComponent {
     }
   }
 
-  goToSection(section: 'life' | 'open-positions' | 'faq'): void {
+  goToSection(section: 'life' | 'faq'): void {
     this.mobileMenuOpen = false;
     const token = ++this.navToken;
     this.router.navigate(['/'], { fragment: section }).then(() => {
